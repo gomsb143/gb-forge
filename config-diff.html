@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Config Diff — GomathiBalan's Forge</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#0d1117;--bg-2:#161b22;--bg-3:#1c2330;--bg-4:#21262d;
+      --border:#30363d;--border-2:#3d444d;
+      --ink:#e6edf3;--ink-2:#8d96a0;--ink-3:#484f58;
+      --accent:#388bfd;--accent-soft:#0d2044;
+      --add:#3fb950;    --add-bg:rgba(63,185,80,.1);   --add-border:rgba(63,185,80,.3);
+      --del:#f85149;    --del-bg:rgba(248,81,73,.1);   --del-border:rgba(248,81,73,.3);
+      --mod:#d29922;    --mod-bg:rgba(210,153,34,.1);  --mod-border:rgba(210,153,34,.3);
+      --eq:#8d96a0;
+      --font:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
+    }
+    html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--ink);overflow:hidden}
+    .app{display:flex;flex-direction:column;height:100vh}
+    .topbar{height:52px;background:var(--bg-2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:10px;flex-shrink:0}
+    .back{font-size:12px;font-weight:500;color:var(--ink-3);text-decoration:none}
+    .back:hover{color:var(--ink-2)}
+    .sep{width:1px;height:18px;background:var(--border)}
+    .ptitle{font-size:13px;font-weight:600}
+    .ml{margin-left:auto}
+    .btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:7px;font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all .15s;white-space:nowrap;line-height:1}
+    .btn-ghost{background:transparent;color:var(--ink-2);border:1px solid var(--border)}
+    .btn-ghost:hover{background:var(--bg-4);color:var(--ink)}
+    .btn-accent{background:var(--accent);color:#fff}
+    .btn-accent:hover{background:#1a6dda}
+    .btn-sm{padding:4px 9px;font-size:11px}
+
+    /* TOOLBAR */
+    .toolbar{padding:8px 16px;background:var(--bg-2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0;flex-wrap:wrap}
+    .format-badge{padding:3px 9px;border-radius:5px;font-size:11px;font-weight:700;font-family:var(--mono)}
+    .fb-json{background:#0d2044;color:#388bfd}
+    .fb-yaml{background:#2a1f00;color:#d29922}
+    .fb-ini {background:#0d2e22;color:#3fb950}
+    .fb-auto{background:var(--bg-3);color:var(--ink-3)}
+    .stat-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
+    .sp-add{background:var(--add-bg);color:var(--add)}
+    .sp-del{background:var(--del-bg);color:var(--del)}
+    .sp-mod{background:var(--mod-bg);color:var(--mod)}
+
+    /* BODY */
+    .body{display:flex;flex:1;overflow:hidden}
+    .panel{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+    .panel+.panel{border-left:1px solid var(--border)}
+    .col-header{height:36px;background:var(--bg-3);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 12px;gap:8px;flex-shrink:0}
+    .col-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+    .fmt-tag{font-size:10px;padding:2px 7px;border-radius:4px;font-family:var(--mono);font-weight:700}
+    .code-area{flex:1;padding:14px;font-family:var(--mono);font-size:13px;line-height:1.7;background:var(--bg-2);border:none;outline:none;resize:none;color:var(--ink);tab-size:2;overflow-y:auto}
+    .code-area::-webkit-scrollbar{width:4px}
+    .code-area::-webkit-scrollbar-thumb{background:var(--border-2);border-radius:4px}
+    .code-area::placeholder{color:var(--ink-3);font-family:var(--font)}
+    .parse-err{padding:6px 12px;background:rgba(248,81,73,.1);border-bottom:1px solid rgba(248,81,73,.3);font-size:11px;color:var(--del);font-family:var(--mono);display:none;flex-shrink:0}
+    .parse-err.show{display:block}
+
+    /* DIFF PANEL */
+    .diff-panel{width:420px;display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;border-left:1px solid var(--border)}
+    .diff-body{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:6px}
+    .diff-body::-webkit-scrollbar{width:4px}
+    .diff-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+
+    /* Diff cards */
+    .diff-card{border-radius:8px;border:1px solid;padding:10px 12px;font-family:var(--mono)}
+    .dc-add{background:var(--add-bg);border-color:var(--add-border)}
+    .dc-del{background:var(--del-bg);border-color:var(--del-border)}
+    .dc-mod{background:var(--mod-bg);border-color:var(--mod-border)}
+    .dc-header{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+    .dc-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;text-transform:uppercase;letter-spacing:.04em}
+    .dcb-add{background:var(--add);color:#0d1117}
+    .dcb-del{background:var(--del);color:#fff}
+    .dcb-mod{background:var(--mod);color:#0d1117}
+    .dc-path{font-size:12px;color:var(--ink-2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .dc-val-row{display:flex;align-items:baseline;gap:8px;font-size:12px}
+    .dc-val-label{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;min-width:36px;flex-shrink:0}
+    .dc-val-a{color:var(--del)}
+    .dc-val-b{color:var(--add)}
+    .dc-val-single{color:var(--add)}
+    .dc-del .dc-val-single{color:var(--del)}
+
+    /* Empty/ok */
+    .diff-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:10px;opacity:.3}
+    .diff-empty .di{font-size:36px}
+    .diff-empty p{font-size:12px;color:var(--ink-2);text-align:center}
+    .diff-ok{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:10px}
+    .diff-ok .doi{font-size:32px}
+    .diff-ok p{font-size:13px;font-weight:600;color:var(--add)}
+    .diff-ok small{font-size:11px;color:var(--ink-3)}
+
+    .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(8px);background:var(--add);color:#0d1117;padding:8px 18px;border-radius:20px;font-size:12px;font-weight:700;opacity:0;transition:all .2s;pointer-events:none;z-index:999}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  </style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <a href="index.html" class="back">← GomathiBalan's Forge</a>
+    <div class="sep"></div>
+    <span class="ptitle">⚙ Config Diff</span>
+    <div class="ml" style="display:flex;gap:6px">
+      <button class="btn btn-ghost btn-sm" onclick="loadSample('json')">JSON sample</button>
+      <button class="btn btn-ghost btn-sm" onclick="loadSample('yaml')">YAML sample</button>
+      <button class="btn btn-ghost btn-sm" onclick="loadSample('ini')">INI sample</button>
+      <button class="btn btn-ghost btn-sm" onclick="swapInputs()">⇄ Swap</button>
+      <button class="btn btn-ghost btn-sm" onclick="copyReport()">⎘ Copy report</button>
+    </div>
+  </div>
+  <div class="toolbar">
+    <span style="font-size:11px;color:var(--ink-3)">Format A:</span>
+    <span class="format-badge fb-auto" id="fmtA">auto</span>
+    <span style="font-size:11px;color:var(--ink-3);margin-left:8px">Format B:</span>
+    <span class="format-badge fb-auto" id="fmtB">auto</span>
+    <div class="sep"></div>
+    <span class="stat-pill sp-add" id="statAdd">+0 added</span>
+    <span class="stat-pill sp-del" id="statDel">−0 removed</span>
+    <span class="stat-pill sp-mod" id="statMod">~0 changed</span>
+  </div>
+  <div class="body">
+
+    <div class="panel">
+      <div class="col-header">
+        <span class="col-label">Config A (Original)</span>
+        <label class="btn btn-ghost btn-sm" style="cursor:pointer;margin-left:auto">
+          📁 Upload<input type="file" style="display:none" onchange="uploadFile(this,'a')"/>
+        </label>
+      </div>
+      <div class="parse-err" id="errA"></div>
+      <textarea class="code-area" id="inputA" placeholder="Paste JSON, YAML, or INI config here…" oninput="diff()" spellcheck="false"></textarea>
+    </div>
+
+    <div class="panel">
+      <div class="col-header">
+        <span class="col-label">Config B (Modified)</span>
+        <label class="btn btn-ghost btn-sm" style="cursor:pointer;margin-left:auto">
+          📁 Upload<input type="file" style="display:none" onchange="uploadFile(this,'b')"/>
+        </label>
+      </div>
+      <div class="parse-err" id="errB"></div>
+      <textarea class="code-area" id="inputB" placeholder="Paste JSON, YAML, or INI config here…" oninput="diff()" spellcheck="false"></textarea>
+    </div>
+
+    <div class="diff-panel">
+      <div class="col-header"><span class="col-label">Structural Diff</span></div>
+      <div class="diff-body" id="diffBody">
+        <div class="diff-empty">
+          <div class="di">⚙</div>
+          <p>Paste configs on the left<br/>to see the structural diff.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+const $ = id => document.getElementById(id);
+let lastDiffs = [];
+
+// ── PARSERS ───────────────────────────────────────────────
+function detectFormat(text) {
+  const t = text.trim();
+  if (t.startsWith('{') || t.startsWith('[')) return 'json';
+  if (/^\[[\w\s]+\]/m.test(t) || /^\w[\w\s]*\s*=/.test(t)) return 'ini';
+  if (/^[\w\-]+\s*:/.test(t) || /^---/.test(t) || /^\s{2,}\w/.test(t)) return 'yaml';
+  return 'unknown';
+}
+
+function parseConfig(text, side) {
+  const t = text.trim();
+  const errEl = $('err'+side.toUpperCase());
+  const fmtEl = $('fmt'+side.toUpperCase());
+  if (!t) { errEl.className='parse-err'; fmtEl.textContent='auto'; fmtEl.className='format-badge fb-auto'; return null; }
+
+  const fmt = detectFormat(t);
+  const fmtClasses = {json:'fb-json',yaml:'fb-yaml',ini:'fb-ini',unknown:'fb-auto'};
+  fmtEl.textContent = fmt; fmtEl.className = 'format-badge ' + (fmtClasses[fmt]||'fb-auto');
+
+  try {
+    if (fmt==='json') {
+      const obj = JSON.parse(t);
+      errEl.className='parse-err'; return {fmt:'json', data:obj};
+    }
+    if (fmt==='yaml') {
+      const obj = parseYAML(t);
+      errEl.className='parse-err'; return {fmt:'yaml', data:obj};
+    }
+    if (fmt==='ini') {
+      const obj = parseINI(t);
+      errEl.className='parse-err'; return {fmt:'ini', data:obj};
+    }
+  } catch(e) {
+    errEl.className='parse-err show'; errEl.textContent='Parse error: '+e.message;
+    return null;
+  }
+  return null;
+}
+
+// ── YAML PARSER (subset) ──────────────────────────────────
+function parseYAML(text) {
+  const lines = text.split('\n');
+  const root = {};
+  const stack = [{indent:-1, obj:root}];
+
+  lines.forEach(rawLine => {
+    if (/^\s*#/.test(rawLine) || !rawLine.trim() || rawLine.trim()==='---') return;
+    const indent = rawLine.match(/^(\s*)/)[1].length;
+    const line = rawLine.trim();
+
+    // Key: value
+    const kv = line.match(/^([\w\-\.]+)\s*:\s*(.*)/);
+    if (!kv) return;
+    const [, key, rawVal] = kv;
+    let val;
+
+    if (!rawVal.trim()) {
+      // nested object or list — will be filled by next lines
+      val = {};
+    } else {
+      val = parseYAMLValue(rawVal.trim());
+    }
+
+    // Find parent
+    while (stack.length > 1 && stack[stack.length-1].indent >= indent) stack.pop();
+    const parent = stack[stack.length-1].obj;
+    parent[key] = val;
+    if (typeof val === 'object' && val !== null && !Array.isArray(val)) {
+      stack.push({indent, obj:val});
+    }
+  });
+  return root;
+}
+
+function parseYAMLValue(s) {
+  if (s==='true'||s==='yes'||s==='on')  return true;
+  if (s==='false'||s==='no'||s==='off') return false;
+  if (s==='null'||s==='~') return null;
+  if (!isNaN(Number(s)) && s!=='') return Number(s);
+  if ((s.startsWith("'")&&s.endsWith("'"))||(s.startsWith('"')&&s.endsWith('"'))) return s.slice(1,-1);
+  if (s.startsWith('[')) {
+    try { return JSON.parse(s.replace(/'/g,'"')); } catch { return s; }
+  }
+  return s;
+}
+
+// ── INI PARSER ────────────────────────────────────────────
+function parseINI(text) {
+  const lines = text.split('\n');
+  const root = {};
+  let section = root;
+  let sectionName = null;
+
+  lines.forEach(rawLine => {
+    const line = rawLine.trim();
+    if (!line || line.startsWith(';') || line.startsWith('#')) return;
+    const secMatch = line.match(/^\[(.+)\]$/);
+    if (secMatch) {
+      sectionName = secMatch[1];
+      root[sectionName] = {};
+      section = root[sectionName];
+      return;
+    }
+    const kvMatch = line.match(/^([^=]+?)\s*=\s*(.*)/);
+    if (kvMatch) {
+      const [, key, val] = kvMatch;
+      section[key.trim()] = parseINIValue(val.trim());
+    }
+  });
+  return root;
+}
+
+function parseINIValue(s) {
+  if (s==='true'||s==='yes') return true;
+  if (s==='false'||s==='no') return false;
+  if (!isNaN(Number(s))&&s!=='') return Number(s);
+  if ((s.startsWith('"')&&s.endsWith('"'))||(s.startsWith("'")&&s.endsWith("'"))) return s.slice(1,-1);
+  return s;
+}
+
+// ── STRUCTURAL DIFF ───────────────────────────────────────
+// Flattens both objects to dot-notation paths, then compares key by key
+function flatten(obj, prefix='', result={}) {
+  if (typeof obj !== 'object' || obj === null) {
+    result[prefix] = obj; return result;
+  }
+  if (Array.isArray(obj)) {
+    obj.forEach((v,i) => flatten(v, prefix?`${prefix}[${i}]`:`[${i}]`, result));
+    return result;
+  }
+  Object.entries(obj).forEach(([k,v]) => flatten(v, prefix?`${prefix}.${k}`:k, result));
+  return result;
+}
+
+function structuralDiff(a, b) {
+  const fa = flatten(a);
+  const fb = flatten(b);
+  const allKeys = new Set([...Object.keys(fa),...Object.keys(fb)]);
+  const diffs = [];
+
+  allKeys.forEach(key => {
+    const inA = key in fa, inB = key in fb;
+    if (inA && inB) {
+      const va = fa[key], vb = fb[key];
+      if (JSON.stringify(va) !== JSON.stringify(vb)) {
+        diffs.push({type:'modified', path:key, a:va, b:vb});
+      }
+    } else if (inA) {
+      diffs.push({type:'removed', path:key, a:fa[key]});
+    } else {
+      diffs.push({type:'added', path:key, b:fb[key]});
+    }
+  });
+
+  // Sort: modified first, then added, then removed; alphabetically within each
+  const order = {modified:0, added:1, removed:2};
+  diffs.sort((a,b) => order[a.type]-order[b.type] || a.path.localeCompare(b.path));
+  return diffs;
+}
+
+// ── DIFF ──────────────────────────────────────────────────
+function diff() {
+  const a = parseConfig($('inputA').value, 'a');
+  const b = parseConfig($('inputB').value, 'b');
+
+  if (!a || !b) {
+    if (!$('inputA').value.trim() && !$('inputB').value.trim()) {
+      $('diffBody').innerHTML='<div class="diff-empty"><div class="di">⚙</div><p>Paste configs on the left<br/>to see the structural diff.</p></div>';
+    }
+    updateStats([]);
+    return;
+  }
+
+  const diffs = structuralDiff(a.data, b.data);
+  lastDiffs = diffs;
+  updateStats(diffs);
+  renderDiff(diffs);
+}
+
+function updateStats(diffs) {
+  const add = diffs.filter(d=>d.type==='added').length;
+  const del = diffs.filter(d=>d.type==='removed').length;
+  const mod = diffs.filter(d=>d.type==='modified').length;
+  $('statAdd').textContent = `+${add} added`;
+  $('statDel').textContent = `−${del} removed`;
+  $('statMod').textContent = `~${mod} changed`;
+}
+
+function renderDiff(diffs) {
+  const body = $('diffBody');
+  if (!diffs.length) {
+    body.innerHTML='<div class="diff-ok"><div class="doi">✅</div><p>No differences</p><small>Both configs are structurally identical</small></div>';
+    return;
+  }
+
+  body.innerHTML = diffs.map(d => {
+    const cls = d.type==='added'?'dc-add':d.type==='removed'?'dc-del':'dc-mod';
+    const badge = d.type==='added'?'dcb-add':d.type==='removed'?'dcb-del':'dcb-mod';
+    const label = d.type==='added'?'Added':d.type==='removed'?'Removed':'Changed';
+
+    let valHtml = '';
+    if (d.type==='modified') {
+      valHtml = `
+        <div class="dc-val-row"><span class="dc-val-label" style="color:var(--del)">WAS</span><span class="dc-val-a">${escHtml(formatVal(d.a))}</span></div>
+        <div class="dc-val-row"><span class="dc-val-label" style="color:var(--add)">NOW</span><span class="dc-val-b">${escHtml(formatVal(d.b))}</span></div>`;
+    } else {
+      const val = d.type==='added' ? d.b : d.a;
+      valHtml = `<div class="dc-val-row"><span class="dc-val-single">${escHtml(formatVal(val))}</span></div>`;
+    }
+
+    return `<div class="diff-card ${cls}">
+      <div class="dc-header">
+        <span class="dc-badge ${badge}">${label}</span>
+        <span class="dc-path" title="${escHtml(d.path)}">${escHtml(d.path)}</span>
+      </div>
+      ${valHtml}
+    </div>`;
+  }).join('');
+}
+
+function formatVal(v) {
+  if (v === null) return 'null';
+  if (typeof v === 'object') return JSON.stringify(v);
+  if (typeof v === 'string' && v.length > 80) return '"' + v.slice(0,80) + '…"';
+  if (typeof v === 'string') return '"' + v + '"';
+  return String(v);
+}
+
+// ── ACTIONS ───────────────────────────────────────────────
+function swapInputs() {
+  const a=$('inputA').value, b=$('inputB').value;
+  $('inputA').value=b; $('inputB').value=a; diff();
+}
+
+function uploadFile(input, side) {
+  const f=input.files[0]; if(!f) return;
+  const r=new FileReader(); r.onload=e=>{$('input'+side.toUpperCase()).value=e.target.result;diff();}; r.readAsText(f); input.value='';
+}
+
+function copyReport() {
+  if (!lastDiffs.length) { showToast('⚠ No differences to report'); return; }
+  const lines = lastDiffs.map(d => {
+    if (d.type==='modified') return `~ ${d.path}\n  WAS: ${formatVal(d.a)}\n  NOW: ${formatVal(d.b)}`;
+    if (d.type==='added')    return `+ ${d.path}: ${formatVal(d.b)}`;
+    return `- ${d.path}: ${formatVal(d.a)}`;
+  });
+  navigator.clipboard.writeText(lines.join('\n\n')).then(()=>showToast('✓ Report copied'));
+}
+
+function loadSample(fmt) {
+  const samples = {
+    json: {
+      a: `{
+  "server": {
+    "host": "localhost",
+    "port": 8080,
+    "debug": true,
+    "workers": 4
+  },
+  "database": {
+    "host": "db.internal",
+    "port": 5432,
+    "name": "appdb",
+    "pool_size": 10,
+    "ssl": false
+  },
+  "cache": {
+    "driver": "redis",
+    "ttl": 3600,
+    "host": "cache.internal"
+  },
+  "features": {
+    "signup": true,
+    "beta": false,
+    "analytics": true
+  }
+}`,
+      b: `{
+  "server": {
+    "host": "0.0.0.0",
+    "port": 443,
+    "debug": false,
+    "workers": 16,
+    "ssl": true
+  },
+  "database": {
+    "host": "db-prod.internal",
+    "port": 5432,
+    "name": "appdb_prod",
+    "pool_size": 50,
+    "ssl": true,
+    "replica": "db-replica.internal"
+  },
+  "cache": {
+    "driver": "redis",
+    "ttl": 86400,
+    "host": "cache-prod.internal"
+  },
+  "features": {
+    "signup": true,
+    "beta": false,
+    "analytics": false,
+    "audit_log": true
+  }
+}`
+    },
+    yaml: {
+      a: `server:
+  host: localhost
+  port: 8080
+  debug: true
+
+database:
+  host: db.local
+  port: 5432
+  name: devdb
+  ssl: false
+
+logging:
+  level: debug
+  format: text
+  output: stdout`,
+      b: `server:
+  host: 0.0.0.0
+  port: 443
+  debug: false
+  ssl: true
+
+database:
+  host: db-prod.example.com
+  port: 5432
+  name: proddb
+  ssl: true
+  pool: 20
+
+logging:
+  level: warn
+  format: json
+  output: /var/log/app.log
+  rotate: daily`
+    },
+    ini: {
+      a: `[server]
+host = localhost
+port = 8080
+debug = true
+
+[database]
+host = db.local
+name = devdb
+user = root
+password = dev_password
+
+[cache]
+driver = memory
+ttl = 60`,
+      b: `[server]
+host = 0.0.0.0
+port = 443
+debug = false
+ssl = true
+
+[database]
+host = db-prod.internal
+name = proddb
+user = app_user
+password = REDACTED
+pool_size = 20
+
+[cache]
+driver = redis
+ttl = 3600
+host = cache.internal`
+    }
+  };
+  const s = samples[fmt];
+  $('inputA').value = s.a;
+  $('inputB').value = s.b;
+  diff();
+}
+
+function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function showToast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
+</script>
+
+<!-- ── TEAMKIT FOOTER ── -->
+<div style="
+  border-top:1px solid rgba(255,255,255,.07);
+  background:rgba(0,0,0,.25);
+  padding:10px 20px;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:8px;
+  font-family:'DM Sans',sans-serif;
+  font-size:11px;
+  flex-shrink:0;
+" id="tk-footer">
+  <span style="color:rgba(255,255,255,.35)">
+    🧰 <strong style="color:rgba(255,255,255,.6)">GomathiBalan's Forge</strong> &nbsp;·&nbsp;
+    Built by <strong style="color:rgba(255,255,255,.7)">GomathiBalan</strong>
+  </span>
+  <span style="color:rgba(255,255,255,.25);font-size:10px">
+    Designed with prompts &nbsp;·&nbsp; Crafted by 
+    <strong style="color:rgba(255,255,255,.4)">Claude AI</strong>
+  </span>
+</div>
+</body>
+</html>

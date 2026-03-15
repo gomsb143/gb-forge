@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Log Highlighter — GomathiBalan's Forge</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#0d1117;--bg-2:#161b22;--bg-3:#1c2330;--bg-4:#21262d;
+      --border:#30363d;--border-2:#3d444d;
+      --ink:#e6edf3;--ink-2:#8d96a0;--ink-3:#484f58;
+      --font:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
+      /* Log levels */
+      --err:#f85149;   --err-bg:rgba(248,81,73,.12);
+      --warn:#d29922;  --warn-bg:rgba(210,153,34,.12);
+      --info:#3fb950;  --info-bg:rgba(63,185,80,.1);
+      --debug:#388bfd; --debug-bg:rgba(56,139,253,.1);
+      --trace:#bc8cff; --trace-bg:rgba(188,140,255,.1);
+      --accent:#388bfd;--accent-soft:#0d2044;
+    }
+    html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--ink);overflow:hidden}
+    .app{display:flex;flex-direction:column;height:100vh}
+    .topbar{height:52px;background:var(--bg-2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:10px;flex-shrink:0}
+    .back{font-size:12px;font-weight:500;color:var(--ink-3);text-decoration:none}
+    .back:hover{color:var(--ink-2)}
+    .sep{width:1px;height:18px;background:var(--border)}
+    .ptitle{font-size:13px;font-weight:600}
+    .ml{margin-left:auto}
+    .btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:7px;font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all .15s;white-space:nowrap;line-height:1}
+    .btn-ghost{background:transparent;color:var(--ink-2);border:1px solid var(--border)}
+    .btn-ghost:hover{background:var(--bg-4);color:var(--ink)}
+    .btn-ghost.on{background:var(--accent-soft);color:var(--accent);border-color:var(--accent)}
+    .btn-sm{padding:4px 9px;font-size:11px}
+
+    /* TOOLBAR */
+    .toolbar{padding:8px 14px;background:var(--bg-2);border-bottom:1px solid var(--border);display:flex;gap:8px;align-items:center;flex-shrink:0;flex-wrap:wrap}
+    .level-btn{padding:4px 10px;border-radius:5px;font-size:11px;font-weight:700;border:1px solid transparent;cursor:pointer;font-family:var(--mono);transition:all .15s;opacity:.45}
+    .level-btn.on{opacity:1}
+    .lb-error{background:var(--err-bg);color:var(--err);border-color:var(--err)} .lb-error.on{border-color:var(--err)}
+    .lb-warn {background:var(--warn-bg);color:var(--warn);border-color:transparent} .lb-warn.on{border-color:var(--warn)}
+    .lb-info {background:var(--info-bg);color:var(--info);border-color:transparent} .lb-info.on{border-color:var(--info)}
+    .lb-debug{background:var(--debug-bg);color:var(--debug);border-color:transparent} .lb-debug.on{border-color:var(--debug)}
+    .lb-trace{background:var(--trace-bg);color:var(--trace);border-color:transparent} .lb-trace.on{border-color:var(--trace)}
+
+    .search-input{background:var(--bg-3);border:1px solid var(--border);border-radius:7px;padding:5px 10px;font-family:var(--mono);font-size:12px;color:var(--ink);outline:none;transition:border-color .15s;width:200px}
+    .search-input:focus{border-color:var(--accent)}
+    .search-input::placeholder{color:var(--ink-3);font-family:var(--font)}
+
+    .stats-pill{font-size:11px;color:var(--ink-3);font-family:var(--mono)}
+
+    /* BODY */
+    .body{display:flex;flex:1;overflow:hidden}
+
+    /* INPUT */
+    .input-col{width:38%;display:flex;flex-direction:column;overflow:hidden;border-right:1px solid var(--border);flex-shrink:0}
+    .col-header{height:34px;background:var(--bg-3);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 12px;gap:8px;flex-shrink:0}
+    .col-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+    .log-textarea{flex:1;padding:14px;font-family:var(--mono);font-size:12px;line-height:1.6;background:var(--bg-2);border:none;outline:none;resize:none;color:var(--ink);tab-size:2;overflow-y:auto}
+    .log-textarea::-webkit-scrollbar{width:4px}
+    .log-textarea::-webkit-scrollbar-thumb{background:var(--border-2);border-radius:4px}
+    .log-textarea::placeholder{color:var(--ink-3);font-family:var(--font);font-size:12px}
+
+    /* OUTPUT */
+    .output-col{flex:1;display:flex;flex-direction:column;overflow:hidden}
+    .log-output{flex:1;overflow-y:auto;font-family:var(--mono);font-size:12px;line-height:1.6;padding:0}
+    .log-output::-webkit-scrollbar{width:5px}
+    .log-output::-webkit-scrollbar-thumb{background:var(--border-2);border-radius:4px}
+
+    /* Log lines */
+    .log-line{display:flex;padding:1px 0;border-left:3px solid transparent;transition:background .1s}
+    .log-line:hover{background:rgba(255,255,255,.03)}
+    .ll-num{width:44px;padding:0 8px;text-align:right;font-size:10px;color:var(--ink-3);flex-shrink:0;user-select:none;border-right:1px solid var(--border)}
+    .ll-text{padding:0 14px;white-space:pre-wrap;word-break:break-all;flex:1;min-width:0}
+    .ll-err  {background:var(--err-bg);  border-left-color:var(--err)}
+    .ll-warn {background:var(--warn-bg); border-left-color:var(--warn)}
+    .ll-info {background:var(--info-bg); border-left-color:var(--info)}
+    .ll-debug{background:var(--debug-bg);border-left-color:var(--debug)}
+    .ll-trace{background:var(--trace-bg);border-left-color:var(--trace)}
+    .ll-hidden{display:none}
+
+    /* Token colours */
+    .tok-err{color:var(--err);font-weight:600}
+    .tok-warn{color:var(--warn);font-weight:600}
+    .tok-info{color:var(--info);font-weight:600}
+    .tok-debug{color:var(--debug);font-weight:600}
+    .tok-trace{color:var(--trace);font-weight:600}
+    .tok-time{color:#8d96a0}
+    .tok-ip{color:#ffa657}
+    .tok-path{color:#a5d6ff}
+    .tok-num{color:#ffa657}
+    .tok-str{color:#a5d6ff}
+    .tok-key{color:#79c0ff}
+    .tok-search{background:rgba(255,235,0,.25);border-radius:2px;outline:1px solid rgba(255,235,0,.5)}
+
+    /* Section dividers */
+    .log-section-header{background:var(--bg-3);padding:4px 14px;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);border-top:1px solid var(--border);border-bottom:1px solid var(--border);user-select:none}
+
+    /* Empty */
+    .log-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:10px;opacity:.25}
+    .log-empty .li{font-size:36px}
+    .log-empty p{font-size:12px;color:var(--ink-2);text-align:center}
+
+    /* RIGHT panel - stats */
+    .stats-col{width:200px;background:var(--bg-2);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
+    .stat-block{padding:12px}
+    .stat-block+.stat-block{border-top:1px solid var(--border)}
+    .stat-title{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);margin-bottom:8px}
+    .stat-row{display:flex;justify-content:space-between;align-items:center;padding:3px 0;font-size:12px}
+    .stat-label{color:var(--ink-2)}
+    .stat-val{font-family:var(--mono);font-weight:600}
+
+    .kw-input{width:100%;background:var(--bg-3);border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-family:var(--mono);font-size:11px;color:var(--ink);outline:none;transition:border-color .15s;margin-bottom:6px}
+    .kw-input:focus{border-color:var(--accent)}
+    .kw-input::placeholder{color:var(--ink-3)}
+    .kw-tag{display:inline-flex;align-items:center;gap:4px;background:var(--accent-soft);border:1px solid var(--accent);border-radius:4px;padding:2px 7px;font-size:10px;font-family:var(--mono);color:var(--accent);margin:2px}
+    .kw-del{background:none;border:none;color:var(--accent);cursor:pointer;font-size:12px;padding:0;opacity:.7}
+    .kw-del:hover{opacity:1}
+
+    .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(8px);background:var(--info);color:#fff;padding:8px 18px;border-radius:20px;font-size:12px;font-weight:700;opacity:0;transition:all .2s;pointer-events:none;z-index:999}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  </style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <a href="index.html" class="back">← GomathiBalan's Forge</a>
+    <div class="sep"></div>
+    <span class="ptitle">📄 Log Highlighter</span>
+    <div class="ml" style="display:flex;gap:6px">
+      <button class="btn btn-ghost btn-sm" onclick="loadSample()">Load sample</button>
+      <button class="btn btn-ghost btn-sm" onclick="clearAll()">↺ Clear</button>
+      <button class="btn btn-ghost btn-sm" onclick="downloadHighlighted()">⬇ Download</button>
+    </div>
+  </div>
+  <div class="toolbar">
+    <button class="level-btn lb-error on" id="lbERROR"   onclick="toggleLevel('ERROR')">ERROR</button>
+    <button class="level-btn lb-warn  on" id="lbWARNING" onclick="toggleLevel('WARNING')">WARN</button>
+    <button class="level-btn lb-info  on" id="lbINFO"    onclick="toggleLevel('INFO')">INFO</button>
+    <button class="level-btn lb-debug on" id="lbDEBUG"   onclick="toggleLevel('DEBUG')">DEBUG</button>
+    <button class="level-btn lb-trace on" id="lbTRACE"   onclick="toggleLevel('TRACE')">TRACE</button>
+    <div class="sep"></div>
+    <input class="search-input" id="searchInput" type="text" placeholder="Search / highlight keyword…" oninput="render()"/>
+    <div class="sep"></div>
+    <button class="btn btn-ghost btn-sm" id="sectionBtn" onclick="toggleSections()">⊞ Group by session</button>
+    <span class="stats-pill" id="statsPill"></span>
+  </div>
+  <div class="body">
+    <div class="input-col">
+      <div class="col-header">
+        <span class="col-label">Raw Log Input</span>
+        <label class="btn btn-ghost btn-sm" style="cursor:pointer;margin-left:auto">
+          📁 Upload
+          <input type="file" accept=".log,.txt,.json" style="display:none" onchange="uploadFile(this)"/>
+        </label>
+      </div>
+      <textarea class="log-textarea" id="logInput" placeholder="Paste log output here…&#10;&#10;Supports: plain logs, JSON logs, Apache/Nginx access logs&#10;Auto-detects ERROR, WARN, INFO, DEBUG, TRACE" oninput="render()" spellcheck="false"></textarea>
+    </div>
+    <div class="output-col">
+      <div class="col-header">
+        <span class="col-label">Highlighted Output</span>
+        <span id="lineCount" style="font-size:11px;color:var(--ink-3);font-family:var(--mono);margin-left:auto"></span>
+      </div>
+      <div class="log-output" id="logOutput">
+        <div class="log-empty"><div class="li">📄</div><p>Paste logs on the left<br/>to see highlighted output.</p></div>
+      </div>
+    </div>
+    <div class="stats-col">
+      <div class="stat-block">
+        <div class="stat-title">Level Counts</div>
+        <div id="levelStats"></div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-title">Custom Keywords</div>
+        <input class="kw-input" id="kwInput" type="text" placeholder="Add keyword…" onkeydown="if(event.key==='Enter')addKeyword()"/>
+        <div id="kwTags"></div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-title">Format Detected</div>
+        <div id="formatDetected" style="font-size:12px;color:var(--ink-2)">—</div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+const $ = id => document.getElementById(id);
+let visibleLevels = new Set(['ERROR','WARNING','INFO','DEBUG','TRACE']);
+let keywords = [];
+let groupSections = false;
+
+// ── LEVEL PATTERNS ────────────────────────────────────────
+const LEVEL_PATTERNS = [
+  {level:'ERROR',   re:/\b(ERROR|FATAL|CRITICAL|SEVERE|ERR)\b/i,  cls:'ll-err',  tok:'tok-err'},
+  {level:'WARNING', re:/\b(WARN(?:ING)?)\b/i,                     cls:'ll-warn', tok:'tok-warn'},
+  {level:'INFO',    re:/\b(INFO(?:RMATION)?|NOTICE)\b/i,           cls:'ll-info', tok:'tok-info'},
+  {level:'DEBUG',   re:/\b(DEBUG|VERBOSE)\b/i,                     cls:'ll-debug',tok:'tok-debug'},
+  {level:'TRACE',   re:/\b(TRACE)\b/i,                             cls:'ll-trace',tok:'tok-trace'},
+];
+
+function detectLevel(line) {
+  for (const p of LEVEL_PATTERNS) if (p.re.test(line)) return p;
+  return null;
+}
+
+function detectFormat(lines) {
+  const sample = lines.slice(0,10).join('\n');
+  if (lines[0]?.trim().startsWith('{')) return 'JSON logs';
+  if (/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}.*"(GET|POST|PUT|DELETE)/.test(sample)) return 'Apache/Nginx access log';
+  if (/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(sample)) return 'ISO timestamp log';
+  if (/\[\d{2}\/\w+\/\d{4}/.test(sample)) return 'Apache error log';
+  if (/\d{2}:\d{2}:\d{2}\.\d{3}/.test(sample)) return 'Application log';
+  return 'Plain text log';
+}
+
+// ── TOKENISE a single line into HTML ──────────────────────
+function tokeniseLine(line, searchQ) {
+  let html = escHtml(line);
+  // Timestamps
+  html = html.replace(/(\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:?\d{2})?|\[\d{2}\/\w+\/\d{4}:\d{2}:\d{2}:\d{2}[^\]]*\]|\d{2}:\d{2}:\d{2}(?:\.\d{3})?)/g,
+    m=>`<span class="tok-time">${m}</span>`);
+  // Log levels
+  html = html.replace(/\b(ERROR|FATAL|CRITICAL|SEVERE)\b/gi, m=>`<span class="tok-err">${m}</span>`);
+  html = html.replace(/\b(WARN(?:ING)?)\b/gi,    m=>`<span class="tok-warn">${m}</span>`);
+  html = html.replace(/\b(INFO(?:RMATION)?)\b/gi, m=>`<span class="tok-info">${m}</span>`);
+  html = html.replace(/\b(DEBUG|VERBOSE)\b/gi,    m=>`<span class="tok-debug">${m}</span>`);
+  html = html.replace(/\b(TRACE)\b/gi,            m=>`<span class="tok-trace">${m}</span>`);
+  // IP addresses
+  html = html.replace(/\b(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\b/g, m=>`<span class="tok-ip">${m}</span>`);
+  // File paths
+  html = html.replace(/((?:\/[\w\-\.]+)+(?:\.\w+)?)/g, m=>`<span class="tok-path">${m}</span>`);
+  // JSON keys in log lines
+  html = html.replace(/"(\w+)":/g, (m,k)=>`<span class="tok-key">"${k}"</span>:`);
+  // Custom keywords
+  keywords.forEach(kw => {
+    const re = new RegExp(`(${escRegex(escHtml(kw))})`, 'gi');
+    html = html.replace(re, `<span class="tok-search">$1</span>`);
+  });
+  // Search highlight
+  if (searchQ) {
+    const re = new RegExp(`(${escRegex(escHtml(searchQ))})`, 'gi');
+    html = html.replace(re, `<span class="tok-search">$1</span>`);
+  }
+  return html;
+}
+
+// ── RENDER ────────────────────────────────────────────────
+function render() {
+  const raw = $('logInput').value;
+  const out = $('logOutput');
+  if (!raw.trim()) {
+    out.innerHTML = '<div class="log-empty"><div class="li">📄</div><p>Paste logs on the left<br/>to see highlighted output.</p></div>';
+    updateStats({}, 0, 0);
+    return;
+  }
+
+  const lines = raw.split('\n');
+  const searchQ = $('searchInput').value.trim();
+  $('formatDetected').textContent = detectFormat(lines);
+
+  const counts = {ERROR:0,WARNING:0,INFO:0,DEBUG:0,TRACE:0};
+  let visibleCount = 0, totalCount = lines.length;
+
+  // Build sessions (split on timestamp boundaries if groupSections)
+  const SESSION_RE = /^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2}/;
+  let html = '';
+  let sessionStart = null;
+
+  lines.forEach((line, i) => {
+    if (!line.trim()) { html += `<div class="log-line"><div class="ll-num">${i+1}</div><div class="ll-text">&nbsp;</div></div>`; return; }
+
+    const levelInfo = detectLevel(line);
+    const level = levelInfo?.level || 'INFO';
+    if (counts[level] !== undefined) counts[level]++;
+
+    const hidden = !visibleLevels.has(level) ||
+      (searchQ && !line.toLowerCase().includes(searchQ.toLowerCase()) &&
+       !keywords.some(k=>line.toLowerCase().includes(k.toLowerCase())));
+
+    if (!hidden) visibleCount++;
+
+    // Section header
+    if (groupSections && SESSION_RE.test(line)) {
+      const ts = line.match(SESSION_RE)[0];
+      if (ts !== sessionStart) {
+        sessionStart = ts;
+        html += `<div class="log-section-header">Session @ ${escHtml(ts)}</div>`;
+      }
+    }
+
+    const cls = (levelInfo?.cls || '') + (hidden ? ' ll-hidden' : '');
+    html += `<div class="log-line ${cls}">
+      <div class="ll-num">${i+1}</div>
+      <div class="ll-text">${tokeniseLine(line, searchQ)}</div>
+    </div>`;
+  });
+
+  out.innerHTML = html;
+  $('lineCount').textContent = `${visibleCount}/${totalCount} lines`;
+  updateStats(counts, visibleCount, totalCount);
+}
+
+function updateStats(counts, visible, total) {
+  const colours = {ERROR:'var(--err)',WARNING:'var(--warn)',INFO:'var(--info)',DEBUG:'var(--debug)',TRACE:'var(--trace)'};
+  $('levelStats').innerHTML = Object.entries(counts).map(([l,n]) =>
+    `<div class="stat-row"><span class="stat-label" style="color:${colours[l]}">${l}</span><span class="stat-val" style="color:${colours[l]}">${n}</span></div>`
+  ).join('');
+  $('statsPill').textContent = total ? `${visible}/${total} lines shown` : '';
+}
+
+// ── TOGGLES ───────────────────────────────────────────────
+function toggleLevel(level) {
+  const map = {ERROR:'ERROR',WARNING:'WARNING',INFO:'INFO',DEBUG:'DEBUG',TRACE:'TRACE'};
+  if (visibleLevels.has(level)) visibleLevels.delete(level); else visibleLevels.add(level);
+  $('lb'+level).classList.toggle('on', visibleLevels.has(level));
+  render();
+}
+
+function toggleSections() {
+  groupSections = !groupSections;
+  $('sectionBtn').classList.toggle('on', groupSections);
+  render();
+}
+
+// ── KEYWORDS ──────────────────────────────────────────────
+function addKeyword() {
+  const kw = $('kwInput').value.trim(); if(!kw||keywords.includes(kw)) return;
+  keywords.push(kw); $('kwInput').value=''; renderKwTags(); render();
+}
+function removeKeyword(kw) { keywords=keywords.filter(k=>k!==kw); renderKwTags(); render(); }
+function renderKwTags() {
+  $('kwTags').innerHTML = keywords.map(kw =>
+    `<span class="kw-tag">${escHtml(kw)}<button class="kw-del" onclick="removeKeyword('${escHtml(kw)}')">×</button></span>`).join('');
+}
+
+// ── ACTIONS ───────────────────────────────────────────────
+function downloadHighlighted() {
+  const raw = $('logInput').value; if(!raw) return;
+  const blob = new Blob([raw],{type:'text/plain'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='highlighted.log';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  showToast('✓ Downloaded');
+}
+
+function uploadFile(input) {
+  const f=input.files[0]; if(!f) return;
+  const r=new FileReader(); r.onload=e=>{$('logInput').value=e.target.result;render()}; r.readAsText(f); input.value='';
+}
+
+function clearAll() { $('logInput').value=''; render(); }
+
+function loadSample() {
+  $('logInput').value = `2024-01-15T08:00:01.123Z INFO  [app.server] Server starting on port 3000
+2024-01-15T08:00:01.456Z INFO  [db.conn] Connecting to PostgreSQL at 192.168.1.10:5432
+2024-01-15T08:00:01.789Z DEBUG [db.conn] Connection pool initialized: min=2 max=10
+2024-01-15T08:00:02.001Z INFO  [app.server] Server started successfully
+2024-01-15T08:00:02.100Z INFO  [auth] JWT secret loaded from /etc/app/secrets/jwt.key
+2024-01-15T08:01:15.234Z INFO  [api] GET /api/users 200 45ms user_id=1234
+2024-01-15T08:01:15.567Z DEBUG [api] Query executed in 12ms: SELECT * FROM users WHERE id=1234
+2024-01-15T08:01:22.890Z WARN  [api] Rate limit approaching for IP 203.0.113.42 (45/50 requests)
+2024-01-15T08:01:45.111Z INFO  [api] POST /api/users 201 88ms
+2024-01-15T08:02:00.000Z ERROR [db.conn] Connection to 192.168.1.10:5432 timed out after 5000ms
+2024-01-15T08:02:00.100Z ERROR [db.conn] Retrying connection (attempt 1/3)
+2024-01-15T08:02:01.200Z ERROR [db.conn] Retrying connection (attempt 2/3)
+2024-01-15T08:02:02.300Z INFO  [db.conn] Reconnected successfully
+2024-01-15T08:02:15.444Z WARN  [cache] Cache miss rate at 78% — consider increasing cache size
+2024-01-15T08:03:00.001Z DEBUG [scheduler] Running cleanup job: /var/app/tmp/sessions
+2024-01-15T08:03:00.234Z INFO  [scheduler] Deleted 142 expired sessions
+2024-01-15T08:05:11.777Z ERROR [auth] Authentication failed for user "admin@example.com" — invalid token
+2024-01-15T08:05:11.778Z WARN  [security] 3 failed login attempts from 198.51.100.23
+2024-01-15T08:05:30.000Z FATAL [app.server] Unhandled exception in request handler
+  at /app/src/routes/users.js:45:12
+  at processNextTick (internal/process/task_queues.js:65:17)
+Error: Cannot read property 'id' of undefined
+2024-01-15T08:05:30.100Z INFO  [app.server] Process recovered — continuing
+2024-01-15T08:10:00.000Z TRACE [metrics] CPU: 23% MEM: 512MB/2GB DISK: 45%
+`;
+  render();
+}
+
+function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function escRegex(s){return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}
+function showToast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
+</script>
+
+<!-- ── TEAMKIT FOOTER ── -->
+<div style="
+  border-top:1px solid rgba(255,255,255,.07);
+  background:rgba(0,0,0,.25);
+  padding:10px 20px;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:8px;
+  font-family:'DM Sans',sans-serif;
+  font-size:11px;
+  flex-shrink:0;
+" id="tk-footer">
+  <span style="color:rgba(255,255,255,.35)">
+    🧰 <strong style="color:rgba(255,255,255,.6)">GomathiBalan's Forge</strong> &nbsp;·&nbsp;
+    Built by <strong style="color:rgba(255,255,255,.7)">GomathiBalan</strong>
+  </span>
+  <span style="color:rgba(255,255,255,.25);font-size:10px">
+    Designed with prompts &nbsp;·&nbsp; Crafted by 
+    <strong style="color:rgba(255,255,255,.4)">Claude AI</strong>
+  </span>
+</div>
+</body>
+</html>

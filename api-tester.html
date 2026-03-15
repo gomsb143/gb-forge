@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>API Tester — GomathiBalan's Forge</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#0d1117;--bg-2:#161b22;--bg-3:#1c2330;--bg-4:#21262d;
+      --border:#30363d;--border-2:#3d444d;
+      --ink:#e6edf3;--ink-2:#8d96a0;--ink-3:#484f58;
+      --accent:#388bfd;--accent-soft:#0d2044;
+      --green:#3fb950;--green-soft:#0d2e22;
+      --amber:#d29922;--amber-soft:#2a1f00;
+      --red:#f85149;--red-soft:#2a0e0e;
+      --purple:#bc8cff;
+      --get:#3fb950;--post:#388bfd;--put:#d29922;--delete:#f85149;--patch:#bc8cff;
+      --font:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
+    }
+    html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--ink);overflow:hidden}
+    .app{display:flex;flex-direction:column;height:100vh}
+
+    /* TOPBAR */
+    .topbar{height:52px;background:var(--bg-2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;flex-shrink:0}
+    .back{font-size:12px;font-weight:500;color:var(--ink-3);text-decoration:none;transition:color .15s}
+    .back:hover{color:var(--ink-2)}
+    .sep{width:1px;height:18px;background:var(--border)}
+    .ptitle{font-size:13px;font-weight:600;color:var(--ink)}
+    .ml{margin-left:auto}
+    .btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:7px;font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all .15s;white-space:nowrap;line-height:1}
+    .btn-ghost{background:transparent;color:var(--ink-2);border:1px solid var(--border)}
+    .btn-ghost:hover{background:var(--bg-4);color:var(--ink)}
+    .btn-send{background:var(--accent);color:#fff;padding:10px 24px;font-size:13px;border-radius:8px}
+    .btn-send:hover{background:#1a6dda}
+    .btn-send:disabled{opacity:.5;cursor:not-allowed}
+    .btn-sm{padding:4px 9px;font-size:11px}
+
+    /* REQUEST BAR */
+    .req-bar{padding:12px 16px;background:var(--bg-2);border-bottom:1px solid var(--border);flex-shrink:0;display:flex;flex-direction:column;gap:10px}
+    .url-row{display:flex;gap:8px;align-items:center}
+    .method-sel{background:var(--bg-3);border:1px solid var(--border);border-radius:8px;padding:9px 10px;font-family:var(--mono);font-size:13px;font-weight:700;color:var(--green);outline:none;cursor:pointer;transition:color .15s;min-width:100px}
+    .method-sel:focus{border-color:var(--accent)}
+    .url-input{flex:1;background:var(--bg-3);border:1px solid var(--border);border-radius:8px;padding:9px 14px;font-family:var(--mono);font-size:13px;color:var(--ink);outline:none;transition:border-color .15s}
+    .url-input:focus{border-color:var(--accent)}
+    .url-input::placeholder{color:var(--ink-3);font-family:var(--font)}
+
+    /* BODY */
+    .body{display:flex;flex:1;overflow:hidden}
+
+    /* REQUEST PANEL */
+    .req-panel{width:50%;display:flex;flex-direction:column;overflow:hidden;border-right:1px solid var(--border)}
+    .tabs-row{display:flex;background:var(--bg-3);border-bottom:1px solid var(--border);flex-shrink:0}
+    .tab{padding:8px 14px;font-size:12px;font-weight:600;color:var(--ink-3);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;user-select:none}
+    .tab:hover{color:var(--ink-2)}
+    .tab.on{color:var(--accent);border-bottom-color:var(--accent)}
+    .tab-pane{flex:1;overflow:hidden;display:none;flex-direction:column}
+    .tab-pane.on{display:flex}
+
+    /* KV editor */
+    .kv-list{overflow-y:auto;flex:1;padding:8px}
+    .kv-list::-webkit-scrollbar{width:4px}
+    .kv-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+    .kv-row{display:flex;gap:6px;margin-bottom:6px;align-items:center}
+    .kv-check{width:16px;height:16px;accent-color:var(--accent);cursor:pointer;flex-shrink:0}
+    .kv-key,.kv-val{flex:1;background:var(--bg-3);border:1px solid var(--border);border-radius:6px;padding:6px 9px;font-family:var(--mono);font-size:12px;color:var(--ink);outline:none;transition:border-color .15s;min-width:0}
+    .kv-key:focus,.kv-val:focus{border-color:var(--accent)}
+    .kv-key::placeholder,.kv-val::placeholder{color:var(--ink-3)}
+    .kv-del{width:22px;height:22px;border-radius:50%;background:transparent;border:none;cursor:pointer;color:var(--ink-3);font-size:13px;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
+    .kv-del:hover{background:var(--red-soft);color:var(--red)}
+    .kv-add-row{padding:8px;border-top:1px solid var(--border);flex-shrink:0}
+
+    /* Body editor */
+    .body-editor{flex:1;padding:14px;font-family:var(--mono);font-size:13px;line-height:1.7;background:var(--bg-2);border:none;outline:none;resize:none;color:var(--ink);tab-size:2;overflow-y:auto}
+    .body-editor::-webkit-scrollbar{width:4px}
+    .body-editor::-webkit-scrollbar-thumb{background:var(--border-2);border-radius:4px}
+    .body-editor::placeholder{color:var(--ink-3);font-family:var(--font)}
+    .body-toolbar{padding:6px 10px;background:var(--bg-3);border-bottom:1px solid var(--border);display:flex;gap:6px;flex-shrink:0}
+
+    /* RESPONSE PANEL */
+    .res-panel{flex:1;display:flex;flex-direction:column;overflow:hidden}
+    .res-header{padding:10px 14px;background:var(--bg-3);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-shrink:0;flex-wrap:wrap}
+    .res-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+    .status-badge{font-size:12px;font-weight:700;padding:3px 10px;border-radius:6px;font-family:var(--mono)}
+    .s-2xx{background:var(--green-soft);color:var(--green)}
+    .s-3xx{background:var(--amber-soft);color:var(--amber)}
+    .s-4xx,.s-5xx{background:var(--red-soft);color:var(--red)}
+    .res-time{font-size:12px;font-family:var(--mono);color:var(--ink-3)}
+    .res-size{font-size:12px;font-family:var(--mono);color:var(--ink-3)}
+    .res-body{flex:1;overflow-y:auto;padding:16px;font-family:var(--mono);font-size:13px;line-height:1.7;color:var(--ink);white-space:pre-wrap;word-break:break-all;background:var(--bg-2)}
+    .res-body::-webkit-scrollbar{width:4px}
+    .res-body::-webkit-scrollbar-thumb{background:var(--border-2);border-radius:4px}
+    .res-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:10px;opacity:.25}
+    .res-empty .ri{font-size:40px}
+    .res-empty p{font-size:12px;color:var(--ink-2);text-align:center}
+    .res-tabs-row{display:flex;background:var(--bg-3);border-bottom:1px solid var(--border);flex-shrink:0}
+
+    /* History sidebar */
+    .hist-col{width:220px;background:var(--bg-2);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
+    .hist-header{padding:10px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+    .hist-title{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+    .hist-list{overflow-y:auto;flex:1;padding:6px}
+    .hist-list::-webkit-scrollbar{width:3px}
+    .hist-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+    .hist-item{padding:7px 9px;border-radius:6px;cursor:pointer;border:1px solid transparent;transition:all .12s;margin-bottom:4px}
+    .hist-item:hover{background:var(--bg-3);border-color:var(--border)}
+    .hist-method{font-family:var(--mono);font-size:10px;font-weight:700}
+    .hist-url{font-size:11px;color:var(--ink-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px}
+    .hist-status{font-size:10px;font-family:var(--mono);margin-top:2px}
+    .hist-time{font-size:10px;color:var(--ink-3);margin-top:1px}
+
+    /* Spinner */
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .spinner{width:16px;height:16px;border:2px solid var(--border-2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+
+    /* JSON highlight */
+    .j-key{color:#79c0ff}.j-str{color:#a5d6ff}.j-num{color:#ffa657}.j-bool{color:#ff7b72}.j-null{color:#8b949e}
+
+    /* CORS warning */
+    .cors-warn{padding:8px 14px;background:#2a1f00;border-bottom:1px solid var(--amber);font-size:11px;color:var(--amber);display:none}
+    .cors-warn.show{display:block}
+
+    .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(8px);background:var(--green);color:#0d1117;padding:8px 18px;border-radius:20px;font-size:12px;font-weight:700;opacity:0;transition:all .2s;pointer-events:none;z-index:999}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <a href="index.html" class="back">← GomathiBalan's Forge</a>
+    <div class="sep"></div>
+    <span class="ptitle">⚡ API Tester</span>
+    <div class="ml" style="display:flex;gap:6px">
+      <button class="btn btn-ghost btn-sm" onclick="importCurl()">⎘ Import cURL</button>
+      <button class="btn btn-ghost btn-sm" onclick="exportCurl()">⬆ Export cURL</button>
+    </div>
+  </div>
+
+  <!-- REQUEST BAR -->
+  <div class="req-bar">
+    <div class="url-row">
+      <select class="method-sel" id="methodSel" onchange="syncMethodColour()">
+        <option value="GET">GET</option>
+        <option value="POST">POST</option>
+        <option value="PUT">PUT</option>
+        <option value="PATCH">PATCH</option>
+        <option value="DELETE">DELETE</option>
+        <option value="HEAD">HEAD</option>
+        <option value="OPTIONS">OPTIONS</option>
+      </select>
+      <input class="url-input" id="urlInput" type="text"
+        placeholder="https://api.example.com/endpoint"
+        onkeydown="if(event.key==='Enter') send()"/>
+      <button class="btn btn-send" id="sendBtn" onclick="send()">Send ▶</button>
+    </div>
+    <div class="cors-warn" id="corsWarn">
+      ⚠ CORS error — the server doesn't allow browser requests from this origin.
+      Try enabling CORS on the server, use a proxy, or test from a CORS-enabled client.
+    </div>
+  </div>
+
+  <div class="body">
+
+    <!-- REQUEST PANEL -->
+    <div class="req-panel">
+      <div class="tabs-row">
+        <div class="tab on" id="tabHeaders" onclick="setReqTab('headers')">Headers</div>
+        <div class="tab"    id="tabParams"  onclick="setReqTab('params')">Query Params</div>
+        <div class="tab"    id="tabBody"    onclick="setReqTab('body')">Body</div>
+        <div class="tab"    id="tabAuth"    onclick="setReqTab('auth')">Auth</div>
+      </div>
+
+      <!-- HEADERS -->
+      <div class="tab-pane on" id="paneHeaders">
+        <div class="kv-list" id="headersList"></div>
+        <div class="kv-add-row">
+          <button class="btn btn-ghost btn-sm" onclick="addKV('headers')">+ Add header</button>
+          <button class="btn btn-ghost btn-sm" style="margin-left:4px" onclick="addCommonHeaders()">+ Common headers</button>
+        </div>
+      </div>
+
+      <!-- QUERY PARAMS -->
+      <div class="tab-pane" id="paneParams">
+        <div class="kv-list" id="paramsList"></div>
+        <div class="kv-add-row">
+          <button class="btn btn-ghost btn-sm" onclick="addKV('params')">+ Add param</button>
+        </div>
+      </div>
+
+      <!-- BODY -->
+      <div class="tab-pane" id="paneBody">
+        <div class="body-toolbar">
+          <button class="btn btn-ghost btn-sm" onclick="setBodyType('json')">JSON</button>
+          <button class="btn btn-ghost btn-sm" onclick="setBodyType('text')">Text</button>
+          <button class="btn btn-ghost btn-sm" onclick="setBodyType('form')">Form</button>
+          <div style="margin-left:auto;display:flex;gap:4px">
+            <button class="btn btn-ghost btn-sm" onclick="formatBody()">Format</button>
+            <button class="btn btn-ghost btn-sm" onclick="clearBody()">Clear</button>
+          </div>
+        </div>
+        <textarea class="body-editor" id="bodyEditor"
+          placeholder='{"key": "value"}'></textarea>
+      </div>
+
+      <!-- AUTH -->
+      <div class="tab-pane" id="paneAuth">
+        <div style="padding:14px;display:flex;flex-direction:column;gap:14px">
+          <div>
+            <div style="font-size:11px;font-weight:600;color:var(--ink-3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em">Auth Type</div>
+            <select id="authType" onchange="renderAuthFields()" style="width:100%;background:var(--bg-3);border:1px solid var(--border);border-radius:7px;padding:8px 10px;font-family:var(--font);font-size:13px;color:var(--ink);outline:none">
+              <option value="none">None</option>
+              <option value="bearer">Bearer Token</option>
+              <option value="basic">Basic Auth</option>
+              <option value="apikey">API Key</option>
+            </select>
+          </div>
+          <div id="authFields"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESPONSE PANEL -->
+    <div class="res-panel">
+      <div class="res-header">
+        <span class="res-label">Response</span>
+        <span class="status-badge" id="statusBadge" style="display:none"></span>
+        <span class="res-time" id="resTime"></span>
+        <span class="res-size" id="resSize"></span>
+        <div style="margin-left:auto;display:flex;gap:6px">
+          <div class="spinner" id="spinner" style="display:none"></div>
+          <button class="btn btn-ghost btn-sm" id="copyResBtn" onclick="copyResponse()" style="display:none">⎘ Copy</button>
+        </div>
+      </div>
+      <div class="res-tabs-row" id="resTabsRow" style="display:none">
+        <div class="tab on" id="tabResBody"    onclick="setResTab('body')">Body</div>
+        <div class="tab"    id="tabResHeaders" onclick="setResTab('resHeaders')">Headers</div>
+      </div>
+      <div id="resBodyPane" style="display:flex;flex:1;flex-direction:column;overflow:hidden">
+        <div class="res-empty" id="resEmpty">
+          <div class="ri">⚡</div>
+          <p>Enter a URL and click Send<br/>to see the response here.</p>
+        </div>
+        <div class="res-body" id="resBody" style="display:none"></div>
+      </div>
+      <div id="resHeadersPane" style="display:none;flex:1;overflow-y:auto;padding:12px">
+        <div id="resHeadersList"></div>
+      </div>
+    </div>
+
+    <!-- HISTORY -->
+    <div class="hist-col">
+      <div class="hist-header">
+        <span class="hist-title">History</span>
+        <button class="btn btn-ghost btn-sm" onclick="clearHistory()">Clear</button>
+      </div>
+      <div class="hist-list" id="histList">
+        <div style="padding:20px;font-size:12px;color:var(--ink-3);text-align:center;opacity:.5">No requests yet</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+const METHOD_COLOURS = {GET:'var(--get)',POST:'var(--post)',PUT:'var(--put)',DELETE:'var(--delete)',PATCH:'var(--patch)',HEAD:'var(--ink-2)',OPTIONS:'var(--ink-2)'};
+
+let kvCounters = {headers:0, params:0};
+let history = [];
+let lastResponse = null;
+let reqTab = 'headers';
+let resTab = 'body';
+let bodyType = 'json';
+
+// ── KV EDITOR ─────────────────────────────────────────────
+function addKV(type, key='', val='', enabled=true) {
+  const list = $(type+'List');
+  const id = kvCounters[type]++;
+  const row = document.createElement('div');
+  row.className = 'kv-row'; row.id = `${type}-${id}`;
+  row.innerHTML = `
+    <input type="checkbox" class="kv-check" ${enabled?'checked':''} onchange=""/>
+    <input class="kv-key" type="text" placeholder="Key" value="${escHtml(key)}"/>
+    <input class="kv-val" type="text" placeholder="Value" value="${escHtml(val)}"/>
+    <button class="kv-del" onclick="this.closest('.kv-row').remove()">✕</button>`;
+  list.appendChild(row);
+}
+
+function getKVs(type) {
+  const rows = document.querySelectorAll(`#${type}List .kv-row`);
+  const result = {};
+  rows.forEach(r => {
+    const [check, key, val] = r.querySelectorAll('input');
+    if (check.checked && key.value.trim()) result[key.value.trim()] = val.value;
+  });
+  return result;
+}
+
+function addCommonHeaders() {
+  [['Content-Type','application/json'],['Accept','application/json'],['User-Agent','GomathiBalan's Forge-API-Tester/1.0']].forEach(([k,v]) => addKV('headers',k,v));
+}
+
+// ── TABS ──────────────────────────────────────────────────
+function setReqTab(t) {
+  reqTab = t;
+  ['headers','params','body','auth'].forEach(k => {
+    const cap = k.charAt(0).toUpperCase()+k.slice(1);
+    $('tab'+cap).classList.toggle('on', k===t);
+    $('pane'+cap).classList.toggle('on', k===t);
+  });
+}
+function setResTab(t) {
+  resTab = t;
+  ['resBody','resHeaders'].forEach(k => {
+    const cap = k.charAt(0).toUpperCase()+k.slice(1);
+    $('tab'+cap).classList.toggle('on', k===t);
+  });
+  $('resBodyPane').style.display    = t==='body'       ? 'flex' : 'none';
+  $('resHeadersPane').style.display = t==='resHeaders' ? 'flex' : 'none';
+}
+
+// ── BODY ──────────────────────────────────────────────────
+function setBodyType(t) {
+  bodyType = t;
+  document.querySelectorAll('.body-toolbar .btn').forEach(b => b.classList.remove('active'));
+  const labels = {json:'JSON',text:'Text',form:'Form'};
+  document.querySelectorAll('.body-toolbar .btn').forEach(b => { if(b.textContent===labels[t]) b.classList.add('active'); });
+}
+function formatBody() {
+  try { $('bodyEditor').value = JSON.stringify(JSON.parse($('bodyEditor').value), null, 2); } catch {}
+}
+function clearBody() { $('bodyEditor').value = ''; }
+
+// ── AUTH ──────────────────────────────────────────────────
+function renderAuthFields() {
+  const type = $('authType').value;
+  const f = $('authFields');
+  const inp = (label, id, ph='', type2='text') =>
+    `<div style="margin-bottom:10px">
+      <div style="font-size:11px;font-weight:600;color:var(--ink-3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.06em">${label}</div>
+      <input id="${id}" type="${type2}" placeholder="${ph}" style="width:100%;background:var(--bg-3);border:1px solid var(--border);border-radius:7px;padding:8px 10px;font-family:var(--mono);font-size:12px;color:var(--ink);outline:none"/>
+    </div>`;
+  if (type==='bearer') f.innerHTML = inp('Token','authToken','eyJhbGci...');
+  else if (type==='basic') f.innerHTML = inp('Username','authUser','username') + inp('Password','authPass','password','password');
+  else if (type==='apikey') f.innerHTML = inp('Header Name','authKeyName','X-API-Key') + inp('Value','authKeyVal','your-api-key');
+  else f.innerHTML = '<div style="font-size:12px;color:var(--ink-3)">No auth — request sent as-is.</div>';
+}
+
+function getAuthHeaders() {
+  const type = $('authType').value;
+  if (type==='bearer') { const t=$('authToken')?.value; if(t) return {Authorization:`Bearer ${t}`}; }
+  if (type==='basic')  { const u=$('authUser')?.value,p=$('authPass')?.value; if(u) return {Authorization:'Basic '+btoa(`${u}:${p}`)}; }
+  if (type==='apikey') { const k=$('authKeyName')?.value,v=$('authKeyVal')?.value; if(k&&v) return {[k]:v}; }
+  return {};
+}
+
+// ── METHOD COLOUR ─────────────────────────────────────────
+function syncMethodColour() {
+  const m = $('methodSel').value;
+  $('methodSel').style.color = METHOD_COLOURS[m] || 'var(--ink)';
+}
+
+// ── SEND ──────────────────────────────────────────────────
+async function send() {
+  let url = $('urlInput').value.trim();
+  if (!url) { showToast('⚠ Enter a URL first'); return; }
+  if (!url.startsWith('http')) url = 'https://' + url;
+
+  // Append query params
+  const params = getKVs('params');
+  if (Object.keys(params).length) {
+    const u = new URL(url); Object.entries(params).forEach(([k,v]) => u.searchParams.set(k,v)); url = u.toString();
+  }
+
+  const method = $('methodSel').value;
+  const headers = { ...getKVs('headers'), ...getAuthHeaders() };
+  const body = ['GET','HEAD','OPTIONS'].includes(method) ? undefined : ($('bodyEditor').value.trim() || undefined);
+
+  // UI: loading
+  $('sendBtn').disabled = true;
+  $('spinner').style.display = 'block';
+  $('corsWarn').className = 'cors-warn';
+  $('resEmpty').style.display = 'none';
+  $('resBody').style.display  = 'none';
+  $('statusBadge').style.display = 'none';
+  $('resTabsRow').style.display  = 'none';
+  $('copyResBtn').style.display  = 'none';
+  $('resTime').textContent = ''; $('resSize').textContent = '';
+
+  const t0 = performance.now();
+  try {
+    const res = await fetch(url, { method, headers, body: body || undefined });
+    const elapsed = Math.round(performance.now() - t0);
+    const contentType = res.headers.get('content-type') || '';
+    const text = await res.text();
+    let displayBody = text;
+    if (contentType.includes('json')) {
+      try { displayBody = JSON.stringify(JSON.parse(text), null, 2); } catch {}
+    }
+
+    lastResponse = { status: res.status, statusText: res.statusText, headers: [...res.headers.entries()], body: displayBody, elapsed };
+    renderResponse(lastResponse, text.length);
+    addHistory(method, url, res.status, elapsed);
+
+  } catch(e) {
+    const elapsed = Math.round(performance.now() - t0);
+    if (e.message.includes('fetch') || e.message.includes('CORS') || e.name === 'TypeError') {
+      $('corsWarn').className = 'cors-warn show';
+      $('resEmpty').style.display = 'none';
+      $('resBody').style.display  = 'block';
+      $('resBody').innerHTML = `<span style="color:var(--red)">// Network error\n// ${escHtml(e.message)}\n//\n// Possible causes:\n// 1. CORS policy — server doesn't allow browser requests\n// 2. Network issue — check the URL\n// 3. Mixed content — try https://</span>`;
+    }
+    addHistory(method, url, 0, elapsed);
+  } finally {
+    $('sendBtn').disabled = false;
+    $('spinner').style.display = 'none';
+  }
+}
+
+function renderResponse({status, statusText, headers, body, elapsed}, rawLen) {
+  const badge = $('statusBadge');
+  badge.textContent = `${status} ${statusText}`;
+  badge.className = 'status-badge ' + (status<300?'s-2xx':status<400?'s-3xx':status<500?'s-4xx':'s-5xx');
+  badge.style.display = 'inline';
+  $('resTime').textContent = elapsed + ' ms';
+  $('resSize').textContent = formatBytes(rawLen);
+  $('resTabsRow').style.display = 'flex';
+  $('copyResBtn').style.display = 'inline-flex';
+
+  // Body
+  $('resBody').innerHTML = highlightJson(body);
+  $('resBody').style.display = 'block';
+
+  // Headers
+  $('resHeadersList').innerHTML = headers.map(([k,v]) =>
+    `<div style="display:flex;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px">
+      <span style="color:var(--j-key);font-family:var(--mono);min-width:180px;flex-shrink:0">${escHtml(k)}</span>
+      <span style="color:var(--ink-2);font-family:var(--mono);word-break:break-all">${escHtml(v)}</span>
+    </div>`).join('');
+}
+
+// ── HISTORY ───────────────────────────────────────────────
+function addHistory(method, url, status, elapsed) {
+  history.unshift({method, url, status, elapsed, time: new Date().toLocaleTimeString()});
+  history = history.slice(0,50);
+  renderHistory();
+  saveHistory();
+}
+
+function renderHistory() {
+  const list = $('histList');
+  if (!history.length) { list.innerHTML = '<div style="padding:20px;font-size:12px;color:var(--ink-3);text-align:center;opacity:.5">No requests yet</div>'; return; }
+  list.innerHTML = history.map((h,i) => {
+    const col = METHOD_COLOURS[h.method] || 'var(--ink-2)';
+    const sc  = h.status ? (h.status<300?'var(--green)':h.status<400?'var(--amber)':'var(--red)') : 'var(--red)';
+    const short = h.url.replace(/^https?:\/\//, '').split('?')[0];
+    return `<div class="hist-item" onclick="loadHistory(${i})">
+      <div class="hist-method" style="color:${col}">${h.method}</div>
+      <div class="hist-url">${escHtml(short)}</div>
+      ${h.status ? `<div class="hist-status" style="color:${sc}">${h.status}</div>` : '<div class="hist-status" style="color:var(--red)">Error</div>'}
+      <div class="hist-time">${h.time} · ${h.elapsed}ms</div>
+    </div>`;
+  }).join('');
+}
+
+function loadHistory(i) {
+  const h = history[i];
+  $('urlInput').value = h.url;
+  $('methodSel').value = h.method;
+  syncMethodColour();
+}
+
+function clearHistory() { history = []; saveHistory(); renderHistory(); }
+
+function saveHistory() {
+  try { localStorage.setItem('teamkit_api_hist', JSON.stringify(history)); } catch {}
+}
+
+// ── CURL IMPORT/EXPORT ────────────────────────────────────
+function exportCurl() {
+  const method = $('methodSel').value;
+  const url    = $('urlInput').value.trim();
+  const headers= getKVs('headers');
+  const body   = $('bodyEditor').value.trim();
+  if (!url) { showToast('⚠ Enter a URL first'); return; }
+  let curl = `curl -X ${method} '${url}'`;
+  Object.entries(headers).forEach(([k,v]) => { curl += `\n  -H '${k}: ${v}'`; });
+  if (body) curl += `\n  -d '${body.replace(/'/g,"'\\''")}' `;
+  navigator.clipboard.writeText(curl).then(() => showToast('✓ cURL command copied'));
+}
+
+function importCurl() {
+  const raw = prompt('Paste a cURL command:');
+  if (!raw) return;
+  try {
+    const urlM = raw.match(/'(https?:\/\/[^']+)'/);
+    if (urlM) $('urlInput').value = urlM[1];
+    const methodM = raw.match(/-X\s+(\w+)/);
+    if (methodM) { $('methodSel').value = methodM[1]; syncMethodColour(); }
+    const headers = [...raw.matchAll(/-H\s+'([^:]+):\s*([^']+)'/g)];
+    headers.forEach(([,k,v]) => addKV('headers', k.trim(), v.trim()));
+    const bodyM = raw.match(/-d\s+'([^']+)'/);
+    if (bodyM) $('bodyEditor').value = bodyM[1];
+    showToast('✓ cURL imported');
+  } catch { showToast('⚠ Could not parse cURL'); }
+}
+
+// ── UTILS ─────────────────────────────────────────────────
+function highlightJson(text) {
+  if (!text.trim().startsWith('{') && !text.trim().startsWith('[')) return escHtml(text);
+  return escHtml(text)
+    .replace(/("(?:[^"\\]|\\.)*")\s*:/g, (_, k) => `<span class="j-key">${k}</span>:`)
+    .replace(/:\s*("(?:[^"\\]|\\.)*")/g, (_, v) => `: <span class="j-str">${v}</span>`)
+    .replace(/\b(-?\d+\.?\d*(?:[eE][+-]?\d+)?)\b/g, m => `<span class="j-num">${m}</span>`)
+    .replace(/\b(true|false)\b/g, m => `<span class="j-bool">${m}</span>`)
+    .replace(/\bnull\b/g, '<span class="j-null">null</span>');
+}
+function formatBytes(b) { return b<1024?b+'B':b<1048576?(b/1024).toFixed(1)+'KB':(b/1048576).toFixed(2)+'MB'; }
+function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function showToast(msg) {
+  const t=$('toast'); t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2200);
+}
+function copyResponse() {
+  if (!lastResponse) return;
+  navigator.clipboard.writeText(lastResponse.body).then(()=>showToast('✓ Response copied'));
+}
+
+// ── INIT ──────────────────────────────────────────────────
+syncMethodColour();
+renderAuthFields();
+// Default headers
+addKV('headers','Content-Type','application/json');
+addKV('headers','Accept','application/json');
+// Load history
+try { history = JSON.parse(localStorage.getItem('teamkit_api_hist')||'[]'); renderHistory(); } catch {}
+// Sample URL
+$('urlInput').value = 'https://jsonplaceholder.typicode.com/posts/1';
+</script>
+
+<!-- ── TEAMKIT FOOTER ── -->
+<div style="
+  border-top:1px solid rgba(255,255,255,.07);
+  background:rgba(0,0,0,.25);
+  padding:10px 20px;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:8px;
+  font-family:'DM Sans',sans-serif;
+  font-size:11px;
+  flex-shrink:0;
+" id="tk-footer">
+  <span style="color:rgba(255,255,255,.35)">
+    🧰 <strong style="color:rgba(255,255,255,.6)">GomathiBalan's Forge</strong> &nbsp;·&nbsp;
+    Built by <strong style="color:rgba(255,255,255,.7)">GomathiBalan</strong>
+  </span>
+  <span style="color:rgba(255,255,255,.25);font-size:10px">
+    Designed with prompts &nbsp;·&nbsp; Crafted by 
+    <strong style="color:rgba(255,255,255,.4)">Claude AI</strong>
+  </span>
+</div>
+</body>
+</html>

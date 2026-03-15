@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Celebration Card Maker — GomathiBalan's Forge</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --ink: #18181b; --ink-2: #52525b; --ink-3: #a1a1aa;
+      --surface: #fafafa; --surface-2: #f4f4f5; --surface-3: #e4e4e7;
+      --white: #fff; --border: #e4e4e7;
+      --accent: #2563eb; --accent-light: #eff6ff;
+      --red: #dc2626; --red-light: #fef2f2;
+      --rs: 8px; --r: 12px; --pw: 300px; --font: 'DM Sans', sans-serif;
+    }
+    html, body { height: 100%; overflow: hidden; font-family: var(--font); background: var(--surface); color: var(--ink); }
+    .app { display: flex; flex-direction: column; height: 100vh; }
+
+    /* TOPBAR */
+    .topbar { height: 52px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; flex-shrink: 0; z-index: 100; gap: 12px; }
+    .tl { display: flex; align-items: center; gap: 12px; }
+    .tr { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .back { font-size: 12px; font-weight: 500; color: var(--ink-3); text-decoration: none; transition: color .15s; white-space: nowrap; }
+    .back:hover { color: var(--ink); }
+    .sep { width: 1px; height: 18px; background: var(--border); flex-shrink: 0; }
+    .ptitle { font-size: 13px; font-weight: 600; color: var(--ink); white-space: nowrap; }
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: var(--rs); font-family: var(--font); font-size: 12px; font-weight: 600; cursor: pointer; border: none; transition: all .15s; white-space: nowrap; line-height: 1; }
+    .btn-ghost { background: transparent; color: var(--ink-2); border: 1px solid var(--border); }
+    .btn-ghost:hover { background: var(--surface-2); color: var(--ink); }
+    .btn-dark { background: var(--ink); color: #fff; }
+    .btn-dark:hover { background: #27272a; }
+    .btn-dark:disabled,.btn-accent:disabled { opacity:.5; cursor:not-allowed; }
+    .btn-accent { background: var(--accent); color: #fff; }
+    .btn-accent:hover { background: #1d4ed8; }
+
+    /* BODY */
+    .body { display: flex; flex: 1; overflow: hidden; }
+
+    /* PANEL */
+    .panel { width: var(--pw); background: var(--white); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; flex-shrink: 0; }
+    .pscroll { overflow-y: auto; flex: 1; }
+    .pscroll::-webkit-scrollbar { width: 3px; }
+    .pscroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+    .psec { padding: 16px; border-bottom: 1px solid var(--border); }
+    .psec:last-child { border-bottom: none; }
+    .plbl { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
+
+    /* Segmented */
+    .seg { display: flex; border: 1px solid var(--border); border-radius: var(--rs); overflow: hidden; background: var(--surface-2); }
+    .seg-b { flex: 1; padding: 7px 6px; font-family: var(--font); font-size: 12px; font-weight: 500; border: none; background: transparent; cursor: pointer; color: var(--ink-2); transition: all .15s; display: flex; align-items: center; justify-content: center; gap: 4px; }
+    .seg-b.on { background: var(--white); color: var(--ink); font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+
+    /* Spinner */
+    .spin-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .spin-lbl { font-size: 12px; color: var(--ink-2); flex: 1; font-weight: 500; }
+    .spinner { display: flex; align-items: center; border: 1px solid var(--border); border-radius: var(--rs); overflow: hidden; background: var(--white); }
+    .spb { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; background: var(--surface-2); border: none; cursor: pointer; font-size: 14px; color: var(--ink-2); transition: background .15s; font-family: var(--font); }
+    .spb:hover { background: var(--surface-3); color: var(--ink); }
+    .spv { width: 36px; text-align: center; font-size: 13px; font-weight: 700; color: var(--ink); border: none; background: transparent; font-family: var(--font); pointer-events: none; }
+
+    /* Slider */
+    .sl-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .sl-lbl { font-size: 12px; color: var(--ink-2); font-weight: 500; min-width: 76px; }
+    .sl-row input[type=range] { flex: 1; -webkit-appearance: none; height: 3px; border-radius: 3px; background: var(--surface-3); outline: none; padding: 0; border: none; }
+    .sl-row input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--accent); cursor: pointer; }
+    .sl-num { font-size: 11px; font-weight: 700; color: var(--ink-2); min-width: 30px; text-align: right; }
+
+    /* Fields */
+    .field { margin-bottom: 10px; }
+    .field:last-child { margin-bottom: 0; }
+    .field label { display: block; font-size: 11px; font-weight: 600; color: var(--ink-2); margin-bottom: 5px; }
+    .field input { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--rs); font-family: var(--font); font-size: 12px; color: var(--ink); background: var(--surface); outline: none; transition: border-color .15s; }
+    .field input:focus { border-color: var(--accent); background: var(--white); }
+    .color-row { display: flex; align-items: center; gap: 8px; }
+    .color-row input[type=color] { width: 36px; height: 32px; padding: 2px 3px; border: 1px solid var(--border); border-radius: var(--rs); cursor: pointer; }
+    .color-row span { font-size: 11px; color: var(--ink-3); }
+
+    /* Upload */
+    .upload-zone { border: 2px dashed var(--border); border-radius: var(--r); padding: 18px 14px; text-align: center; cursor: pointer; transition: all .18s; background: var(--surface); }
+    .upload-zone:hover { border-color: var(--accent); background: var(--accent-light); }
+    .upload-zone .uzi { font-size: 26px; margin-bottom: 5px; }
+    .upload-zone strong { display: block; font-size: 12px; color: var(--ink); margin-bottom: 2px; }
+    .upload-zone p { font-size: 11px; color: var(--ink-3); line-height: 1.4; }
+
+    /* Photo list */
+    .photo-list { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+    .photo-item { display: flex; align-items: center; gap: 8px; padding: 7px 8px; border: 1px solid var(--border); border-radius: var(--rs); background: var(--white); }
+    .photo-item:hover { border-color: #c4c4c8; }
+    .thumb-wrap { position: relative; flex-shrink: 0; width: 38px; height: 38px; cursor: pointer; }
+    .pthumb { width: 38px; height: 38px; border-radius: 6px; object-fit: cover; border: 1px solid var(--border); display: block; }
+    .pthumb.circ { border-radius: 50%; }
+    .thumb-edit-overlay { position: absolute; inset: 0; border-radius: 6px; background: rgba(37,99,235,.6); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity .15s; font-size: 14px; }
+    .thumb-wrap:hover .thumb-edit-overlay { opacity: 1; }
+    .thumb-wrap.circ .pthumb { border-radius: 50%; }
+    .thumb-wrap.circ .thumb-edit-overlay { border-radius: 50%; }
+    .thumb-wrap.edited .pthumb { outline: 2px solid var(--accent); outline-offset: 1px; }
+    .pinfo { flex: 1; min-width: 0; }
+    .pin { width: 100%; border: none; border-bottom: 1px solid var(--border); background: transparent; font-family: var(--font); font-size: 11px; color: var(--ink); outline: none; padding: 2px 0; display: block; }
+    .pin:focus { border-color: var(--accent); }
+    .pin::placeholder { color: var(--ink-3); }
+    .pin.sub { color: var(--ink-2); margin-top: 4px; }
+    .pdel { width: 22px; height: 22px; border-radius: 50%; background: var(--surface-2); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--ink-3); transition: all .15s; flex-shrink: 0; }
+    .pdel:hover { background: var(--red-light); color: var(--red); }
+    .badge { font-size: 10px; font-weight: 700; padding: 2px 7px; background: var(--accent-light); color: var(--accent); border-radius: 20px; }
+
+    /* Canvas area */
+    .canvas-area { flex: 1; overflow: auto; background: #e8e8eb; background-image: linear-gradient(45deg,#dddde0 25%,transparent 25%),linear-gradient(-45deg,#dddde0 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#dddde0 75%),linear-gradient(-45deg,transparent 75%,#dddde0 75%); background-size: 16px 16px; background-position: 0 0,0 8px,8px -8px,-8px 0; }
+    .canvas-inner { display: flex; flex-direction: column; align-items: center; padding: 48px 32px 80px; min-width: max-content; }
+    .canvas-lbl { font-size: 11px; font-weight: 600; color: rgba(0,0,0,.3); background: rgba(255,255,255,.65); backdrop-filter: blur(4px); padding: 4px 12px; border-radius: 20px; letter-spacing: .04em; white-space: nowrap; margin-bottom: 20px; }
+    .footer-hints { position: fixed; bottom: 14px; left: calc(var(--pw) + 50%); transform: translateX(-50%); display: flex; gap: 6px; pointer-events: none; z-index: 50; }
+    .hint { font-size: 10px; font-weight: 500; padding: 4px 10px; border-radius: 20px; background: rgba(255,255,255,.75); backdrop-filter: blur(4px); color: rgba(0,0,0,.4); white-space: nowrap; }
+    #slide { background: transparent; position: relative; flex-shrink: 0; box-shadow: 0 4px 32px rgba(0,0,0,.10); }
+    .empty-st { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; opacity: .3; pointer-events: none; }
+    .empty-st .ei { font-size: 44px; }
+    .empty-st p { font-size: 13px; font-weight: 500; text-align: center; color: var(--ink); }
+
+    /* EDIT MODAL */
+    .modal-backdrop { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,.5); backdrop-filter: blur(3px); display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity .2s; }
+    .modal-backdrop.open { opacity: 1; pointer-events: all; }
+    .modal { background: var(--white); border-radius: 16px; width: 360px; max-width: 94vw; box-shadow: 0 24px 64px rgba(0,0,0,.2); overflow: hidden; transform: scale(.96) translateY(8px); transition: transform .2s; }
+    .modal-backdrop.open .modal { transform: scale(1) translateY(0); }
+    .modal-header { padding: 16px 20px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .modal-title { font-size: 14px; font-weight: 700; color: var(--ink); }
+    .modal-close { width: 28px; height: 28px; border-radius: 50%; background: var(--surface-2); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 13px; color: var(--ink-2); transition: all .15s; }
+    .modal-close:hover { background: var(--surface-3); color: var(--ink); }
+
+    /*
+     * PREVIEW: always a fixed 240×240 square.
+     * border-radius toggled in JS:  50% = perfect circle,  10px = rounded square.
+     * The canvas inside is ALSO 240×240 so there is zero CSS scaling — 1 canvas px = 1 screen px.
+     */
+    .preview-outer {
+      width: 240px; height: 240px;
+      margin: 18px auto 0;
+      overflow: hidden;
+      background: #111;
+      flex-shrink: 0;
+      /* shape applied by JS */
+    }
+    #editCanvas {
+      display: block;
+      width: 240px;
+      height: 240px;
+      cursor: grab;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+    #editCanvas:active { cursor: grabbing; }
+
+    .pan-hint { font-size: 10px; color: var(--ink-3); text-align: center; margin-top: 8px; padding: 0 20px; }
+    .modal-controls { padding: 14px 20px 4px; display: flex; flex-direction: column; gap: 4px; }
+    .mc-row { display: flex; align-items: center; gap: 10px; }
+    .mc-lbl { font-size: 11px; font-weight: 600; color: var(--ink-2); min-width: 44px; }
+    .mc-row input[type=range] { flex: 1; -webkit-appearance: none; height: 4px; border-radius: 4px; background: var(--surface-3); outline: none; padding: 0; border: none; }
+    .mc-row input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--accent); cursor: pointer; }
+    .mc-val { font-size: 11px; font-weight: 700; color: var(--ink-3); min-width: 36px; text-align: right; }
+    .modal-footer { padding: 16px 20px 18px; display: flex; gap: 8px; justify-content: flex-end; }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="tl">
+      <a href="index.html" class="back">← GomathiBalan's Forge</a>
+      <div class="sep"></div>
+      <span class="ptitle">🎉 Celebration Card Maker</span>
+    </div>
+    <div class="tr">
+      <button class="btn btn-ghost" onclick="clearAll()">↺ Clear</button>
+      <button class="btn btn-ghost" id="dlSvgBtn" onclick="downloadSVG()">⬇ SVG</button>
+      <button class="btn btn-accent" id="dlPngBtn" onclick="downloadPNG()">⬇ Download PNG</button>
+    </div>
+  </div>
+
+  <div class="body">
+
+    <!-- PANEL -->
+    <div class="panel">
+      <div class="pscroll">
+
+        <!-- HEADER TEXT -->
+        <div class="psec">
+          <div class="plbl">Slide Header</div>
+          <div class="field"><label>Eyebrow</label><input id="eyebrowInput" type="text" value="Happy Birthday" oninput="render()"/></div>
+          <div class="field"><label>Main title</label><input id="titleInput" type="text" value="Wishing You A Wonderful Day" oninput="render()"/></div>
+          <div class="field"><label>Subtitle</label><input id="subtitleInput" type="text" placeholder="e.g. From the whole team 🎉" oninput="render()"/></div>
+          <div class="field"><label>Text colour</label>
+            <div class="color-row">
+              <input id="textColor" type="color" value="#18181b" oninput="render()"/>
+              <span>All text on the slide</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- GRID -->
+        <div class="psec">
+          <div class="plbl">Grid Layout <span class="badge" id="cellBadge">8 cells</span></div>
+          <div class="spin-row"><span class="spin-lbl">Columns</span><div class="spinner"><button class="spb" onclick="adj('cols',-1)">−</button><span class="spv" id="colsVal">4</span><button class="spb" onclick="adj('cols',+1)">+</button></div></div>
+          <div class="spin-row"><span class="spin-lbl">Rows</span><div class="spinner"><button class="spb" onclick="adj('rows',-1)">−</button><span class="spv" id="rowsVal">2</span><button class="spb" onclick="adj('rows',+1)">+</button></div></div>
+        </div>
+
+        <!-- SHAPE -->
+        <div class="psec">
+          <div class="plbl">Photo Shape</div>
+          <div class="seg">
+            <button class="seg-b on" id="shapeCircle" onclick="setShape('circle')">⬤ Circle</button>
+            <button class="seg-b" id="shapeSquare" onclick="setShape('square')">■ Square</button>
+          </div>
+        </div>
+
+        <!-- SIZE & SPACING -->
+        <div class="psec">
+          <div class="plbl">Size &amp; Spacing</div>
+          <div class="sl-row"><span class="sl-lbl">Photo size</span><input type="range" id="sizeRange" min="40" max="200" value="90" oninput="render()"/><span class="sl-num" id="sizeNum">90</span></div>
+          <div class="sl-row"><span class="sl-lbl">Gap</span><input type="range" id="gapRange" min="8" max="80" value="24" oninput="render()"/><span class="sl-num" id="gapNum">24</span></div>
+          <div class="sl-row"><span class="sl-lbl">Name size</span><input type="range" id="fontRange" min="8" max="28" value="12" oninput="render()"/><span class="sl-num" id="fontNum">12</span></div>
+          <div class="sl-row"><span class="sl-lbl">Header size</span><input type="range" id="headerRange" min="14" max="80" value="36" oninput="render()"/><span class="sl-num" id="headerNum">36</span></div>
+          <div class="sl-row"><span class="sl-lbl">Header gap</span><input type="range" id="headerGapRange" min="0" max="80" value="24" oninput="render()"/><span class="sl-num" id="headerGapNum">24</span></div>
+          <div class="sl-row"><span class="sl-lbl">Padding</span><input type="range" id="padRange" min="16" max="100" value="40" oninput="render()"/><span class="sl-num" id="padNum">40</span></div>
+        </div>
+
+        <!-- PHOTOS -->
+        <div class="psec">
+          <div class="plbl">Photos <span class="badge" id="photoBadge">0 added</span></div>
+          <div class="upload-zone" onclick="document.getElementById('fileIn').click()">
+            <div class="uzi">📸</div>
+            <strong>Click to add photos</strong>
+            <p>Hover a thumbnail and click ✏️ to crop</p>
+          </div>
+          <input type="file" id="fileIn" accept="image/*" multiple style="display:none" onchange="handleFiles(this)"/>
+          <div class="photo-list" id="photoList"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- CANVAS -->
+    <div class="canvas-area">
+      <div class="canvas-inner">
+        <div class="canvas-lbl">Transparent background · Screenshot or download</div>
+        <div id="slide"></div>
+      </div>
+      <div class="footer-hints">
+        <span class="hint">No background · ready for slides</span>
+        <span class="hint" id="dimPill">– × –</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-backdrop" id="editModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">✏️ &nbsp;<span id="editModalName">Edit Photo</span></span>
+      <button class="modal-close" onclick="closeEditModal()">✕</button>
+    </div>
+
+    <!-- 240×240 fixed square. border-radius set in JS to 50% (circle) or 10px (square). -->
+    <div class="preview-outer" id="previewOuter">
+      <canvas id="editCanvas" width="240" height="240"></canvas>
+    </div>
+    <p class="pan-hint">Drag to reposition · slider to zoom</p>
+
+    <div class="modal-controls">
+      <div class="mc-row">
+        <span class="mc-lbl">Zoom</span>
+        <input type="range" id="editZoom" min="100" max="300" value="100" oninput="onEditZoom()"/>
+        <span class="mc-val" id="editZoomVal">100%</span>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="resetEdit()">↺ Reset</button>
+      <button class="btn btn-dark" onclick="applyEdit()">✓ Apply</button>
+    </div>
+  </div>
+</div>
+
+<!-- Offscreen canvas for text measurement only -->
+<canvas id="mc" style="display:none;position:absolute;left:-9999px"></canvas>
+
+<script>
+// ─────────────────────────────────────────────────────────────
+//  STATE
+//  pan is stored as a FRACTION of the image's drawn size so it
+//  is completely independent of which canvas it gets rendered on.
+//
+//  panFX, panFY  ∈  (-∞, +∞)
+//  meaning: offset = panF * drawnImageSize
+//  e.g. panFX = 0.1 means shift right by 10% of the drawn image width
+// ─────────────────────────────────────────────────────────────
+const S = {
+  shape: 'circle',
+  cols: 4, rows: 2,
+  photos: [],   // { id, dataUrl, name, sub, zoom:100, panFX:0, panFY:0 }
+  nextId: 1,
+};
+
+// Modal working copy — written back to S.photos only on Apply
+const E = {
+  photoId: null,
+  zoom: 100,      // percent
+  panFX: 0,       // fraction of drawn image width
+  panFY: 0,       // fraction of drawn image height
+  dragging: false,
+  lastX: 0, lastY: 0,
+  img: null,
+};
+
+const PREV = 240; // px — preview canvas is always this square
+
+const $  = id => document.getElementById(id);
+const gv = id => parseFloat($(id).value);
+const cl = (v,a,b) => Math.max(a,Math.min(b,v));
+
+// ── TEXT MEASUREMENT ───────────────────────────────────────
+const _mctx = $('mc').getContext('2d');
+function measure(t,f){ _mctx.font=f; return _mctx.measureText(t).width; }
+function wrap(text,font,maxPx){
+  if(!text) return [];
+  const words=text.split(/\s+/).filter(Boolean), lines=[]; let line='';
+  for(const w of words){
+    const t=line?line+' '+w:w;
+    if(measure(t,font)<=maxPx) line=t;
+    else{ if(line) lines.push(line); line=w; }
+  }
+  if(line) lines.push(line);
+  return lines.length?lines:[text];
+}
+
+// ── GRID ───────────────────────────────────────────────────
+function adj(key,d){
+  const lim={cols:[1,12],rows:[1,8]};
+  S[key]=cl(S[key]+d,...lim[key]);
+  $(key+'Val').textContent=S[key];
+  $('cellBadge').textContent=(S.cols*S.rows)+' cells';
+  render();
+}
+
+// ── SHAPE ──────────────────────────────────────────────────
+function setShape(s){
+  S.shape=s;
+  $('shapeCircle').classList.toggle('on',s==='circle');
+  $('shapeSquare').classList.toggle('on',s==='square');
+  document.querySelectorAll('.pthumb').forEach(t=>t.classList.toggle('circ',s==='circle'));
+  document.querySelectorAll('.thumb-wrap').forEach(t=>t.classList.toggle('circ',s==='circle'));
+  render();
+}
+
+// ── FILES ──────────────────────────────────────────────────
+function handleFiles(input){
+  const files=Array.from(input.files); let done=0;
+  files.forEach(file=>{
+    const r=new FileReader();
+    r.onload=e=>{
+      const base=file.name.replace(/\.[^/.]+$/,'').replace(/[-_]/g,' ');
+      S.photos.push({id:S.nextId++,dataUrl:e.target.result,name:base,sub:'',zoom:100,panFX:0,panFY:0});
+      if(++done===files.length){input.value='';rebuildList();render();}
+    };
+    r.readAsDataURL(file);
+  });
+}
+
+function removePhoto(id){
+  S.photos=S.photos.filter(p=>p.id!==id);
+  rebuildList(); render();
+}
+
+function rebuildList(){
+  const list=$('photoList');
+  list.innerHTML='';
+  $('photoBadge').textContent=S.photos.length+' added';
+  S.photos.forEach((p,i)=>{
+    const edited=p.zoom!==100||p.panFX!==0||p.panFY!==0;
+    const el=document.createElement('div');
+    el.className='photo-item';
+    el.innerHTML=`
+      <div class="thumb-wrap${S.shape==='circle'?' circ':''}${edited?' edited':''}"
+           onclick="openEditModal(${p.id})" title="Edit crop / zoom">
+        <img class="pthumb${S.shape==='circle'?' circ':''}" src="${esc(p.dataUrl)}" draggable="false"/>
+        <div class="thumb-edit-overlay">✏️</div>
+      </div>
+      <div class="pinfo">
+        <input class="pin" type="text" placeholder="Name…" value="${esc(p.name)}"
+               oninput="S.photos[${i}].name=this.value;render()"/>
+        <input class="pin sub" type="text" placeholder="Role / years (optional)" value="${esc(p.sub)}"
+               oninput="S.photos[${i}].sub=this.value;render()"/>
+      </div>
+      <button class="pdel" onclick="removePhoto(${p.id})">✕</button>`;
+    list.appendChild(el);
+  });
+}
+
+// ── EDIT MODAL ─────────────────────────────────────────────
+function openEditModal(id){
+  const photo=S.photos.find(p=>p.id===id);
+  if(!photo) return;
+  E.photoId=id; E.zoom=photo.zoom; E.panFX=photo.panFX; E.panFY=photo.panFY; E.dragging=false;
+  $('editModalName').textContent=photo.name||'Edit Photo';
+  $('editZoom').value=E.zoom;
+  $('editZoomVal').textContent=Math.round(E.zoom)+'%';
+  // Shape the preview — 50% on a square = perfect circle, 10px = rounded square
+  $('previewOuter').style.borderRadius=S.shape==='circle'?'50%':'10px';
+  E.img=new Image();
+  E.img.onload=()=>drawPreview();
+  E.img.src=photo.dataUrl;
+  $('editModal').classList.add('open');
+}
+
+function closeEditModal(){
+  $('editModal').classList.remove('open');
+  E.photoId=null;
+}
+
+function resetEdit(){
+  E.zoom=100; E.panFX=0; E.panFY=0;
+  $('editZoom').value=100;
+  $('editZoomVal').textContent='100%';
+  drawPreview();
+}
+
+function onEditZoom(){
+  E.zoom=parseFloat($('editZoom').value);
+  $('editZoomVal').textContent=Math.round(E.zoom)+'%';
+  drawPreview();
+}
+
+function applyEdit(){
+  if(E.photoId===null) return;
+  const idx=S.photos.findIndex(p=>p.id===E.photoId);
+  if(idx===-1) return;
+  S.photos[idx].zoom=E.zoom;
+  S.photos[idx].panFX=E.panFX;
+  S.photos[idx].panFY=E.panFY;
+  closeEditModal();
+  rebuildList(); render();
+}
+
+// ─────────────────────────────────────────────────────────────
+//  CORE DRAW FUNCTION
+//  Renders one photo into any square canvas of any size,
+//  using the normalised panFX/panFY fractions.
+//
+//  panOffset (pixels) = panF * drawnImageSize
+//  This means the same panF always moves the image by the same
+//  VISUAL PROPORTION regardless of the canvas size.
+// ─────────────────────────────────────────────────────────────
+function drawPhoto(ctx, img, size, zoom, panFX, panFY){
+  ctx.clearRect(0,0,size,size);
+  const scale    = zoom/100;
+  // fitScale: make the image fill the square entirely at zoom=1
+  const fitScale = Math.max(size/img.naturalWidth, size/img.naturalHeight);
+  const dw = img.naturalWidth  * fitScale * scale;
+  const dh = img.naturalHeight * fitScale * scale;
+  // Convert normalised pan to pixels in this canvas's coordinate space
+  const offsetX = panFX * dw;
+  const offsetY = panFY * dh;
+  // Centre + offset
+  const dx = (size-dw)/2 + offsetX;
+  const dy = (size-dh)/2 + offsetY;
+  ctx.drawImage(img, dx, dy, dw, dh);
+}
+
+// Draw into the 240px modal preview canvas
+function drawPreview(){
+  if(!E.img||!E.img.complete||!E.img.naturalWidth) return;
+  const cv=$('editCanvas');
+  const ctx=cv.getContext('2d');
+  drawPhoto(ctx, E.img, PREV, E.zoom, E.panFX, E.panFY);
+}
+
+// ── DRAG on edit canvas ─────────────────────────────────────
+// When dragging, convert pixel delta → fraction delta so E.panFX/Y stays normalised.
+// pixelDelta / drawnImageSize = fractionDelta
+function dragDelta(dx, dy){
+  if(!E.img) return;
+  const fitScale = Math.max(PREV/E.img.naturalWidth, PREV/E.img.naturalHeight);
+  const dw = E.img.naturalWidth  * fitScale * (E.zoom/100);
+  const dh = E.img.naturalHeight * fitScale * (E.zoom/100);
+  E.panFX += dx/dw;
+  E.panFY += dy/dh;
+  drawPreview();
+}
+
+const editCv=$('editCanvas');
+editCv.addEventListener('mousedown',e=>{
+  if(!E.img) return;
+  E.dragging=true; E.lastX=e.clientX; E.lastY=e.clientY; e.preventDefault();
+});
+editCv.addEventListener('touchstart',e=>{
+  if(!E.img||!e.touches[0]) return;
+  E.dragging=true; E.lastX=e.touches[0].clientX; E.lastY=e.touches[0].clientY;
+},{passive:true});
+window.addEventListener('mousemove',e=>{
+  if(!E.dragging) return;
+  dragDelta(e.clientX-E.lastX, e.clientY-E.lastY);
+  E.lastX=e.clientX; E.lastY=e.clientY;
+});
+window.addEventListener('touchmove',e=>{
+  if(!E.dragging||!e.touches[0]) return;
+  dragDelta(e.touches[0].clientX-E.lastX, e.touches[0].clientY-E.lastY);
+  E.lastX=e.touches[0].clientX; E.lastY=e.touches[0].clientY;
+},{passive:true});
+window.addEventListener('mouseup',()=>{ E.dragging=false; });
+window.addEventListener('touchend',()=>{ E.dragging=false; });
+$('editModal').addEventListener('click',e=>{ if(e.target===$('editModal')) closeEditModal(); });
+
+// ── LAYOUT CALCULATOR ──────────────────────────────────────
+function layout(){
+  const imgSize=gv('sizeRange'),gap=gv('gapRange'),fontSize=gv('fontRange');
+  const headerSize=gv('headerRange'),headerGap=gv('headerGapRange'),pad=gv('padRange');
+  const {cols,rows}=S;
+  const eyebrow=$('eyebrowInput').value.trim();
+  const title=$('titleInput').value.trim();
+  const subtitle=$('subtitleInput').value.trim();
+
+  const namePadTop=Math.round(imgSize*0.14);
+  const nameLineH=Math.ceil(fontSize*1.55);
+  const subLineH=Math.ceil(fontSize*1.35);
+  const hasAnySub=S.photos.some(p=>p.sub&&p.sub.trim());
+  const labelH=namePadTop+nameLineH+(hasAnySub?subLineH:0);
+  const gridW=cols*imgSize+(cols-1)*gap;
+  const gridH=rows*(imgSize+labelH)+(rows-1)*gap;
+  const minW=gridW+pad*2;
+
+  const eyebrowFs=headerSize*0.40, titleFs=headerSize, subtitleFs=headerSize*0.44;
+  const textMargin=pad*2, maxTextW=minW-textMargin;
+
+  const eyebrowLines=eyebrow?wrap(eyebrow.toUpperCase(),`700 ${eyebrowFs}px DM Sans,sans-serif`,maxTextW):[];
+  const titleLines=title?wrap(title,`400 ${titleFs}px DM Serif Display,serif`,maxTextW):[];
+  const subtitleLines=subtitle?wrap(subtitle,`400 ${subtitleFs}px DM Sans,sans-serif`,maxTextW):[];
+
+  const eyebrowLH=Math.ceil(eyebrowFs*1.55),titleLH=Math.ceil(titleFs*1.30),subtitleLH=Math.ceil(subtitleFs*1.55);
+  const INTER=6;
+  const eyebrowBlockH=eyebrowLines.length?eyebrowLines.length*eyebrowLH+INTER:0;
+  const titleBlockH=titleLines.length?titleLines.length*titleLH+INTER:0;
+  const subtitleBlockH=subtitleLines.length?subtitleLines.length*subtitleLH+INTER:0;
+  const hasHeader=!!(eyebrowLines.length||titleLines.length||subtitleLines.length);
+  const headerBlockH=hasHeader?eyebrowBlockH+titleBlockH+subtitleBlockH+headerGap:0;
+
+  const slideW=minW, slideH=pad+headerBlockH+gridH+pad, gridTop=pad+headerBlockH;
+  return {imgSize,gap,fontSize,headerSize,pad,cols,rows,
+    eyebrow,title,subtitle,hasHeader,
+    eyebrowLines,titleLines,subtitleLines,
+    eyebrowFs,titleFs,subtitleFs,eyebrowLH,titleLH,subtitleLH,
+    eyebrowBlockH,titleBlockH,subtitleBlockH,headerBlockH,
+    namePadTop,nameLineH,subLineH,hasAnySub,labelH,
+    gridW,gridH,slideW,slideH,gridTop,textMargin};
+}
+
+// ── RENDER DOM preview ─────────────────────────────────────
+function render(){
+  [['sizeRange','sizeNum'],['gapRange','gapNum'],['fontRange','fontNum'],
+   ['headerRange','headerNum'],['headerGapRange','headerGapNum'],['padRange','padNum']]
+  .forEach(([r,n])=>$(n).textContent=Math.round(gv(r)));
+
+  const L=layout(), color=$('textColor').value, slide=$('slide');
+  slide.style.width=L.slideW+'px'; slide.style.height=L.slideH+'px'; slide.innerHTML='';
+
+  if(!S.photos.length){
+    const es=document.createElement('div'); es.className='empty-st';
+    es.innerHTML=`<div class="ei">🎉</div><p>Add photos to start<br/>your celebration card</p>`;
+    slide.appendChild(es);
+    $('dimPill').textContent=`${Math.round(L.slideW)} × ${Math.round(L.slideH)} px`;
+    return;
+  }
+
+  // Header
+  if(L.hasHeader){
+    let curY=L.pad; const half=L.textMargin/2;
+    const renderBlock=(lines,fs,lh,family,weight,opacity,extra)=>{
+      lines.forEach((line,li)=>{
+        const d=document.createElement('div');
+        d.style.cssText=`position:absolute;left:${half}px;right:${half}px;top:${curY+li*lh}px;height:${lh}px;display:flex;align-items:center;justify-content:center;font-family:${family};font-weight:${weight};font-size:${fs}px;color:${color};opacity:${opacity};white-space:nowrap;${extra||''}`;
+        d.textContent=line; slide.appendChild(d);
+      });
+      if(lines.length) curY+=lines.length*lh+6;
+    };
+    if(L.eyebrowLines.length)  renderBlock(L.eyebrowLines, L.eyebrowFs,L.eyebrowLH, "'DM Sans',sans-serif",     700,0.55,'letter-spacing:0.12em;text-transform:uppercase');
+    if(L.titleLines.length)    renderBlock(L.titleLines,   L.titleFs,  L.titleLH,   "'DM Serif Display',serif", 400,1.0,'');
+    if(L.subtitleLines.length) renderBlock(L.subtitleLines,L.subtitleFs,L.subtitleLH,"'DM Sans',sans-serif",     400,0.6,'');
+  }
+
+  // Grid
+  for(let r=0;r<L.rows;r++){
+    for(let c=0;c<L.cols;c++){
+      const idx=r*L.cols+c, photo=S.photos[idx]||null;
+      const cellX=L.pad+c*(L.imgSize+L.gap);
+      const cellY=L.gridTop+r*(L.imgSize+L.labelH+L.gap);
+
+      if(photo){
+        const clip=document.createElement('div');
+        clip.style.cssText=`position:absolute;left:${cellX}px;top:${cellY}px;width:${L.imgSize}px;height:${L.imgSize}px;overflow:hidden;border-radius:${S.shape==='circle'?'50%':'10px'};`;
+        const cv=document.createElement('canvas');
+        cv.width=L.imgSize; cv.height=L.imgSize;
+        cv.style.cssText='display:block;width:100%;height:100%;';
+        const img=new Image();
+        img.onload=()=>drawPhoto(cv.getContext('2d'),img,L.imgSize,photo.zoom,photo.panFX,photo.panFY);
+        img.src=photo.dataUrl;
+        clip.appendChild(cv); slide.appendChild(clip);
+
+        const nameTop=cellY+L.imgSize+L.namePadTop;
+        const nm=document.createElement('div');
+        nm.style.cssText=`position:absolute;left:${cellX-L.gap*.5}px;top:${nameTop}px;width:${L.imgSize+L.gap}px;height:${L.nameLineH}px;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;font-size:${L.fontSize}px;font-weight:600;color:${color};overflow:hidden;white-space:nowrap;text-overflow:ellipsis;`;
+        nm.textContent=photo.name||''; slide.appendChild(nm);
+
+        if(photo.sub&&photo.sub.trim()){
+          const sb=document.createElement('div');
+          sb.style.cssText=`position:absolute;left:${cellX-L.gap*.5}px;top:${nameTop+L.nameLineH}px;width:${L.imgSize+L.gap}px;height:${L.subLineH}px;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;font-size:${L.fontSize*.88}px;font-weight:400;color:${color};opacity:.6;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;`;
+          sb.textContent=photo.sub; slide.appendChild(sb);
+        }
+      } else {
+        const ph=document.createElement('div');
+        ph.style.cssText=`position:absolute;left:${cellX}px;top:${cellY}px;width:${L.imgSize}px;height:${L.imgSize}px;border:2px dashed rgba(0,0,0,0.1);border-radius:${S.shape==='circle'?'50%':'10px'};display:flex;align-items:center;justify-content:center;`;
+        ph.innerHTML=`<span style="opacity:.18;font-size:${L.imgSize*.22}px">+</span>`;
+        slide.appendChild(ph);
+      }
+    }
+  }
+  $('dimPill').textContent=`${Math.round(L.slideW)} × ${Math.round(L.slideH)} px`;
+}
+
+// ── BAKE one photo to a canvas data URL (for SVG embed & PNG export) ──
+// Uses the same drawPhoto() so output always matches the preview.
+function bakePhoto(photo, size){
+  const cv=document.createElement('canvas'); cv.width=size; cv.height=size;
+  const img=new Image(); img.src=photo.dataUrl;
+  if(img.complete&&img.naturalWidth){
+    drawPhoto(cv.getContext('2d'),img,size,photo.zoom,photo.panFX,photo.panFY);
+  }
+  return cv.toDataURL('image/png');
+}
+
+// Async version used in PNG export (waits for image.onload)
+function bakeAsync(photo, size){
+  return new Promise(res=>{
+    const cv=document.createElement('canvas'); cv.width=size; cv.height=size;
+    const img=new Image();
+    img.onload=()=>{ drawPhoto(cv.getContext('2d'),img,size,photo.zoom,photo.panFX,photo.panFY); res(cv); };
+    img.onerror=()=>res(cv);
+    img.src=photo.dataUrl;
+  });
+}
+
+// ── PNG DOWNLOAD ───────────────────────────────────────────
+async function downloadPNG(){
+  if(!S.photos.length){alert('Add at least one photo first.');return;}
+  const btn=$('dlPngBtn'); btn.textContent='⏳ Rendering…'; btn.disabled=true;
+  try{
+    await document.fonts.ready;
+    const L=layout(), color=$('textColor').value, SC=2;
+    const W=L.slideW*SC, H=L.slideH*SC;
+    const canvas=document.createElement('canvas'); canvas.width=W; canvas.height=H;
+    const ctx=canvas.getContext('2d');
+
+    // Header
+    if(L.hasHeader){
+      let curY=L.pad*SC; const cx=W/2;
+      const drawBlock=(lines,fs,lh,fontStr,opacity)=>{
+        if(!lines.length) return;
+        ctx.save(); ctx.globalAlpha=opacity; ctx.font=fontStr;
+        ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillStyle=color;
+        lines.forEach((line,li)=>ctx.fillText(line,cx,curY+li*lh*SC+(lh*SC)/2));
+        ctx.restore(); curY+=lines.length*lh*SC+6*SC;
+      };
+      if(L.eyebrowLines.length){
+        ctx.save(); ctx.globalAlpha=0.55;
+        ctx.font=`700 ${L.eyebrowFs*SC}px 'DM Sans',sans-serif`;
+        ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillStyle=color;
+        L.eyebrowLines.forEach((line,li)=>drawTracked(ctx,line,cx,curY+li*L.eyebrowLH*SC+(L.eyebrowLH*SC)/2,L.eyebrowFs*SC*0.12));
+        ctx.restore(); curY+=L.eyebrowLines.length*L.eyebrowLH*SC+6*SC;
+      }
+      drawBlock(L.titleLines,   L.titleFs,   L.titleLH,   `400 ${L.titleFs*SC}px 'DM Serif Display',serif`,1.0);
+      drawBlock(L.subtitleLines,L.subtitleFs,L.subtitleLH,`400 ${L.subtitleFs*SC}px 'DM Sans',sans-serif`, 0.6);
+    }
+
+    // Photos — bake each then stamp onto output canvas with correct clip
+    const proms=[];
+    for(let r=0;r<L.rows;r++){
+      for(let c=0;c<L.cols;c++){
+        const i=r*L.cols+c, photo=S.photos[i];
+        const cellX=(L.pad+c*(L.imgSize+L.gap))*SC;
+        const cellY=(L.gridTop+r*(L.imgSize+L.labelH+L.gap))*SC;
+        const sz=L.imgSize*SC;
+
+        if(photo){
+          // Bake at 2× so it's sharp in the 2× output canvas
+          proms.push(bakeAsync(photo,sz).then(baked=>{
+            ctx.save();
+            if(S.shape==='circle'){ ctx.beginPath(); ctx.arc(cellX+sz/2,cellY+sz/2,sz/2,0,Math.PI*2); ctx.clip(); }
+            else{ rrect(ctx,cellX,cellY,sz,sz,10*SC); ctx.clip(); }
+            ctx.drawImage(baked,cellX,cellY,sz,sz);
+            ctx.restore();
+          }));
+          // Labels drawn immediately (text needs no async)
+          const nameTop=(L.gridTop+r*(L.imgSize+L.labelH+L.gap)+L.imgSize+L.namePadTop)*SC;
+          ctx.save(); ctx.font=`600 ${L.fontSize*SC}px 'DM Sans',sans-serif`;
+          ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillStyle=color;
+          ctx.fillText(photo.name||'',cellX+sz/2,nameTop+(L.nameLineH*SC)/2,sz+L.gap*SC);
+          ctx.restore();
+          if(photo.sub&&photo.sub.trim()){
+            ctx.save(); ctx.globalAlpha=0.6;
+            ctx.font=`400 ${L.fontSize*.88*SC}px 'DM Sans',sans-serif`;
+            ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillStyle=color;
+            ctx.fillText(photo.sub,cellX+sz/2,nameTop+L.nameLineH*SC+(L.subLineH*SC)/2,sz+L.gap*SC);
+            ctx.restore();
+          }
+        } else {
+          ctx.save(); ctx.strokeStyle='rgba(0,0,0,0.1)'; ctx.lineWidth=2*SC;
+          ctx.setLineDash([6*SC,4*SC]);
+          if(S.shape==='circle'){ctx.beginPath();ctx.arc(cellX+sz/2,cellY+sz/2,sz/2,0,Math.PI*2);ctx.stroke();}
+          else{rrect(ctx,cellX,cellY,sz,sz,10*SC);ctx.stroke();}
+          ctx.restore();
+        }
+      }
+    }
+    await Promise.all(proms);
+
+    const a=document.createElement('a');
+    a.href=canvas.toDataURL('image/png');
+    a.download='teamkit-celebration-card.png';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  }catch(err){alert('PNG export failed: '+err.message);console.error(err);}
+  finally{btn.textContent='⬇ Download PNG';btn.disabled=false;}
+}
+
+// ── SVG DOWNLOAD ───────────────────────────────────────────
+function downloadSVG(){
+  if(!S.photos.length){alert('Add at least one photo first.');return;}
+  const btn=$('dlSvgBtn'); btn.textContent='⏳…'; btn.disabled=true;
+  setTimeout(()=>{
+    try{
+      const b64=btoa(unescape(encodeURIComponent(buildSVG())));
+      const a=document.createElement('a');
+      a.href='data:image/svg+xml;base64,'+b64;
+      a.download='teamkit-celebration-card.svg';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    }catch(err){alert('SVG error: '+err.message);}
+    finally{btn.textContent='⬇ SVG';btn.disabled=false;}
+  },40);
+}
+
+function buildSVG(){
+  const L=layout(), color=$('textColor').value, W=L.slideW, H=L.slideH, p=[];
+  p.push(`<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">`);
+  p.push(`<defs><style>@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&amp;family=DM+Sans:opsz,wght@9..40,400;9..40,600;9..40,700&amp;display=swap');</style>`);
+  S.photos.forEach((ph,i)=>{
+    if(i>=L.cols*L.rows) return;
+    const col=i%L.cols, row=Math.floor(i/L.cols);
+    const x=L.pad+col*(L.imgSize+L.gap), y=L.gridTop+row*(L.imgSize+L.labelH+L.gap);
+    if(S.shape==='circle') p.push(`<clipPath id="cp${i}"><circle cx="${n(x+L.imgSize/2)}" cy="${n(y+L.imgSize/2)}" r="${n(L.imgSize/2)}"/></clipPath>`);
+    else p.push(`<clipPath id="cp${i}"><rect x="${n(x)}" y="${n(y)}" width="${n(L.imgSize)}" height="${n(L.imgSize)}" rx="10"/></clipPath>`);
+  });
+  p.push('</defs>');
+
+  if(L.hasHeader){
+    let curY=L.pad; const cx=W/2;
+    const emit=(lines,fs,lh,family,weight,opacity,ls)=>{
+      if(!lines.length) return;
+      lines.forEach((line,li)=>{
+        const baseline=curY+li*lh+fs;
+        const lsA=ls?` letter-spacing="${ls}"`:'';
+        p.push(`<text x="${n(cx)}" y="${n(baseline)}" text-anchor="middle" font-family="${family}" font-weight="${weight}" font-size="${n(fs)}" fill="${xe(color)}" opacity="${opacity}"${lsA}>${xs(line)}</text>`);
+      });
+      curY+=lines.length*lh+6;
+    };
+    emit(L.eyebrowLines, L.eyebrowFs,L.eyebrowLH,'DM Sans,sans-serif',       700,0.55,'3');
+    emit(L.titleLines,   L.titleFs,  L.titleLH,  'DM Serif Display,serif',   400,1.0, null);
+    emit(L.subtitleLines,L.subtitleFs,L.subtitleLH,'DM Sans,sans-serif',      400,0.6, null);
+  }
+
+  for(let row=0;row<L.rows;row++){
+    for(let col=0;col<L.cols;col++){
+      const i=row*L.cols+col, photo=S.photos[i];
+      const cx=L.pad+col*(L.imgSize+L.gap), cy=L.gridTop+row*(L.imgSize+L.labelH+L.gap);
+      if(photo){
+        const baked=bakePhoto(photo,L.imgSize);
+        p.push(`<image href="${baked}" x="${n(cx)}" y="${n(cy)}" width="${n(L.imgSize)}" height="${n(L.imgSize)}" preserveAspectRatio="xMidYMid slice" clip-path="url(#cp${i})"/>`);
+        const nameBL=cy+L.imgSize+L.namePadTop+L.fontSize;
+        p.push(`<text x="${n(cx+L.imgSize/2)}" y="${n(nameBL)}" text-anchor="middle" font-family="DM Sans,sans-serif" font-weight="600" font-size="${n(L.fontSize)}" fill="${xe(color)}">${xs(photo.name||'')}</text>`);
+        if(photo.sub&&photo.sub.trim()){
+          p.push(`<text x="${n(cx+L.imgSize/2)}" y="${n(nameBL+L.nameLineH)}" text-anchor="middle" font-family="DM Sans,sans-serif" font-weight="400" font-size="${n(L.fontSize*.88)}" fill="${xe(color)}" opacity="0.6">${xs(photo.sub)}</text>`);
+        }
+      } else {
+        if(S.shape==='circle') p.push(`<circle cx="${n(cx+L.imgSize/2)}" cy="${n(cy+L.imgSize/2)}" r="${n(L.imgSize/2)}" fill="none" stroke="rgba(0,0,0,0.1)" stroke-width="2" stroke-dasharray="6,4"/>`);
+        else p.push(`<rect x="${n(cx)}" y="${n(cy)}" width="${n(L.imgSize)}" height="${n(L.imgSize)}" rx="10" fill="none" stroke="rgba(0,0,0,0.1)" stroke-width="2" stroke-dasharray="6,4"/>`);
+      }
+    }
+  }
+  p.push('</svg>'); return p.join('\n');
+}
+
+// ── UTILS ──────────────────────────────────────────────────
+function drawTracked(ctx,text,cx,y,tracking){
+  const chars=text.split(''), ws=chars.map(ch=>ctx.measureText(ch).width);
+  const total=ws.reduce((s,w)=>s+w,0)+tracking*(chars.length-1);
+  let x=cx-total/2;
+  chars.forEach((ch,i)=>{ctx.fillText(ch,x+ws[i]/2,y);x+=ws[i]+tracking;});
+}
+function rrect(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);
+  ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);
+  ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);
+  ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();
+}
+const n  = v=>Math.round(v*10)/10;
+const xs = s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const xe = s=>String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+const esc= s=>String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+
+function clearAll(){
+  if(S.photos.length&&!confirm('Clear all photos and reset?')) return;
+  S.photos=[]; rebuildList(); render();
+}
+
+// ── INIT ───────────────────────────────────────────────────
+$('cellBadge').textContent=(S.cols*S.rows)+' cells';
+render();
+</script>
+
+<!-- ── TEAMKIT FOOTER ── -->
+<div style="
+  border-top:1px solid #e6e1da;
+  background:#f0ede8;
+  padding:10px 20px;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:8px;
+  font-family:'DM Sans',sans-serif;
+  font-size:11px;
+  flex-shrink:0;
+" id="tk-footer">
+  <span style="color:#a8a49e">
+    🧰 <strong style="color:#6b6760">GomathiBalan's Forge</strong> &nbsp;·&nbsp;
+    Built by <strong style="color:#1c1917">GomathiBalan</strong>
+  </span>
+  <span style="color:#c4bfb8;font-size:10px">
+    Designed with prompts &nbsp;·&nbsp; Crafted by 
+    <strong style="color:#a8a49e">Claude AI</strong>
+  </span>
+</div>
+</body>
+</html>

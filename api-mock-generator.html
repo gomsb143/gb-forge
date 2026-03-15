@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>API Mock Generator — GomathiBalan's Forge</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#0d1117;--bg-2:#161b22;--bg-3:#1c2330;--bg-4:#21262d;
+      --border:#30363d;--border-2:#3d444d;
+      --ink:#e6edf3;--ink-2:#8d96a0;--ink-3:#484f58;
+      --accent:#388bfd;--accent-soft:#0d2044;
+      --green:#3fb950;--amber:#d29922;--red:#f85149;--purple:#bc8cff;
+      --font:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
+      --j-key:#79c0ff;--j-str:#a5d6ff;--j-num:#ffa657;--j-bool:#ff7b72;--j-null:#8b949e;--j-punc:#8d96a0;
+    }
+    html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--ink);overflow:hidden}
+    .app{display:flex;flex-direction:column;height:100vh}
+    .topbar{height:52px;background:var(--bg-2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:10px;flex-shrink:0}
+    .back{font-size:12px;font-weight:500;color:var(--ink-3);text-decoration:none}
+    .back:hover{color:var(--ink-2)}
+    .sep{width:1px;height:18px;background:var(--border)}
+    .ptitle{font-size:13px;font-weight:600}
+    .ml{margin-left:auto}
+    .btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:7px;font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all .15s;white-space:nowrap;line-height:1}
+    .btn-ghost{background:transparent;color:var(--ink-2);border:1px solid var(--border)}
+    .btn-ghost:hover{background:var(--bg-4);color:var(--ink)}
+    .btn-accent{background:var(--accent);color:#fff}
+    .btn-accent:hover{background:#1a6dda}
+    .btn-sm{padding:4px 9px;font-size:11px}
+    .body{display:flex;flex:1;overflow:hidden}
+
+    /* LEFT CONFIG PANEL */
+    .config-col{width:320px;background:var(--bg-2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
+    .pscroll{overflow-y:auto;flex:1}
+    .pscroll::-webkit-scrollbar{width:3px}
+    .pscroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+    .psec{padding:14px;border-bottom:1px solid var(--border)}
+    .plbl{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);margin-bottom:10px}
+    .field-row{margin-bottom:8px}
+    .field-label{font-size:11px;font-weight:600;color:var(--ink-2);margin-bottom:4px}
+    .finput{width:100%;background:var(--bg-3);border:1px solid var(--border);border-radius:7px;padding:7px 10px;font-family:var(--font);font-size:12px;color:var(--ink);outline:none;transition:border-color .15s}
+    .finput:focus{border-color:var(--accent)}
+    .finput::placeholder{color:var(--ink-3)}
+    select.finput{cursor:pointer}
+    .fhint{font-size:10px;color:var(--ink-3);margin-top:3px}
+
+    /* Schema builder */
+    .schema-table{width:100%;border-collapse:collapse}
+    .schema-table th{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);padding:4px 6px;text-align:left}
+    .schema-table td{padding:3px 4px}
+    .schema-table tr+tr td{border-top:1px solid var(--border)}
+    .si{background:var(--bg-3);border:1px solid var(--border);border-radius:5px;padding:4px 6px;font-family:var(--font);font-size:11px;color:var(--ink);outline:none;width:100%;transition:border-color .15s}
+    .si:focus{border-color:var(--accent)}
+    .si-del{background:transparent;border:none;cursor:pointer;color:var(--ink-3);font-size:13px;padding:0 2px;transition:color .15s}
+    .si-del:hover{color:var(--red)}
+
+    /* Type badge colours */
+    .type-string {color:#a5d6ff} .type-number{color:#ffa657} .type-boolean{color:#ff7b72}
+    .type-object {color:#3fb950} .type-array  {color:#d29922} .type-uuid   {color:#bc8cff}
+    .type-email  {color:#3fb950} .type-date   {color:#d29922} .type-url    {color:#388bfd}
+    .type-name   {color:#e6edf3} .type-phone  {color:#ffa657} .type-lorem  {color:#8d96a0}
+
+    /* COUNT picker */
+    .count-row{display:flex;gap:8px;align-items:center}
+    .count-num{width:70px;background:var(--bg-3);border:1px solid var(--border);border-radius:7px;padding:7px;font-family:var(--mono);font-size:13px;color:var(--ink);outline:none;text-align:center}
+    .count-num:focus{border-color:var(--accent)}
+    .count-lbl{font-size:12px;color:var(--ink-2)}
+
+    /* Toggle */
+    .toggle-row{display:flex;align-items:center;justify-content:space-between;padding:4px 0}
+    .toggle-lbl{font-size:12px;color:var(--ink-2)}
+    .tog{width:34px;height:19px;border-radius:10px;background:var(--border-2);border:none;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0}
+    .tog::after{content:'';position:absolute;top:2px;left:2px;width:15px;height:15px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+    .tog.on{background:var(--accent)}
+    .tog.on::after{transform:translateX(15px)}
+
+    /* MAIN output */
+    .output-col{flex:1;display:flex;flex-direction:column;overflow:hidden}
+    .output-header{height:36px;background:var(--bg-3);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:8px;flex-shrink:0}
+    .output-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+
+    /* Tabs */
+    .tabs-row{display:flex;background:var(--bg-2);border-bottom:1px solid var(--border);flex-shrink:0}
+    .tab{padding:8px 16px;font-size:12px;font-weight:600;color:var(--ink-3);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s}
+    .tab.on{color:var(--accent);border-bottom-color:var(--accent)}
+    .tab-pane{flex:1;overflow-y:auto;display:none}
+    .tab-pane.on{display:block}
+    .tab-pane::-webkit-scrollbar{width:5px}
+    .tab-pane::-webkit-scrollbar-thumb{background:var(--border-2);border-radius:4px}
+
+    .json-out{padding:16px;font-family:var(--mono);font-size:13px;line-height:1.7;white-space:pre;color:var(--ink)}
+    .j-key{color:var(--j-key)}.j-str{color:var(--j-str)}.j-num{color:var(--j-num)}
+    .j-bool{color:var(--j-bool)}.j-null{color:var(--j-null)}.j-punc{color:var(--j-punc)}
+
+    /* Empty */
+    .empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:10px;opacity:.3}
+    .empty .ei{font-size:40px}
+    .empty p{font-size:12px;color:var(--ink-2);text-align:center}
+
+    /* Presets sidebar */
+    .presets-col{width:220px;background:var(--bg-2);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
+    .phead{padding:10px 12px;border-bottom:1px solid var(--border);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+    .presets-list{overflow-y:auto;flex:1;padding:6px}
+    .presets-list::-webkit-scrollbar{width:3px}
+    .presets-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+    .preset-item{padding:8px 10px;border-radius:6px;cursor:pointer;border:1px solid transparent;transition:all .12s;margin-bottom:4px}
+    .preset-item:hover{background:var(--bg-3);border-color:var(--border)}
+    .pi-name{font-size:12px;font-weight:600;color:var(--ink)}
+    .pi-desc{font-size:10px;color:var(--ink-3);margin-top:2px}
+
+    .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(8px);background:var(--green);color:#0d1117;padding:8px 18px;border-radius:20px;font-size:12px;font-weight:700;opacity:0;transition:all .2s;pointer-events:none;z-index:999}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  </style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <a href="index.html" class="back">← GomathiBalan's Forge</a>
+    <div class="sep"></div>
+    <span class="ptitle">⚡ API Mock Generator</span>
+    <div class="ml" style="display:flex;gap:6px">
+      <button class="btn btn-ghost btn-sm" onclick="copyOutput()">⎘ Copy JSON</button>
+      <button class="btn btn-ghost btn-sm" onclick="downloadOutput()">⬇ Download</button>
+      <button class="btn btn-accent btn-sm" onclick="generate()">▶ Generate</button>
+    </div>
+  </div>
+  <div class="body">
+
+    <!-- CONFIG -->
+    <div class="config-col">
+      <div class="pscroll">
+
+        <div class="psec">
+          <div class="plbl">Response Shape</div>
+          <div class="field-row">
+            <div class="field-label">Wrap in</div>
+            <select class="finput" id="wrapSel">
+              <option value="array">Array of objects</option>
+              <option value="object">Single object</option>
+              <option value="paginated">Paginated response</option>
+              <option value="envelope">{ data: [...], meta: {...} }</option>
+            </select>
+          </div>
+          <div class="field-row" id="countRow">
+            <div class="field-label">Number of items</div>
+            <div class="count-row">
+              <input class="count-num" id="countNum" type="number" min="1" max="100" value="5"/>
+              <span class="count-lbl">items in array</span>
+            </div>
+          </div>
+          <div class="toggle-row">
+            <span class="toggle-lbl">Pretty print</span>
+            <button class="tog on" id="togPretty" onclick="toggleOpt('pretty')"></button>
+          </div>
+          <div class="toggle-row">
+            <span class="toggle-lbl">Randomise values each time</span>
+            <button class="tog on" id="togRandom" onclick="toggleOpt('random')"></button>
+          </div>
+        </div>
+
+        <div class="psec">
+          <div class="plbl" style="display:flex;align-items:center;justify-content:space-between">
+            Fields
+            <button class="btn btn-ghost btn-sm" onclick="addField()">+ Add</button>
+          </div>
+          <table class="schema-table">
+            <thead><tr><th>Name</th><th>Type</th><th></th></tr></thead>
+            <tbody id="fieldRows"></tbody>
+          </table>
+        </div>
+
+        <div class="psec">
+          <div class="plbl">HTTP Metadata</div>
+          <div class="field-row">
+            <div class="field-label">Status code</div>
+            <select class="finput" id="statusCode">
+              <option>200 OK</option>
+              <option>201 Created</option>
+              <option>400 Bad Request</option>
+              <option>401 Unauthorized</option>
+              <option>403 Forbidden</option>
+              <option>404 Not Found</option>
+              <option>500 Internal Server Error</option>
+            </select>
+          </div>
+          <div class="field-row">
+            <div class="field-label">Content-Type</div>
+            <select class="finput" id="contentType">
+              <option>application/json</option>
+              <option>application/json; charset=utf-8</option>
+              <option>application/hal+json</option>
+            </select>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- OUTPUT -->
+    <div class="output-col">
+      <div class="tabs-row">
+        <div class="tab on"  id="tabJson"    onclick="setTab('json')">JSON Response</div>
+        <div class="tab"     id="tabCurl"    onclick="setTab('curl')">cURL</div>
+        <div class="tab"     id="tabHeaders" onclick="setTab('headers')">Headers</div>
+      </div>
+      <div class="tab-pane on" id="paneJson">
+        <div class="json-out" id="jsonOut">
+          <div class="empty" style="height:300px">
+            <div class="ei">⚡</div>
+            <p>Configure fields on the left<br/>and click Generate.</p>
+          </div>
+        </div>
+      </div>
+      <div class="tab-pane" id="paneCurl">
+        <div class="json-out" id="curlOut" style="color:var(--ink-2)"></div>
+      </div>
+      <div class="tab-pane" id="paneHeaders">
+        <div class="json-out" id="headersOut" style="color:var(--ink-2)"></div>
+      </div>
+    </div>
+
+    <!-- PRESETS -->
+    <div class="presets-col">
+      <div class="phead">Presets</div>
+      <div class="presets-list" id="presetsList"></div>
+    </div>
+
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+const $ = id => document.getElementById(id);
+
+// ── FAKE DATA GENERATORS ──────────────────────────────────
+const FIRST = ['Alice','Bob','Carol','David','Eva','Frank','Grace','Henry','Iris','James','Kate','Liam','Mia','Noah','Olivia','Paul','Quinn','Rachel','Sam','Tina','Uma','Victor','Wendy','Xander','Yara','Zoe'];
+const LAST  = ['Smith','Johnson','Williams','Brown','Jones','Garcia','Miller','Davis','Wilson','Taylor','Anderson','Thomas','Jackson','White','Harris','Martin','Thompson','Moore','Young','Allen','King','Wright','Scott','Green','Baker'];
+const DOMAINS = ['gmail.com','outlook.com','yahoo.com','company.io','acme.org','example.com','techcorp.dev'];
+const CITIES  = ['New York','London','Berlin','Tokyo','Sydney','Toronto','Mumbai','Singapore','Paris','Dubai'];
+const COUNTRIES=['US','UK','DE','JP','AU','CA','IN','SG','FR','AE'];
+const COMPANIES=['Acme Corp','TechVision','DataFlow','NexGen','CloudBase','DevStudio','NetWorks','ByteForge'];
+const LOREM = ['Lorem ipsum dolor sit amet.','Consectetur adipiscing elit.','Sed do eiusmod tempor incididunt.','Ut labore et dolore magna aliqua.','Enim ad minim veniam.','Quis nostrud exercitation ullamco.'];
+const PATHS = ['/api/v1','/api/v2','/users','/products','/orders','/settings','/auth','/data'];
+const STATUSES_USER = ['active','inactive','pending','suspended'];
+const STATUSES_ORDER= ['pending','processing','shipped','delivered','cancelled'];
+
+let opts = { pretty: true, random: true };
+let fieldCounter = 0;
+let fields = [];
+let lastOutput = '';
+
+// ── FIELD TYPES ───────────────────────────────────────────
+const FIELD_TYPES = [
+  'string','number','integer','boolean','uuid','email','name','firstName','lastName',
+  'phone','date','datetime','url','ipv4','lorem','city','country','company',
+  'status','array[string]','array[number]','object','null'
+];
+
+function genValue(type, fieldName) {
+  const r = (arr) => arr[Math.floor(Math.random()*arr.length)];
+  const ri = (min,max) => Math.floor(Math.random()*(max-min+1))+min;
+  const rf = (min,max,dp=2) => parseFloat((Math.random()*(max-min)+min).toFixed(dp));
+  const pad = n => String(n).padStart(2,'0');
+  const uuid = () => 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const v=Math.random()*16|0;return(c==='x'?v:v&0x3|0x8).toString(16)});
+  const d = new Date(Date.now() - ri(0,365)*86400000);
+  const dateStr = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  const dtStr   = `${dateStr}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}Z`;
+
+  // Smart inference from field name
+  const n = fieldName.toLowerCase();
+  if (type==='string') {
+    if (n.includes('email')) return `${FIRST[ri(0,FIRST.length-1)].toLowerCase()}.${LAST[ri(0,LAST.length-1)].toLowerCase()}@${r(DOMAINS)}`;
+    if (n.includes('name') && !n.includes('first') && !n.includes('last')) return `${r(FIRST)} ${r(LAST)}`;
+    if (n.includes('first')) return r(FIRST);
+    if (n.includes('last'))  return r(LAST);
+    if (n.includes('city'))  return r(CITIES);
+    if (n.includes('country')) return r(COUNTRIES);
+    if (n.includes('company')) return r(COMPANIES);
+    if (n.includes('phone')) return `+1-${ri(200,999)}-${ri(100,999)}-${ri(1000,9999)}`;
+    if (n.includes('url') || n.includes('link') || n.includes('href')) return `https://example.com${r(PATHS)}/${uuid().slice(0,8)}`;
+    if (n.includes('status')) return r(n.includes('order')?STATUSES_ORDER:STATUSES_USER);
+    if (n.includes('color') || n.includes('colour')) return `#${Math.floor(Math.random()*0xFFFFFF).toString(16).padStart(6,'0')}`;
+    if (n.includes('description') || n.includes('bio') || n.includes('note')) return r(LOREM);
+    if (n.includes('token') || n.includes('key') || n.includes('secret')) return uuid().replace(/-/g,'');
+    return `sample_${fieldName}_${ri(100,999)}`;
+  }
+  if (type==='number')  return rf(0, n.includes('price')||n.includes('amount')?999:9999, n.includes('price')?2:0);
+  if (type==='integer') return ri(n.includes('age')?18:1, n.includes('age')?80:n.includes('count')||n.includes('total')?100:9999);
+  if (type==='boolean') return Math.random()>0.4;
+  if (type==='uuid')    return uuid();
+  if (type==='email')   return `${r(FIRST).toLowerCase()}.${r(LAST).toLowerCase()}@${r(DOMAINS)}`;
+  if (type==='name')    return `${r(FIRST)} ${r(LAST)}`;
+  if (type==='firstName') return r(FIRST);
+  if (type==='lastName')  return r(LAST);
+  if (type==='phone')   return `+1-${ri(200,999)}-${ri(100,999)}-${ri(1000,9999)}`;
+  if (type==='date')    return dateStr;
+  if (type==='datetime')return dtStr;
+  if (type==='url')     return `https://example.com${r(PATHS)}/${uuid().slice(0,8)}`;
+  if (type==='ipv4')    return `${ri(1,255)}.${ri(0,255)}.${ri(0,255)}.${ri(1,254)}`;
+  if (type==='lorem')   return r(LOREM);
+  if (type==='city')    return r(CITIES);
+  if (type==='country') return r(COUNTRIES);
+  if (type==='company') return r(COMPANIES);
+  if (type==='status')  return r(STATUSES_USER);
+  if (type==='array[string]') return Array.from({length:ri(2,4)},()=>`item_${ri(100,999)}`);
+  if (type==='array[number]') return Array.from({length:ri(2,4)},()=>ri(1,100));
+  if (type==='object')  return {id:uuid().slice(0,8),value:ri(1,100)};
+  if (type==='null')    return null;
+  return `${fieldName}_value`;
+}
+
+// ── FIELD ROWS ────────────────────────────────────────────
+function addField(name='', type='string') {
+  fieldCounter++;
+  const id = fieldCounter;
+  const tr = document.createElement('tr');
+  tr.id = 'fr-'+id;
+  tr.innerHTML = `
+    <td><input class="si" type="text" value="${escHtml(name)}" placeholder="fieldName" oninput="syncFields()"/></td>
+    <td>
+      <select class="si" onchange="syncFields()">
+        ${FIELD_TYPES.map(t=>`<option${t===type?' selected':''}>${t}</option>`).join('')}
+      </select>
+    </td>
+    <td><button class="si-del" onclick="removeField(${id})">✕</button></td>`;
+  $('fieldRows').appendChild(tr);
+  syncFields();
+}
+
+function removeField(id) { $('fr-'+id)?.remove(); syncFields(); }
+
+function syncFields() {
+  fields = [...document.querySelectorAll('#fieldRows tr')].map(tr => {
+    const inputs = tr.querySelectorAll('.si');
+    return { name: inputs[0].value.trim() || 'field', type: inputs[1].value };
+  });
+}
+
+// ── GENERATE ──────────────────────────────────────────────
+function generate() {
+  syncFields();
+  if (!fields.length) { showToast('⚠ Add at least one field'); return; }
+
+  const wrap  = $('wrapSel').value;
+  const count = Math.min(100, Math.max(1, parseInt($('countNum').value)||5));
+
+  const makeObj = () => {
+    const obj = {};
+    fields.forEach(f => { obj[f.name] = genValue(f.type, f.name); });
+    return obj;
+  };
+
+  let data;
+  if (wrap==='object') {
+    data = makeObj();
+  } else if (wrap==='array') {
+    data = Array.from({length:count}, makeObj);
+  } else if (wrap==='paginated') {
+    const ri = (a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+    data = {
+      page: 1, per_page: count, total: count * ri(2,10),
+      total_pages: ri(2,10),
+      data: Array.from({length:count}, makeObj)
+    };
+  } else { // envelope
+    const ri = (a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+    data = {
+      data: Array.from({length:count}, makeObj),
+      meta: { total: count*ri(2,10), page: 1, per_page: count, request_id: genValue('uuid','id'), timestamp: new Date().toISOString() },
+      links: { self: 'https://api.example.com/v1/resources?page=1', next: 'https://api.example.com/v1/resources?page=2', prev: null }
+    };
+  }
+
+  const indent = opts.pretty ? 2 : 0;
+  const json = JSON.stringify(data, null, indent);
+  lastOutput = json;
+
+  $('jsonOut').innerHTML = highlightJson(json);
+  renderCurl(json);
+  renderHeaders();
+  showToast('✓ Generated');
+}
+
+function highlightJson(json) {
+  return escHtml(json)
+    .replace(/("(?:[^"\\]|\\.)*")\s*:/g, (_, k) => `<span class="j-key">${k}</span>:`)
+    .replace(/:\s*("(?:[^"\\]|\\.)*")/g, (_, v) => `: <span class="j-str">${v}</span>`)
+    .replace(/(?<=[\[,\s\n])("(?:[^"\\]|\\.)*")(?=[\],\s\n])/g, m => `<span class="j-str">${m}</span>`)
+    .replace(/\b(-?\d+\.?\d*(?:[eE][+-]?\d+)?)\b/g, m => `<span class="j-num">${m}</span>`)
+    .replace(/\b(true|false)\b/g, m => `<span class="j-bool">${m}</span>`)
+    .replace(/\bnull\b/g, '<span class="j-null">null</span>')
+    .replace(/([{}\[\]])/g, m => `<span class="j-punc">${m}</span>`);
+}
+
+function renderCurl(json) {
+  const status = $('statusCode').value.split(' ')[0];
+  const ct = $('contentType').value;
+  $('curlOut').textContent = `# Example request\ncurl -X GET https://api.example.com/v1/resources \\\n  -H "Authorization: Bearer YOUR_TOKEN" \\\n  -H "Accept: application/json"\n\n# Mock response (status ${status})\n# Content-Type: ${ct}\n\n${json}`;
+}
+
+function renderHeaders() {
+  const status = $('statusCode').value;
+  const ct = $('contentType').value;
+  const uuid = () => 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const v=Math.random()*16|0;return(c==='x'?v:v&0x3|0x8).toString(16)});
+  $('headersOut').textContent = `HTTP/1.1 ${status}\nContent-Type: ${ct}\nX-Request-ID: ${uuid()}\nX-RateLimit-Limit: 1000\nX-RateLimit-Remaining: 999\nX-RateLimit-Reset: ${Math.floor(Date.now()/1000)+3600}\nCache-Control: no-cache, no-store\nVary: Accept, Authorization\nDate: ${new Date().toUTCString()}`;
+}
+
+// ── TABS ──────────────────────────────────────────────────
+function setTab(t) {
+  ['json','curl','headers'].forEach(k=>{
+    $('tab'+k.charAt(0).toUpperCase()+k.slice(1)).classList.toggle('on',k===t);
+    $('pane'+k.charAt(0).toUpperCase()+k.slice(1)).classList.toggle('on',k===t);
+  });
+}
+
+// ── OPTIONS ───────────────────────────────────────────────
+function toggleOpt(k) {
+  opts[k]=!opts[k];
+  $('tog'+k.charAt(0).toUpperCase()+k.slice(1)).classList.toggle('on',opts[k]);
+}
+
+// ── COPY / DOWNLOAD ───────────────────────────────────────
+function copyOutput() {
+  if (!lastOutput) { showToast('⚠ Generate first'); return; }
+  navigator.clipboard.writeText(lastOutput).then(()=>showToast('✓ Copied'));
+}
+function downloadOutput() {
+  if (!lastOutput) { showToast('⚠ Generate first'); return; }
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([lastOutput],{type:'application/json'})); a.download='mock-response.json';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+
+// ── PRESETS ───────────────────────────────────────────────
+const PRESETS = [
+  {name:'User',      desc:'Basic user profile', fields:[
+    {n:'id',t:'uuid'},{n:'firstName',t:'firstName'},{n:'lastName',t:'lastName'},
+    {n:'email',t:'email'},{n:'phone',t:'phone'},{n:'role',t:'status'},
+    {n:'createdAt',t:'datetime'},{n:'active',t:'boolean'}
+  ]},
+  {name:'Product',   desc:'E-commerce product', fields:[
+    {n:'id',t:'uuid'},{n:'name',t:'string'},{n:'description',t:'lorem'},
+    {n:'price',t:'number'},{n:'sku',t:'string'},{n:'inStock',t:'boolean'},
+    {n:'quantity',t:'integer'},{n:'category',t:'string'},{n:'createdAt',t:'datetime'}
+  ]},
+  {name:'Order',     desc:'Purchase order', fields:[
+    {n:'orderId',t:'uuid'},{n:'userId',t:'uuid'},{n:'status',t:'status'},
+    {n:'total',t:'number'},{n:'currency',t:'string'},{n:'items',t:'integer'},
+    {n:'createdAt',t:'datetime'},{n:'updatedAt',t:'datetime'}
+  ]},
+  {name:'Blog Post', desc:'CMS article', fields:[
+    {n:'id',t:'uuid'},{n:'title',t:'string'},{n:'slug',t:'string'},
+    {n:'body',t:'lorem'},{n:'author',t:'name'},{n:'published',t:'boolean'},
+    {n:'views',t:'integer'},{n:'tags',t:'array[string]'},{n:'createdAt',t:'datetime'}
+  ]},
+  {name:'API Error', desc:'Error response', fields:[
+    {n:'error',t:'string'},{n:'message',t:'lorem'},{n:'code',t:'integer'},
+    {n:'path',t:'url'},{n:'timestamp',t:'datetime'},{n:'requestId',t:'uuid'}
+  ]},
+  {name:'Auth Token',desc:'JWT auth response', fields:[
+    {n:'accessToken',t:'uuid'},{n:'refreshToken',t:'uuid'},
+    {n:'tokenType',t:'string'},{n:'expiresIn',t:'integer'},{n:'scope',t:'string'}
+  ]},
+  {name:'Server',    desc:'Server / host info', fields:[
+    {n:'hostname',t:'string'},{n:'ip',t:'ipv4'},{n:'region',t:'city'},
+    {n:'status',t:'status'},{n:'uptime',t:'integer'},{n:'lastSeen',t:'datetime'}
+  ]},
+];
+
+function buildPresets() {
+  $('presetsList').innerHTML = PRESETS.map((p,i)=>`
+    <div class="preset-item" onclick="loadPreset(${i})">
+      <div class="pi-name">${p.name}</div>
+      <div class="pi-desc">${p.desc}</div>
+    </div>`).join('');
+}
+
+function loadPreset(i) {
+  const p = PRESETS[i];
+  $('fieldRows').innerHTML=''; fieldCounter=0;
+  p.fields.forEach(f=>addField(f.n,f.t));
+  generate();
+}
+
+// ── UTILS ─────────────────────────────────────────────────
+function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function showToast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
+
+// ── INIT ──────────────────────────────────────────────────
+buildPresets();
+loadPreset(0); // Load User preset by default
+</script>
+
+<!-- ── TEAMKIT FOOTER ── -->
+<div style="
+  border-top:1px solid rgba(255,255,255,.07);
+  background:rgba(0,0,0,.25);
+  padding:10px 20px;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:8px;
+  font-family:'DM Sans',sans-serif;
+  font-size:11px;
+  flex-shrink:0;
+" id="tk-footer">
+  <span style="color:rgba(255,255,255,.35)">
+    🧰 <strong style="color:rgba(255,255,255,.6)">GomathiBalan's Forge</strong> &nbsp;·&nbsp;
+    Built by <strong style="color:rgba(255,255,255,.7)">GomathiBalan</strong>
+  </span>
+  <span style="color:rgba(255,255,255,.25);font-size:10px">
+    Designed with prompts &nbsp;·&nbsp; Crafted by 
+    <strong style="color:rgba(255,255,255,.4)">Claude AI</strong>
+  </span>
+</div>
+</body>
+</html>

@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Standup Timer — GomathiBalan's Forge</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:     #f8f7f4; --bg-2: #ffffff; --bg-3: #f0ede8; --bg-4: #e8e4dd;
+      --border: #e2ddd6; --border-2: #cdc8bf;
+      --ink:    #1c1917; --ink-2: #6b6760; --ink-3: #a8a49e;
+      --accent: #2563eb; --accent-soft: #eff6ff;
+      --green:  #16a34a; --green-soft: #f0fdf4;
+      --amber:  #d97706; --amber-soft: #fffbeb;
+      --red:    #dc2626; --red-soft:   #fef2f2;
+      --font:   'DM Sans', sans-serif;
+      --mono:   'DM Mono', monospace;
+      --serif:  'DM Serif Display', serif;
+    }
+    html, body { height: 100%; font-family: var(--font); background: var(--bg); color: var(--ink); }
+    .app { display: flex; flex-direction: column; height: 100vh; }
+
+    /* TOPBAR */
+    .topbar { height: 52px; background: var(--bg-2); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; flex-shrink: 0; z-index: 100; gap: 12px; }
+    .tl { display: flex; align-items: center; gap: 12px; }
+    .tr { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .back { font-size: 12px; font-weight: 500; color: var(--ink-3); text-decoration: none; transition: color .15s; }
+    .back:hover { color: var(--ink); }
+    .sep { width: 1px; height: 18px; background: var(--border); flex-shrink: 0; }
+    .ptitle { font-size: 13px; font-weight: 600; color: var(--ink); }
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 8px; font-family: var(--font); font-size: 12px; font-weight: 600; cursor: pointer; border: none; transition: all .15s; white-space: nowrap; line-height: 1; }
+    .btn-ghost  { background: transparent; color: var(--ink-2); border: 1px solid var(--border); }
+    .btn-ghost:hover  { background: var(--bg-3); color: var(--ink); border-color: var(--border-2); }
+    .btn-dark   { background: var(--ink); color: #fff; }
+    .btn-dark:hover   { background: #333; }
+    .btn-accent { background: var(--accent); color: #fff; }
+    .btn-accent:hover { background: #1d4ed8; }
+    .btn-green  { background: var(--green); color: #fff; }
+    .btn-green:hover  { background: #15803d; }
+    .btn-red    { background: var(--red); color: #fff; }
+    .btn-red:hover    { background: #b91c1c; }
+    .btn-sm { padding: 5px 10px; font-size: 11px; }
+    .btn-lg { padding: 12px 28px; font-size: 15px; font-weight: 700; border-radius: 12px; }
+    .btn:disabled { opacity: .4; cursor: not-allowed; }
+
+    /* BODY */
+    .body { display: flex; flex: 1; overflow: hidden; }
+
+    /* PANEL */
+    .panel { width: 300px; background: var(--bg-2); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; flex-shrink: 0; }
+    .pscroll { overflow-y: auto; flex: 1; }
+    .pscroll::-webkit-scrollbar { width: 3px; }
+    .pscroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+    .psec { padding: 16px; border-bottom: 1px solid var(--border); }
+    .psec:last-child { border-bottom: none; }
+    .plbl { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
+
+    /* Fields */
+    .field { margin-bottom: 10px; }
+    .field:last-child { margin-bottom: 0; }
+    .field label { display: block; font-size: 11px; font-weight: 600; color: var(--ink-2); margin-bottom: 5px; }
+    .field input, .field select { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 7px; font-family: var(--font); font-size: 12px; color: var(--ink); background: var(--bg); outline: none; transition: border-color .15s; }
+    .field input:focus, .field select:focus { border-color: var(--accent); background: #fff; }
+    .field input::placeholder { color: var(--ink-3); }
+
+    /* Time picker row */
+    .time-row { display: flex; align-items: center; gap: 6px; }
+    .time-row input[type=number] { width: 56px; text-align: center; font-family: var(--mono); font-size: 14px; font-weight: 500; padding: 7px 6px; }
+    .time-colon { font-size: 16px; font-weight: 700; color: var(--ink-3); }
+    .time-lbl   { font-size: 11px; color: var(--ink-3); }
+
+    /* Add person row */
+    .add-row { display: flex; gap: 6px; }
+    .add-row input { flex: 1; padding: 8px 10px; border: 1px solid var(--border); border-radius: 7px; font-family: var(--font); font-size: 12px; color: var(--ink); background: var(--bg); outline: none; transition: border-color .15s; }
+    .add-row input:focus { border-color: var(--accent); background: #fff; }
+    .add-row input::placeholder { color: var(--ink-3); }
+
+    /* Person list */
+    .person-list { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; }
+    .person-item { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border: 1px solid var(--border); border-radius: 7px; background: #fff; cursor: grab; user-select: none; transition: all .15s; }
+    .person-item:hover { border-color: var(--border-2); }
+    .person-item.active-person { border-color: var(--accent); background: var(--accent-soft); }
+    .person-item.done-person   { background: var(--green-soft); border-color: #bbf7d0; }
+    .person-item.skip-person   { opacity: .45; }
+    .pdrag { color: var(--ink-3); font-size: 12px; cursor: grab; flex-shrink: 0; }
+    .pname { font-size: 12px; font-weight: 600; color: var(--ink); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .person-item.active-person .pname { color: var(--accent); }
+    .person-item.done-person   .pname { color: var(--green); }
+    .ptime { font-family: var(--mono); font-size: 11px; color: var(--ink-3); flex-shrink: 0; }
+    .pdel { width: 20px; height: 20px; border-radius: 50%; background: transparent; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--ink-3); transition: all .15s; opacity: 0; }
+    .person-item:hover .pdel { opacity: 1; }
+    .pdel:hover { background: var(--red-soft); color: var(--red); }
+
+    /* Toggle row */
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; }
+    .toggle-label { font-size: 12px; color: var(--ink-2); font-weight: 500; }
+    .toggle { width: 34px; height: 19px; border-radius: 10px; background: var(--border-2); border: none; cursor: pointer; position: relative; transition: background .2s; flex-shrink: 0; }
+    .toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 15px; height: 15px; border-radius: 50%; background: #fff; transition: transform .2s; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+    .toggle.on { background: var(--accent); }
+    .toggle.on::after { transform: translateX(15px); }
+
+    /* MAIN AREA */
+    .main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 32px 24px; overflow-y: auto; gap: 24px; }
+
+    /* PROGRESS BAR TOP */
+    .session-progress { width: 100%; max-width: 680px; }
+    .sp-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .sp-title  { font-size: 13px; font-weight: 600; color: var(--ink-2); }
+    .sp-count  { font-size: 12px; color: var(--ink-3); }
+    .sp-track  { height: 6px; background: var(--border); border-radius: 6px; overflow: hidden; }
+    .sp-fill   { height: 100%; background: var(--green); border-radius: 6px; transition: width .5s ease; }
+
+    /* MAIN TIMER CARD */
+    .timer-card { width: 100%; max-width: 680px; background: var(--bg-2); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; }
+
+    /* Current person header */
+    .tc-header { padding: 24px 32px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
+    .tc-person-info { display: flex; flex-direction: column; gap: 4px; }
+    .tc-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); }
+    .tc-name    { font-family: var(--serif); font-size: 32px; color: var(--ink); line-height: 1.1; }
+    .tc-badge   { padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+    .badge-waiting { background: var(--bg-3); color: var(--ink-3); }
+    .badge-running { background: var(--accent-soft); color: var(--accent); }
+    .badge-done    { background: var(--green-soft); color: var(--green); }
+    .badge-over    { background: var(--red-soft); color: var(--red); }
+
+    /* Clock face */
+    .tc-clock { padding: 32px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+
+    /* SVG ring timer */
+    .ring-wrap { position: relative; width: 200px; height: 200px; }
+    .ring-svg   { transform: rotate(-90deg); }
+    .ring-track { fill: none; stroke: var(--border); stroke-width: 10; }
+    .ring-fill  { fill: none; stroke-width: 10; stroke-linecap: round; transition: stroke-dashoffset .8s linear, stroke .3s; }
+
+    /* Digital time inside ring */
+    .ring-inner { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+    .ring-time   { font-family: var(--mono); font-size: 42px; font-weight: 500; color: var(--ink); letter-spacing: .02em; line-height: 1; }
+    .ring-label  { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
+
+    /* Controls */
+    .tc-controls { display: flex; gap: 10px; justify-content: center; padding: 0 32px 28px; flex-wrap: wrap; }
+
+    /* Queue strip */
+    .queue-strip { width: 100%; max-width: 680px; display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
+    .queue-strip::-webkit-scrollbar { height: 3px; }
+    .queue-strip::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+    .q-chip { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-2); flex-shrink: 0; min-width: 80px; transition: all .2s; cursor: pointer; }
+    .q-chip:hover { border-color: var(--border-2); }
+    .q-chip.qc-active { border-color: var(--accent); background: var(--accent-soft); }
+    .q-chip.qc-done   { border-color: #bbf7d0; background: var(--green-soft); }
+    .q-chip.qc-skip   { opacity: .4; }
+    .qc-name { font-size: 11px; font-weight: 600; color: var(--ink); white-space: nowrap; max-width: 80px; overflow: hidden; text-overflow: ellipsis; }
+    .q-chip.qc-active .qc-name { color: var(--accent); }
+    .q-chip.qc-done   .qc-name { color: var(--green); }
+    .qc-time { font-family: var(--mono); font-size: 10px; color: var(--ink-3); }
+    .qc-dot  { width: 6px; height: 6px; border-radius: 50%; background: var(--border-2); }
+    .q-chip.qc-active .qc-dot { background: var(--accent); }
+    .q-chip.qc-done   .qc-dot { background: var(--green); }
+
+    /* Empty state */
+    .empty-state { display: flex; flex-direction: column; align-items: center; gap: 12px; opacity: .35; padding: 40px 20px; }
+    .empty-state .ei { font-size: 48px; }
+    .empty-state p { font-size: 13px; color: var(--ink-2); text-align: center; }
+
+    /* Toast */
+    .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(10px); background: var(--ink); color: #fff; padding: 10px 20px; border-radius: 20px; font-size: 13px; font-weight: 600; opacity: 0; transition: all .25s; pointer-events: none; z-index: 999; white-space: nowrap; }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* Flashing when over time */
+    @keyframes flash-red { 0%,100%{background:var(--bg-2)} 50%{background:var(--red-soft)} }
+    .timer-card.overtime { animation: flash-red 1s ease infinite; }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="tl">
+      <a href="index.html" class="back">← GomathiBalan's Forge</a>
+      <div class="sep"></div>
+      <span class="ptitle">⏱️ Standup Timer</span>
+    </div>
+    <div class="tr">
+      <button class="btn btn-ghost btn-sm" onclick="resetAll()">↺ Reset</button>
+    </div>
+  </div>
+
+  <div class="body">
+
+    <!-- PANEL -->
+    <div class="panel">
+      <div class="pscroll">
+
+        <!-- Default time per person -->
+        <div class="psec">
+          <div class="plbl">Default Time Per Person</div>
+          <div class="time-row">
+            <input type="number" id="defMin" min="0" max="30" value="2" oninput="saveSettings()"/>
+            <span class="time-colon">:</span>
+            <input type="number" id="defSec" min="0" max="59" value="0" oninput="saveSettings()"/>
+            <span class="time-lbl">min : sec</span>
+          </div>
+        </div>
+
+        <!-- Add person -->
+        <div class="psec">
+          <div class="plbl">Team Members <span style="color:var(--ink-3);font-weight:400;text-transform:none;letter-spacing:0;font-size:10px">drag to reorder</span></div>
+          <div class="add-row">
+            <input id="personInput" type="text" placeholder="Name…" onkeydown="if(event.key==='Enter') addPerson()"/>
+            <button class="btn btn-accent btn-sm" onclick="addPerson()">+</button>
+          </div>
+          <div class="person-list" id="personList"></div>
+        </div>
+
+        <!-- Options -->
+        <div class="psec">
+          <div class="plbl">Options</div>
+          <div class="toggle-row">
+            <span class="toggle-label">Auto-advance to next person</span>
+            <button class="toggle on" id="togAutoAdvance" onclick="toggleOpt('autoAdvance')"></button>
+          </div>
+          <div class="toggle-row">
+            <span class="toggle-label">Sound alerts</span>
+            <button class="toggle on" id="togSound" onclick="toggleOpt('sound')"></button>
+          </div>
+          <div class="toggle-row">
+            <span class="toggle-label">Allow overtime (keep running)</span>
+            <button class="toggle on" id="togOvertime" onclick="toggleOpt('overtime')"></button>
+          </div>
+        </div>
+
+        <!-- Session summary -->
+        <div class="psec">
+          <div class="plbl">Session Summary</div>
+          <div style="display:flex;flex-direction:column;gap:6px;" id="summaryPanel">
+            <div style="font-size:12px;color:var(--ink-3);">Start a session to see summary.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main" id="mainArea">
+
+      <!-- Will be populated by render() -->
+
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<!-- Hidden audio context for beeps -->
+<script>
+// ── STATE ──────────────────────────────────────────────────
+let S = {
+  people: [],       // [{ id, name, allocSec, spentSec, status }] status: waiting|running|done|skip
+  currentIdx: -1,   // index of current person
+  phase: 'setup',   // 'setup' | 'running' | 'paused' | 'done'
+  opts: { autoAdvance: true, sound: true, overtime: true },
+  defSec: 120,
+};
+let nextId = 1;
+let tickInterval = null;
+let audioCtx = null;
+
+const $ = id => document.getElementById(id);
+
+// ── PERSIST ───────────────────────────────────────────────
+function save() {
+  try {
+    localStorage.setItem('teamkit_standup', JSON.stringify({
+      people: S.people.map(p => ({ id: p.id, name: p.name, allocSec: p.allocSec })),
+      opts: S.opts, defSec: S.defSec, nextId
+    }));
+  } catch {}
+}
+function load() {
+  try {
+    const r = localStorage.getItem('teamkit_standup');
+    if (!r) return;
+    const d = JSON.parse(r);
+    S.opts   = { ...S.opts, ...d.opts };
+    S.defSec = d.defSec || 120;
+    nextId   = d.nextId || 1;
+    (d.people || []).forEach(p => {
+      S.people.push({ id: p.id, name: p.name, allocSec: p.allocSec, spentSec: 0, status: 'waiting' });
+    });
+  } catch {}
+}
+
+function saveSettings() {
+  const m = parseInt($('defMin').value) || 0;
+  const s = parseInt($('defSec').value) || 0;
+  S.defSec = m * 60 + s;
+  save();
+}
+
+// ── AUDIO ──────────────────────────────────────────────────
+function getAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function beep(freq = 880, duration = 0.15, type = 'sine', vol = 0.3) {
+  if (!S.opts.sound) return;
+  try {
+    const ctx = getAudio();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = type; osc.frequency.value = freq;
+    gain.gain.setValueAtTime(vol, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + duration);
+  } catch {}
+}
+
+function beepWarning()  { beep(660, 0.12, 'sine', 0.25); }
+function beepTimeUp()   { [880, 660, 440].forEach((f,i) => setTimeout(() => beep(f, 0.18, 'square', 0.2), i*160)); }
+function beepNext()     { [440, 660].forEach((f,i) => setTimeout(() => beep(f, 0.12, 'sine', 0.2), i*100)); }
+function beepDone()     { [440,550,660,880].forEach((f,i) => setTimeout(() => beep(f, 0.2, 'sine', 0.25), i*120)); }
+
+// ── PEOPLE ────────────────────────────────────────────────
+function addPerson() {
+  const inp = $('personInput');
+  const name = inp.value.trim();
+  if (!name) return;
+  S.people.push({ id: nextId++, name, allocSec: S.defSec, spentSec: 0, status: 'waiting' });
+  inp.value = '';
+  save();
+  renderPanel();
+  renderMain();
+  inp.focus();
+}
+
+function removePerson(id) {
+  if (S.phase !== 'setup') return;
+  S.people = S.people.filter(p => p.id !== id);
+  save(); renderPanel(); renderMain();
+}
+
+// ── OPTIONS ───────────────────────────────────────────────
+function toggleOpt(key) {
+  S.opts[key] = !S.opts[key];
+  $('tog' + key.charAt(0).toUpperCase() + key.slice(1)).classList.toggle('on', S.opts[key]);
+  save();
+}
+
+// ── SESSION CONTROL ───────────────────────────────────────
+function startSession() {
+  if (!S.people.length) return;
+  // Unlock audio on user gesture
+  try { getAudio().resume(); } catch {}
+  S.people.forEach(p => { p.spentSec = 0; p.status = 'waiting'; });
+  S.phase = 'running';
+  S.currentIdx = 0;
+  S.people[0].status = 'running';
+  beepNext();
+  startTick();
+  renderPanel(); renderMain();
+}
+
+function pauseResume() {
+  if (S.phase === 'running') {
+    S.phase = 'paused';
+    stopTick();
+  } else if (S.phase === 'paused') {
+    S.phase = 'running';
+    startTick();
+  }
+  renderMain();
+}
+
+function nextPerson(skip = false) {
+  if (S.currentIdx < 0 || S.currentIdx >= S.people.length) return;
+  const cur = S.people[S.currentIdx];
+  cur.status = skip ? 'skip' : 'done';
+
+  // Find next waiting person
+  let next = -1;
+  for (let i = S.currentIdx + 1; i < S.people.length; i++) {
+    if (S.people[i].status === 'waiting') { next = i; break; }
+  }
+
+  if (next === -1) {
+    // Session done
+    S.phase = 'done';
+    S.currentIdx = -1;
+    stopTick();
+    beepDone();
+    renderPanel(); renderMain(); updateSummary();
+    return;
+  }
+
+  S.currentIdx = next;
+  S.people[next].status = 'running';
+  beepNext();
+  renderPanel(); renderMain();
+}
+
+function jumpTo(idx) {
+  if (S.phase === 'setup' || S.phase === 'done') return;
+  if (idx === S.currentIdx) return;
+  const cur = S.people[S.currentIdx];
+  if (cur) cur.status = S.people[cur.id] ? 'waiting' : 'waiting'; // reset to waiting
+  if (cur) cur.status = 'waiting';
+  S.currentIdx = idx;
+  S.people[idx].status = 'running';
+  S.people[idx].spentSec = 0;
+  if (S.phase === 'paused') S.phase = 'running';
+  startTick();
+  beepNext();
+  renderPanel(); renderMain();
+}
+
+function resetAll() {
+  stopTick();
+  S.phase = 'setup';
+  S.currentIdx = -1;
+  S.people.forEach(p => { p.spentSec = 0; p.status = 'waiting'; });
+  renderPanel(); renderMain(); updateSummary();
+}
+
+// ── TICK ──────────────────────────────────────────────────
+function startTick() {
+  stopTick();
+  tickInterval = setInterval(tick, 1000);
+}
+function stopTick() {
+  if (tickInterval) { clearInterval(tickInterval); tickInterval = null; }
+}
+
+function tick() {
+  if (S.phase !== 'running' || S.currentIdx < 0) return;
+  const p = S.people[S.currentIdx];
+  p.spentSec++;
+
+  const remaining = p.allocSec - p.spentSec;
+
+  // Warning beep at 10 seconds
+  if (remaining === 10) beepWarning();
+  // Time up
+  if (remaining === 0) {
+    beepTimeUp();
+    if (!S.opts.overtime) {
+      if (S.opts.autoAdvance) { nextPerson(false); return; }
+    }
+  }
+  // Over by 30s auto-advance
+  if (remaining === -30 && S.opts.overtime && S.opts.autoAdvance) {
+    nextPerson(false); return;
+  }
+
+  updateTimerDisplay();
+  updateSummary();
+}
+
+// ── FAST DISPLAY UPDATE (no full re-render) ────────────────
+function updateTimerDisplay() {
+  if (S.currentIdx < 0) return;
+  const p = S.people[S.currentIdx];
+  const remaining = p.allocSec - p.spentSec;
+  const isOver = remaining < 0;
+  const display = isOver ? remaining : remaining;
+  const abs = Math.abs(remaining);
+  const mm = Math.floor(abs / 60);
+  const ss = abs % 60;
+  const timeStr = (isOver ? '-' : '') + String(mm).padStart(2,'0') + ':' + String(ss).padStart(2,'0');
+
+  const rt = $('ringTime');
+  const rl = $('ringLabel');
+  const rf = $('ringFill');
+  const tc = $('timerCard');
+
+  if (rt) rt.textContent = timeStr;
+  if (rl) rl.textContent = isOver ? 'OVER TIME' : 'REMAINING';
+
+  // Ring colour
+  let stroke = 'var(--accent)';
+  if (isOver)           stroke = 'var(--red)';
+  else if (abs <= 10)   stroke = 'var(--amber)';
+  else if (abs <= 30)   stroke = 'var(--amber)';
+  if (rf) rf.style.stroke = stroke;
+
+  // Ring progress
+  if (rf) {
+    const r = 90;
+    const circ = 2 * Math.PI * r;
+    let pct;
+    if (isOver) {
+      pct = 1.0; // full red ring
+    } else {
+      pct = 1 - (remaining / p.allocSec);
+    }
+    pct = Math.max(0, Math.min(1, pct));
+    rf.style.strokeDasharray  = circ;
+    rf.style.strokeDashoffset = circ * (1 - pct);
+  }
+
+  // Card flash on overtime
+  if (tc) tc.classList.toggle('overtime', isOver);
+
+  // Update queue chips
+  const chip = document.getElementById('chip-' + p.id);
+  if (chip) {
+    const ct = chip.querySelector('.qc-time');
+    if (ct) ct.textContent = timeStr;
+  }
+
+  // Update side panel item
+  const pi = document.getElementById('pi-' + p.id);
+  if (pi) {
+    const pt = pi.querySelector('.ptime');
+    if (pt) pt.textContent = timeStr;
+  }
+}
+
+// ── RENDER PANEL ──────────────────────────────────────────
+function renderPanel() {
+  const list = $('personList');
+  list.innerHTML = '';
+
+  S.people.forEach((p, i) => {
+    const item = document.createElement('div');
+    item.className = 'person-item' +
+      (p.status === 'running' ? ' active-person' : '') +
+      (p.status === 'done'    ? ' done-person'   : '') +
+      (p.status === 'skip'    ? ' skip-person'   : '');
+    item.id = 'pi-' + p.id;
+    item.setAttribute('draggable', S.phase === 'setup' ? 'true' : 'false');
+    item.dataset.idx = i;
+
+    const rem = p.allocSec - p.spentSec;
+    const abs = Math.abs(rem);
+    const timeStr = (rem < 0 ? '-' : '') + String(Math.floor(abs/60)).padStart(2,'0') + ':' + String(abs%60).padStart(2,'0');
+    const statusIcon = p.status === 'done' ? '✓' : p.status === 'running' ? '▶' : p.status === 'skip' ? '–' : '';
+
+    item.innerHTML = `
+      <span class="pdrag">⠿</span>
+      <span class="pname">${statusIcon ? statusIcon+' ' : ''}${esc(p.name)}</span>
+      <span class="ptime">${timeStr}</span>
+      ${S.phase === 'setup' ? `<button class="pdel" onclick="removePerson(${p.id})">✕</button>` : ''}
+    `;
+
+    if (S.phase === 'setup') {
+      item.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', i); item.style.opacity='.4'; });
+      item.addEventListener('dragend',   () => { item.style.opacity=''; });
+      item.addEventListener('dragover',  e => { e.preventDefault(); item.style.background='var(--accent-soft)'; });
+      item.addEventListener('dragleave', () => { item.style.background=''; });
+      item.addEventListener('drop', e => {
+        e.preventDefault(); item.style.background='';
+        const fromIdx = parseInt(e.dataTransfer.getData('text/plain'));
+        if (fromIdx === i) return;
+        const [moved] = S.people.splice(fromIdx, 1);
+        S.people.splice(i, 0, moved);
+        save(); renderPanel();
+      });
+    }
+
+    list.appendChild(item);
+  });
+}
+
+// ── RENDER MAIN ───────────────────────────────────────────
+function renderMain() {
+  const main = $('mainArea');
+
+  if (!S.people.length) {
+    main.innerHTML = `<div class="empty-state"><div class="ei">⏱️</div><p>Add team members in the panel<br/>to start your standup.</p></div>`;
+    return;
+  }
+
+  if (S.phase === 'setup') {
+    renderSetup(main);
+  } else if (S.phase === 'done') {
+    renderDone(main);
+  } else {
+    renderRunning(main);
+  }
+}
+
+function renderSetup(main) {
+  const totalSec = S.people.reduce((s,p) => s + p.allocSec, 0);
+  main.innerHTML = `
+    <div class="session-progress">
+      <div class="sp-header">
+        <span class="sp-title">${S.people.length} people · ${fmtSec(totalSec)} total</span>
+      </div>
+    </div>
+    <div class="timer-card" id="timerCard">
+      <div class="tc-header">
+        <div class="tc-person-info">
+          <div class="tc-eyebrow">Ready to start</div>
+          <div class="tc-name">Standup Timer</div>
+        </div>
+        <div class="tc-badge badge-waiting">Waiting</div>
+      </div>
+      <div class="tc-clock">
+        <div class="ring-wrap">
+          <svg class="ring-svg" width="200" height="200" viewBox="0 0 200 200">
+            <circle class="ring-track" cx="100" cy="100" r="90"/>
+            <circle class="ring-fill" id="ringFill" cx="100" cy="100" r="90"
+              stroke="var(--border)" stroke-dasharray="${2*Math.PI*90}" stroke-dashoffset="${2*Math.PI*90}"/>
+          </svg>
+          <div class="ring-inner">
+            <div class="ring-time" id="ringTime">${fmtSec(S.defSec)}</div>
+            <div class="ring-label" id="ringLabel">PER PERSON</div>
+          </div>
+        </div>
+      </div>
+      <div class="tc-controls">
+        <button class="btn btn-green btn-lg" onclick="startSession()">▶ Start Standup</button>
+      </div>
+    </div>
+    ${renderQueue()}
+  `;
+}
+
+function renderRunning(main) {
+  const p = S.currentIdx >= 0 ? S.people[S.currentIdx] : null;
+  const done  = S.people.filter(x => x.status==='done'||x.status==='skip').length;
+  const total = S.people.length;
+  const pct   = total ? (done/total*100) : 0;
+  const remaining = p ? p.allocSec - p.spentSec : 0;
+  const isOver = remaining < 0;
+  const abs = Math.abs(remaining);
+  const timeStr = (isOver?'-':'') + String(Math.floor(abs/60)).padStart(2,'0') + ':' + String(abs%60).padStart(2,'0');
+  const r = 90, circ = 2*Math.PI*r;
+  const fillPct = p ? Math.max(0, Math.min(1, 1 - (remaining/p.allocSec))) : 0;
+  const strokeColour = isOver ? 'var(--red)' : abs<=30 ? 'var(--amber)' : 'var(--accent)';
+  const badgeClass = isOver ? 'badge-over' : S.phase==='paused' ? 'badge-waiting' : 'badge-running';
+  const badgeText  = isOver ? 'Over Time'  : S.phase==='paused' ? 'Paused'        : 'Speaking';
+
+  main.innerHTML = `
+    <div class="session-progress">
+      <div class="sp-header">
+        <span class="sp-title">${done} of ${total} done</span>
+        <span class="sp-count">${Math.round(pct)}%</span>
+      </div>
+      <div class="sp-track"><div class="sp-fill" style="width:${pct}%"></div></div>
+    </div>
+    <div class="timer-card${isOver?' overtime':''}" id="timerCard">
+      <div class="tc-header">
+        <div class="tc-person-info">
+          <div class="tc-eyebrow">Now speaking</div>
+          <div class="tc-name">${p ? esc(p.name) : '—'}</div>
+        </div>
+        <div class="tc-badge ${badgeClass}">${badgeText}</div>
+      </div>
+      <div class="tc-clock">
+        <div class="ring-wrap">
+          <svg class="ring-svg" width="200" height="200" viewBox="0 0 200 200">
+            <circle class="ring-track" cx="100" cy="100" r="${r}"/>
+            <circle class="ring-fill" id="ringFill" cx="100" cy="100" r="${r}"
+              stroke="${strokeColour}"
+              stroke-dasharray="${circ}"
+              stroke-dashoffset="${circ * (1 - fillPct)}"/>
+          </svg>
+          <div class="ring-inner">
+            <div class="ring-time" id="ringTime">${timeStr}</div>
+            <div class="ring-label" id="ringLabel">${isOver ? 'OVER TIME' : 'REMAINING'}</div>
+          </div>
+        </div>
+      </div>
+      <div class="tc-controls">
+        <button class="btn btn-ghost" onclick="pauseResume()">${S.phase==='paused'?'▶ Resume':'⏸ Pause'}</button>
+        <button class="btn btn-ghost" onclick="nextPerson(true)">⏭ Skip</button>
+        <button class="btn btn-dark"  onclick="nextPerson(false)">✓ Done · Next</button>
+        <button class="btn btn-ghost btn-sm" onclick="resetAll()" style="margin-top:4px;width:100%">↺ Reset session</button>
+      </div>
+    </div>
+    ${renderQueue()}
+  `;
+}
+
+function renderDone(main) {
+  const totalSpent = S.people.reduce((s,p) => s+p.spentSec, 0);
+  const rows = S.people.map(p => {
+    const over = p.spentSec - p.allocSec;
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;">
+      <span style="font-weight:600;color:var(--ink)">${esc(p.name)}</span>
+      <span style="font-family:var(--mono);color:${over>0?'var(--red)':over<-5?'var(--green)':'var(--ink-2)'}">
+        ${fmtSec(p.spentSec)} ${over>0?'(+'+fmtSec(over)+')':over<0?'(-'+fmtSec(-over)+')':''}
+      </span>
+    </div>`;
+  }).join('');
+
+  main.innerHTML = `
+    <div class="timer-card" id="timerCard">
+      <div class="tc-header">
+        <div class="tc-person-info">
+          <div class="tc-eyebrow">Session complete</div>
+          <div class="tc-name">Great standup! 🎉</div>
+        </div>
+        <div class="tc-badge badge-done">Done</div>
+      </div>
+      <div style="padding:24px 32px">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px">
+          Total time: ${fmtSec(totalSpent)}
+        </div>
+        ${rows}
+      </div>
+      <div class="tc-controls">
+        <button class="btn btn-green btn-lg" onclick="startSession()">▶ Start Again</button>
+        <button class="btn btn-ghost" onclick="resetAll()">↺ Reset</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderQueue() {
+  if (S.people.length <= 1) return '';
+  const chips = S.people.map((p, i) => {
+    let cls = '';
+    if (p.status === 'running') cls = 'qc-active';
+    else if (p.status === 'done' || p.status === 'skip') cls = 'qc-done';
+    else if (p.status === 'skip') cls = 'qc-skip';
+    const rem = p.allocSec - p.spentSec;
+    const abs = Math.abs(rem);
+    const timeStr = (rem < 0?'-':'') + String(Math.floor(abs/60)).padStart(2,'0')+':'+String(abs%60).padStart(2,'0');
+    const clickable = S.phase !== 'setup' && S.phase !== 'done';
+    return `<div class="q-chip ${cls}" id="chip-${p.id}" ${clickable?`onclick="jumpTo(${i})"`:''}  title="${esc(p.name)}">
+      <div class="qc-dot"></div>
+      <div class="qc-name">${esc(p.name)}</div>
+      <div class="qc-time">${timeStr}</div>
+    </div>`;
+  }).join('');
+  return `<div class="queue-strip">${chips}</div>`;
+}
+
+// ── SUMMARY ───────────────────────────────────────────────
+function updateSummary() {
+  const panel = $('summaryPanel');
+  if (!panel) return;
+  const done  = S.people.filter(p=>p.status==='done').length;
+  const skip  = S.people.filter(p=>p.status==='skip').length;
+  const spent = S.people.reduce((s,p)=>s+p.spentSec, 0);
+  const total = S.people.reduce((s,p)=>s+p.allocSec, 0);
+  if (S.phase === 'setup') {
+    panel.innerHTML = `<div style="font-size:12px;color:var(--ink-3)">Start a session to see summary.</div>`;
+    return;
+  }
+  panel.innerHTML = `
+    <div style="display:flex;gap:8px;">
+      <div style="flex:1;background:var(--bg-3);border-radius:7px;padding:8px;text-align:center">
+        <div style="font-size:18px;font-weight:700;color:var(--green)">${done}</div>
+        <div style="font-size:10px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.04em">Done</div>
+      </div>
+      <div style="flex:1;background:var(--bg-3);border-radius:7px;padding:8px;text-align:center">
+        <div style="font-size:18px;font-weight:700;color:var(--ink-2)">${skip}</div>
+        <div style="font-size:10px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.04em">Skipped</div>
+      </div>
+      <div style="flex:1;background:var(--bg-3);border-radius:7px;padding:8px;text-align:center">
+        <div style="font-size:18px;font-weight:700;color:var(--ink)">${fmtSec(spent)}</div>
+        <div style="font-size:10px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.04em">Used</div>
+      </div>
+    </div>
+  `;
+}
+
+// ── UTILS ─────────────────────────────────────────────────
+function fmtSec(s) {
+  const abs = Math.abs(s);
+  return String(Math.floor(abs/60)).padStart(2,'0') + ':' + String(abs%60).padStart(2,'0');
+}
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function showToast(msg) {
+  const t=$('toast'); t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+// ── INIT ──────────────────────────────────────────────────
+load();
+// Sync controls
+const m = Math.floor(S.defSec/60), s = S.defSec%60;
+$('defMin').value = m; $('defSec').value = s;
+Object.keys(S.opts).forEach(k => {
+  const el = $('tog'+k.charAt(0).toUpperCase()+k.slice(1));
+  if (el) el.classList.toggle('on', S.opts[k]);
+});
+renderPanel();
+renderMain();
+updateSummary();
+</script>
+
+<!-- ── TEAMKIT FOOTER ── -->
+<div style="
+  border-top:1px solid #e6e1da;
+  background:#f0ede8;
+  padding:10px 20px;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:8px;
+  font-family:'DM Sans',sans-serif;
+  font-size:11px;
+  flex-shrink:0;
+" id="tk-footer">
+  <span style="color:#a8a49e">
+    🧰 <strong style="color:#6b6760">GomathiBalan's Forge</strong> &nbsp;·&nbsp;
+    Built by <strong style="color:#1c1917">GomathiBalan</strong>
+  </span>
+  <span style="color:#c4bfb8;font-size:10px">
+    Designed with prompts &nbsp;·&nbsp; Crafted by 
+    <strong style="color:#a8a49e">Claude AI</strong>
+  </span>
+</div>
+</body>
+</html>

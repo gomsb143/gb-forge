@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>User Manual — GomathiBalan's Forge</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:      #f5f3ef;
+      --bg-2:    #ffffff;
+      --bg-3:    #eceae5;
+      --bg-4:    #e3e0d9;
+      --border:  #dedad2;
+      --border-2:#ccc8be;
+      --ink:     #18120e;
+      --ink-2:   #5c554e;
+      --ink-3:   #9c968e;
+      --accent:  #c84b00;
+      --accent-2:#f97316;
+      --accent-soft:#fff4ed;
+      --nav-bg:  #18120e;
+      --nav-ink: #f5ede6;
+      --nav-ink-2:#8a7e76;
+      --green:   #16a34a; --green-soft:#f0fdf4;
+      --blue:    #2563eb; --blue-soft: #eff6ff;
+      --amber:   #d97706; --amber-soft:#fffbeb;
+      --red:     #dc2626; --red-soft:  #fef2f2;
+      --purple:  #7c3aed; --purple-soft:#f5f3ff;
+      --font:    'DM Sans', sans-serif;
+      --serif:   'DM Serif Display', serif;
+      --mono:    'DM Mono', monospace;
+      --sidebar: 260px;
+    }
+    html, body { height: 100%; font-family: var(--font); background: var(--bg); color: var(--ink); }
+
+    /* ── NAV ── */
+    .nav { background:var(--nav-bg); height:52px; display:flex; align-items:center; justify-content:space-between; padding:0 28px; position:sticky; top:0; z-index:200; border-bottom:1px solid rgba(255,255,255,.06); }
+    .nav-brand { display:flex; align-items:center; gap:10px; text-decoration:none; }
+    .brand-icon { width:30px; height:30px; background:var(--accent); border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:15px; flex-shrink:0; }
+    .brand-name { font-size:14px; font-weight:700; color:var(--nav-ink); letter-spacing:-.01em; }
+    .brand-tag  { font-size:10px; color:var(--nav-ink-2); }
+    .nav-right { display:flex; align-items:center; gap:6px; }
+    .nav-chip { font-size:11px; font-weight:600; padding:4px 10px; border-radius:6px; color:var(--nav-ink-2); background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.08); cursor:pointer; transition:all .15s; text-decoration:none; }
+    .nav-chip:hover { color:var(--nav-ink); background:rgba(255,255,255,.1); }
+    .nav-chip.active { color:var(--accent-2); background:rgba(200,75,0,.15); border-color:rgba(200,75,0,.3); }
+
+    /* ── LAYOUT ── */
+    .layout { display:flex; height:calc(100vh - 52px); overflow:hidden; }
+
+    /* ── SIDEBAR ── */
+    .sidebar { width:var(--sidebar); background:var(--bg-2); border-right:1px solid var(--border); display:flex; flex-direction:column; overflow:hidden; flex-shrink:0; }
+    .sb-search-wrap { padding:12px 14px; border-bottom:1px solid var(--border); flex-shrink:0; position:relative; }
+    .sb-search { width:100%; padding:7px 10px 7px 32px; border:1px solid var(--border); border-radius:7px; font-family:var(--font); font-size:12px; color:var(--ink); background:var(--bg); outline:none; transition:border-color .15s; }
+    .sb-search:focus { border-color:var(--accent); background:var(--bg-2); }
+    .sb-search::placeholder { color:var(--ink-3); }
+    .sb-search-icon { position:absolute; left:22px; top:50%; transform:translateY(-50%); font-size:12px; opacity:.4; pointer-events:none; }
+    .sb-scroll { overflow-y:auto; flex:1; padding:8px 0; }
+    .sb-scroll::-webkit-scrollbar { width:3px; }
+    .sb-scroll::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
+    .sb-cat { font-size:9px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); padding:10px 14px 4px; }
+    .sb-item { display:flex; align-items:center; gap:9px; padding:7px 14px; cursor:pointer; transition:background .12s; border-left:2px solid transparent; }
+    .sb-item:hover { background:var(--bg-3); }
+    .sb-item.active { background:var(--accent-soft); border-left-color:var(--accent); }
+    .sb-item.active .sb-item-name { color:var(--accent); font-weight:700; }
+    .sb-item-icon { font-size:14px; flex-shrink:0; width:20px; text-align:center; }
+    .sb-item-name { font-size:12px; color:var(--ink-2); font-weight:500; }
+    .sb-item.hidden { display:none; }
+
+    /* ── CONTENT ── */
+    .content { flex:1; overflow-y:auto; }
+    .content::-webkit-scrollbar { width:5px; }
+    .content::-webkit-scrollbar-thumb { background:var(--border-2); border-radius:4px; }
+
+    /* Hero header inside content */
+    .content-hero { background:var(--nav-bg); padding:36px 44px 32px; border-bottom:1px solid rgba(255,255,255,.06); position:relative; overflow:hidden; }
+    .content-hero::before { content:''; position:absolute; inset:0; background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px); background-size:28px 28px; pointer-events:none; }
+    .ch-inner { position:relative; }
+    .ch-eyebrow { font-size:10px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--accent-2); margin-bottom:10px; }
+    .ch-title { font-family:var(--serif); font-size:32px; color:#f5ede6; line-height:1.15; margin-bottom:8px; }
+    .ch-sub { font-size:13px; color:#8a7e76; line-height:1.6; max-width:540px; }
+
+    /* Tool sections */
+    .tool-section { padding:36px 44px; border-bottom:1px solid var(--border); scroll-margin-top:20px; }
+    .tool-section:last-child { border-bottom:none; }
+
+    /* Category divider */
+    .cat-divider { padding:20px 44px 0; }
+    .cat-divider-inner { display:flex; align-items:center; gap:12px; padding-bottom:4px; }
+    .cat-divider-icon { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+    .cat-divider-name { font-size:15px; font-weight:700; color:var(--ink); }
+    .cat-divider-line { flex:1; height:1px; background:var(--border); }
+
+    /* Tool header */
+    .tool-header { display:flex; align-items:flex-start; gap:14px; margin-bottom:20px; }
+    .tool-icon { width:44px; height:44px; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; background:var(--bg-3); }
+    .tool-meta { flex:1; }
+    .tool-name { font-size:18px; font-weight:700; color:var(--ink); letter-spacing:-.02em; margin-bottom:4px; }
+    .tool-tagline { font-size:13px; color:var(--ink-3); line-height:1.5; }
+    .tool-link { display:inline-flex; align-items:center; gap:5px; margin-top:6px; font-size:12px; font-weight:700; color:var(--accent); text-decoration:none; padding:5px 12px; border:1px solid var(--accent); border-radius:6px; transition:all .15s; }
+    .tool-link:hover { background:var(--accent-soft); }
+
+    /* What it does */
+    .what-box { background:var(--bg-3); border-radius:10px; padding:14px 18px; margin-bottom:18px; border-left:3px solid var(--accent); }
+    .what-label { font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--accent); margin-bottom:6px; }
+    .what-text { font-size:13px; color:var(--ink-2); line-height:1.65; }
+
+    /* Two-col layout */
+    .two-col { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:18px; }
+    @media (max-width:900px) { .two-col { grid-template-columns:1fr; } }
+
+    /* Use-case box */
+    .use-box { background:var(--green-soft); border:1px solid #bbf7d0; border-radius:10px; padding:14px 18px; }
+    .use-label { font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--green); margin-bottom:8px; }
+    .use-item { display:flex; gap:8px; font-size:12px; color:var(--ink-2); line-height:1.5; margin-bottom:5px; }
+    .use-item:last-child { margin-bottom:0; }
+    .use-dot { color:var(--green); font-weight:700; flex-shrink:0; margin-top:1px; }
+
+    /* Steps */
+    .steps-box { background:var(--bg-2); border:1px solid var(--border); border-radius:10px; padding:14px 18px; }
+    .steps-label { font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); margin-bottom:10px; }
+    .step { display:flex; gap:10px; margin-bottom:10px; align-items:flex-start; }
+    .step:last-child { margin-bottom:0; }
+    .step-num { width:22px; height:22px; border-radius:50%; background:var(--ink); color:#fff; font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:1px; }
+    .step-text { font-size:12px; color:var(--ink-2); line-height:1.55; }
+    .step-text strong { color:var(--ink); }
+    .step-text code { font-family:var(--mono); font-size:11px; background:var(--bg-3); padding:1px 5px; border-radius:4px; color:var(--red); border:1px solid var(--border); }
+
+    /* Tips */
+    .tips-row { display:flex; flex-direction:column; gap:8px; margin-top:14px; }
+    .tip { display:flex; gap:9px; align-items:flex-start; padding:10px 14px; background:var(--amber-soft); border:1px solid #fde68a; border-radius:8px; font-size:12px; color:var(--ink-2); line-height:1.5; }
+    .tip-icon { flex-shrink:0; font-size:14px; }
+
+    /* Shortcuts */
+    .shortcuts-row { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+    .shortcut { display:inline-flex; align-items:center; gap:6px; padding:5px 10px; background:var(--bg-2); border:1px solid var(--border); border-radius:6px; font-size:11px; color:var(--ink-2); }
+    .shortcut kbd { font-family:var(--mono); font-size:10px; font-weight:700; background:var(--bg-3); border:1px solid var(--border-2); border-radius:4px; padding:2px 6px; color:var(--ink); }
+
+    /* Section label inline */
+    .section-label { font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); margin:16px 0 8px; }
+
+    /* Tag chips */
+    .tag { display:inline-block; font-size:10px; font-weight:600; padding:2px 7px; border-radius:4px; background:var(--bg-3); color:var(--ink-3); border:1px solid var(--border); margin-right:4px; margin-bottom:4px; }
+
+    /* Footer */
+    .site-footer { background:var(--nav-bg); padding:24px 28px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+    .footer-left { display:flex; align-items:center; gap:10px; }
+    .footer-icon { width:28px; height:28px; background:var(--accent); border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:14px; }
+    .footer-name { font-size:13px; font-weight:700; color:var(--nav-ink); }
+    .footer-tag  { font-size:11px; color:var(--nav-ink-2); }
+    .footer-right { font-size:11px; color:var(--nav-ink-2); text-align:right; }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <a href="index.html" class="nav-brand">
+    <div class="brand-icon">🔥</div>
+    <div>
+      <div class="brand-name">GomathiBalan's Forge</div>
+      <div class="brand-tag">Tools you didn't know you needed.</div>
+    </div>
+  </a>
+  <div class="nav-right">
+    <a href="index.html" class="nav-chip">← All Tools</a>
+    <span class="nav-chip active">📖 User Manual</span>
+  </div>
+</nav>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sb-search-wrap">
+      <span class="sb-search-icon">🔍</span>
+      <input class="sb-search" id="sbSearch" type="text" placeholder="Find a tool…" oninput="filterSidebar()"/>
+    </div>
+    <div class="sb-scroll" id="sbScroll">
+
+      <div class="sb-cat">👥 Team &amp; Productivity</div>
+      <div class="sb-item" onclick="scrollTo('standup')">      <span class="sb-item-icon">⏱️</span><span class="sb-item-name">Standup Timer</span></div>
+      <div class="sb-item" onclick="scrollTo('timezone')">     <span class="sb-item-icon">🌍</span><span class="sb-item-name">Team Timezone Clock</span></div>
+      <div class="sb-item" onclick="scrollTo('checklist')">    <span class="sb-item-icon">☑️</span><span class="sb-item-name">Checklist Maker</span></div>
+      <div class="sb-item" onclick="scrollTo('celebration')">  <span class="sb-item-icon">🎉</span><span class="sb-item-name">Celebration Card Maker</span></div>
+
+      <div class="sb-cat">{ } JSON Tools</div>
+      <div class="sb-item" onclick="scrollTo('json-fmt')">     <span class="sb-item-icon">{ }</span><span class="sb-item-name">JSON Formatter</span></div>
+      <div class="sb-item" onclick="scrollTo('json-schema')">  <span class="sb-item-icon">✓</span><span class="sb-item-name">JSON Schema Validator</span></div>
+      <div class="sb-item" onclick="scrollTo('config-diff')">  <span class="sb-item-icon">⚙</span><span class="sb-item-name">Config Diff</span></div>
+
+      <div class="sb-cat">⚡ API Tools</div>
+      <div class="sb-item" onclick="scrollTo('api-tester')">   <span class="sb-item-icon">⚡</span><span class="sb-item-name">API Tester</span></div>
+      <div class="sb-item" onclick="scrollTo('api-mock')">     <span class="sb-item-icon">🎲</span><span class="sb-item-name">API Mock Generator</span></div>
+      <div class="sb-item" onclick="scrollTo('regex')">        <span class="sb-item-icon">🔍</span><span class="sb-item-name">Regex Tester</span></div>
+
+      <div class="sb-cat">🔒 Security &amp; Logs</div>
+      <div class="sb-item" onclick="scrollTo('redactor')">     <span class="sb-item-icon">🔒</span><span class="sb-item-name">Secret Redactor</span></div>
+      <div class="sb-item" onclick="scrollTo('log-hl')">       <span class="sb-item-icon">📄</span><span class="sb-item-name">Log Highlighter</span></div>
+
+      <div class="sb-cat">🎨 Design</div>
+      <div class="sb-item" onclick="scrollTo('color')">        <span class="sb-item-icon">🎨</span><span class="sb-item-name">Color Palette Manager</span></div>
+
+      <div class="sb-cat">📝 Writing &amp; Docs</div>
+      <div class="sb-item" onclick="scrollTo('md-preview')">   <span class="sb-item-icon">📝</span><span class="sb-item-name">Markdown Previewer</span></div>
+      <div class="sb-item" onclick="scrollTo('md-linter')">    <span class="sb-item-icon">📋</span><span class="sb-item-name">Markdown Linter</span></div>
+      <div class="sb-item" onclick="scrollTo('text-diff')">    <span class="sb-item-icon">↔</span><span class="sb-item-name">Text Diff Checker</span></div>
+
+    </div>
+  </aside>
+
+  <!-- CONTENT -->
+  <main class="content" id="mainContent">
+
+    <!-- Hero -->
+    <div class="content-hero">
+      <div class="ch-inner">
+        <div class="ch-eyebrow">GomathiBalan's Forge · User Manual</div>
+        <h1 class="ch-title">How to use every tool</h1>
+        <p class="ch-sub">Step-by-step guides, tips, keyboard shortcuts and common use cases for all 20 tools. Use the sidebar to jump to any tool, or search by name.</p>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         TEAM & PRODUCTIVITY
+    ══════════════════════════════════════════ -->
+    <div class="cat-divider">
+      <div class="cat-divider-inner">
+        <div class="cat-divider-icon" style="background:#f0fdf4">👥</div>
+        <span class="cat-divider-name">Team &amp; Productivity</span>
+        <div class="cat-divider-line"></div>
+      </div>
+    </div>
+
+    <!-- STANDUP TIMER -->
+    <div class="tool-section" id="sec-standup">
+      <div class="tool-header">
+        <div class="tool-icon">⏱️</div>
+        <div class="tool-meta">
+          <div class="tool-name">Standup Timer</div>
+          <div class="tool-tagline">Run focused daily standups with per-person countdowns, sound alerts, and a session summary.</div>
+          <a href="standup-timer.html" class="tool-link">Open tool →</a>
+        </div>
+      </div>
+      <div class="what-box">
+        <div class="what-label">What it does</div>
+        <div class="what-text">Gives every team member their own countdown timer during standups. An animated ring fills as time is used, shifting from blue → amber (last 30s) → red (over time). When one person finishes, the next starts automatically. At the end you get a full session summary showing who used how much time.</div>
+      </div>
+      <div class="two-col">
+        <div class="use-box">
+          <div class="use-label">When to use it</div>
+          <div class="use-item"><span class="use-dot">✓</span>Daily team standups</div>
+          <div class="use-item"><span class="use-dot">✓</span>Sprint review introductions</div>
+          <div class="use-item"><span class="use-dot">✓</span>Keeping remote meetings on time</div>
+          <div class="use-item"><span class="use-dot">✓</span>Round-robin updates in any meeting</div>
+        </div>
+        <div class="steps-box">
+          <div class="steps-label">How to use</div>
+          <div class="step"><span class="step-num">1</span><span class="step-text">Set <strong>default time per person</strong> (e.g. 2:00) in the left panel</span></div>
+          <div class="step"><span class="step-num">2</span><span class="step-text">Type each team member's name and press <strong>Enter</strong> or <strong>+</strong></span></div>
+          <div class="step"><span class="step-num">3</span><span class="step-text">Drag names to reorder the queue</span></div>
+          <div class="step"><span class="step-num">4</span><span class="step-text">Click <strong>▶ Start Standup</strong> — the first person's timer begins</span></div>
+          <div class="step"><span class="step-num">5</span><span class="step-text">Click <strong>✓ Done · Next</strong> to move on, or <strong>Skip</strong> to skip someone</span></div>
+        </div>
+      </div>
+      <div class="tips-row">
+        <div class="tip"><span class="tip-icon">💡</span>Click any chip in the <strong>queue strip</strong> at the bottom to jump directly to that person mid-session.</div>
+        <div class="tip"><span class="tip-icon">🔔</span>Enable <strong>Sound alerts</strong> in Options — you'll hear a warning beep at 10 seconds, a chime when time's up, and a fanfare when the session ends.</div>
+        <div class="tip"><span class="tip-icon">⏱</span>Enable <strong>Allow overtime</strong> if speakers regularly run over — the timer goes red and negative instead of forcing an auto-advance.</div>
+      </div>
+    </div>
+
+    <!-- TIMEZONE CLOCK -->
+    <div class="tool-section" id="sec-timezone">
+      <div class="tool-header">
+        <div class="tool-icon">🌍</div>
+        <div class="tool-meta">
+          <div class="tool-name">Team Timezone Clock</div>
+          <div class="tool-tagline">See live clocks for every team member's city, with DST detection and working hours status.</div>
+          <a href="timezone-clock.html" class="tool-link">Open tool →</a>
+        </div>
+      </div>
+      <div class="what-box">
+        <div class="what-label">What it does</div>
+        <div class="what-text">Shows live analog + digital clocks for any city in the world. Searches by city name, state, country, or timezone abbreviation. A colour-coded indicator (🟢 working / 🟡 early-late / 🔴 off hours) tells you at a glance whether someone is reachable. DST is detected automatically and shown on each card.</div>
+      </div>
+      <div class="two-col">
+        <div class="use-box">
+          <div class="use-label">When to use it</div>
+          <div class="use-item"><span class="use-dot">✓</span>Scheduling meetings across time zones</div>
+          <div class="use-item"><span class="use-dot">✓</span>Checking if a colleague is in working hours</div>
+          <div class="use-item"><span class="use-dot">✓</span>Keeping it open on a second monitor during calls</div>
+          <div class="use-item"><span class="use-dot">✓</span>Quickly answering "what time is it in Dallas?"</div>
+        </div>
+        <div class="steps-box">
+          <div class="steps-label">How to use</div>
+          <div class="step"><span class="step-num">1</span><span class="step-text">Click <strong>+ Add member</strong></span></div>
+          <div class="step"><span class="step-num">2</span><span class="step-text">Type a city (e.g. <code>Dallas</code>, <code>Bengaluru</code>, <code>IST</code>, <code>PST</code>)</span></div>
+          <div class="step"><span class="step-num">3</span><span class="step-text">Select the city from the dropdown — it shows UTC offset and ☀️ DST if active</span></div>
+          <div class="step"><span class="step-num">4</span><span class="step-text">Add an optional name (e.g. "Priya" or "NYC Office")</span></div>
+          <div class="step"><span class="step-num">5</span><span class="step-text">All clocks are saved — they persist when you close and reopen the tab</span></div>
+        </div>
+      </div>
+      <div class="tips-row">
+        <div class="tip"><span class="tip-icon">💡</span>Searching <strong>Dallas</strong> shows "Dallas, TX, USA" — and the card correctly shows Dallas with a note "Zone: Chicago, USA" so there's no confusion.</div>
+        <div class="tip"><span class="tip-icon">☀️</span>The <strong>DST badge</strong> on each card lights up when that timezone is currently observing Daylight Saving Time — helpful when US and EU clocks shift at different times.</div>
+      </div>
+    </div>
+
+    <!-- CHECKLIST MAKER -->
+    <div class="tool-section" id="sec-checklist">
+      <div class="tool-header">
+        <div class="tool-icon">☑️</div>
+        <div class="tool-meta">
+          <div class="tool-name">Checklist Maker</div>
+          <div class="tool-tagline">Turn any list into a structured, interactive checklist with sections, priorities and drag-to-reorder.</div>
+          <a href="checklist.html" class="tool-link">Open tool →</a>
+        </div>
+      </div>
+      <div class="what-box">
+        <div class="what-label">What it does</div>
+        <div class="what-text">Converts raw lists into actionable checklists. Supports sections (group items under headers), priority flags, inline notes per item, drag-to-reorder within and across sections, progress tracking, and export to PDF or plain text.</div>
+      </div>
+      <div class="two-col">
+        <div class="use-box">
+          <div class="use-label">When to use it</div>
+          <div class="use-item"><span class="use-dot">✓</span>Sprint or release checklists</div>
+          <div class="use-item"><span class="use-dot">✓</span>Onboarding steps for new team members</div>
+          <div class="use-item"><span class="use-dot">✓</span>Meeting action items</div>
+          <div class="use-item"><span class="use-dot">✓</span>Deployment runbooks</div>
+          <div class="use-item"><span class="use-dot">✓</span>Any repeatable process checklist</div>
+        </div>
+        <div class="steps-box">
+          <div class="steps-label">How to use</div>
+          <div class="step"><span class="step-num">1</span><span class="step-text"><strong>Option A:</strong> Paste a list in the left panel — lines starting with <code>#</code> become section headers</span></div>
+          <div class="step"><span class="step-num">2</span><span class="step-text"><strong>Option B:</strong> Type one item at a time and press Enter</span></div>
+          <div class="step"><span class="step-num">3</span><span class="step-text"><strong>Option C:</strong> Upload a <code>.txt</code> or <code>.csv</code> file</span></div>
+          <div class="step"><span class="step-num">4</span><span class="step-text">Drag items between sections using the <strong>⠿ handle</strong> on the left</span></div>
+          <div class="step"><span class="step-num">5</span><span class="step-text">Click <strong>🔥</strong> for priority, or click the note field to add a description</span></div>
+          <div class="step"><span class="step-num">6</span><span class="step-text">Click <strong>⬇ Download PDF</strong> to print or save</span></div>
+        </div>
+      </div>
+      <div class="tips-row">
+        <div class="tip"><span class="tip-icon">💡</span>Paste format: lines starting with <code># Setup</code> create a dark section header. Items below it belong to that section until the next <code>#</code> heading.</div>
+        <div class="tip"><span class="tip-icon">📎</span>Use <strong>Copy as text</strong> to get a <code>[ ]</code> / <code>[x]</code> formatted list you can paste into Slack, Notion, or a GitHub issue.</div>
+      </div>
+    </div>
+
+    <!-- CELEBRATION CARD -->
+    <div class="tool-section" id="sec-celebration">
+      <div class="tool-header">
+        <div class="tool-icon">🎉</div>
+        <div class="tool-meta">
+          <div class="tool-name">Celebration Card Maker</div>
+          <div class="tool-tagline">Build birthday and work anniversary photo collages for your team. Export as PNG or SVG.</div>
+          <a href="celebration-card.html" class="tool-link">Open tool →</a>
+        </div>
+      </div>
+      <div class="what-box">
+        <div class="what-label">What it does</div>
+        <div class="what-text">Creates a photo grid card for birthdays or work anniversaries. Upload photos for each person, zoom and pan each photo to frame it perfectly, add names and a sub-label, customise the header text, and export as a print-quality PNG or scalable SVG.</div>
+      </div>
+      <div class="two-col">
+        <div class="use-box">
+          <div class="use-label">When to use it</div>
+          <div class="use-item"><span class="use-dot">✓</span>Team birthday cards</div>
+          <div class="use-item"><span class="use-dot">✓</span>Work anniversary collages</div>
+          <div class="use-item"><span class="use-dot">✓</span>Farewell cards</div>
+          <div class="use-item"><span class="use-dot">✓</span>Team celebration slides</div>
+        </div>
+        <div class="steps-box">
+          <div class="steps-label">How to use</div>
+          <div class="step"><span class="step-num">1</span><span class="step-text">Choose <strong>Birthday</strong> or <strong>Anniversary</strong> mode</span></div>
+          <div class="step"><span class="step-num">2</span><span class="step-text">Set grid rows × columns (e.g. 2×3 for 6 people)</span></div>
+          <div class="step"><span class="step-num">3</span><span class="step-text">Click any photo cell to upload a photo — then zoom and pan to frame it</span></div>
+          <div class="step"><span class="step-num">4</span><span class="step-text">Add a <strong>name</strong> and <strong>sub-label</strong> under each photo</span></div>
+          <div class="step"><span class="step-num">5</span><span class="step-text">Customise header text and colours in the panel</span></div>
+          <div class="step"><span class="step-num">6</span><span class="step-text">Click <strong>Download PNG</strong> (2× resolution) or <strong>Download SVG</strong></span></div>
+        </div>
+      </div>
+      <div class="tips-row">
+        <div class="tip"><span class="tip-icon">💡</span>Use <strong>circle</strong> photo shape for a polished look, <strong>square</strong> for a more editorial style.</div>
+        <div class="tip"><span class="tip-icon">📐</span>PNG exports at 2× resolution — it'll look sharp even when printed or shown on a large screen.</div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         JSON TOOLS
+    ══════════════════════════════════════════ -->
+    <div class="cat-divider">
+      <div class="cat-divider-inner">
+        <div class="cat-divider-icon" style="background:#211400;color:#ffa657;font-size:13px;font-family:monospace;font-weight:800">{ }</div>
+        <span class="cat-divider-name">JSON Tools</span>
+        <div class="cat-divider-line"></div>
+      </div>
+    </div>
+
+    <!-- JSON FORMATTER -->
+    <div class="tool-section" id="sec-json-fmt">
+      <div class="tool-header">
+        <div class="tool-icon" style="background:#211400;color:#ffa657;font-size:14px;font-family:monospace;font-weight:800">{ }</div>
+        <div class="tool-meta">
+          <div class="tool-name">JSON Formatter</div>
+          <div class="tool-tagline">Format, validate, minify, sort, repair and visually explore any JSON.</div>
+          <a href="json-formatter.html" class="tool-link">Open tool →</a>
+        </div>
+      </div>
+      <div class="what-box">
+        <div class="what-label">What it does</div>
+        <div class="what-text">Takes messy or minified JSON and makes it readable. Also validates it, shows parse errors, sorts keys alphabetically, minifies for production, and auto-repairs common mistakes (trailing commas, unquoted keys, single quotes, comments). The right panel shows a collapsible tree view with dot-notation path display and a search tab.</div>
+      </div>
+      <div class="two-col">
+        <div class="use-box">
+          <div class="use-label">When to use it</div>
+          <div class="use-item"><span class="use-dot">✓</span>Debugging API responses</div>
+          <div class="use-item"><span class="use-dot">✓</span>Validating config files before deployment</div>
+          <div class="use-item"><span class="use-dot">✓</span>Exploring deeply nested JSON structures</div>
+          <div class="use-item"><span class="use-dot">✓</span>Minifying JSON for a request body</div>
+        </div>
+        <div class="steps-box">
+          <div class="steps-label">How to use</div>
+          <div class="step"><span class="step-num">1</span><span class="step-text">Paste JSON into the <strong>Input</strong> panel — it formats automatically</span></div>
+          <div class="step"><span class="step-num">2</span><span class="step-text">Use the indent selector to switch between <strong>2 spaces / 4 spaces / tabs</strong></span></div>
+          <div class="step"><span class="step-num">3</span><span class="step-text">Click <strong>⇅ Sort keys</strong> to alphabetise all keys recursively</span></div>
+          <div class="step"><span class="step-num">4</span><span class="step-text">Click <strong>🔧 Repair</strong> if you get a parse error — it fixes most common mistakes</span></div>
+          <div class="step"><span class="step-num">5</span><span class="step-text">Click nodes in the <strong>Tree</strong> tab to see the full dot-notation path</span></div>
+          <div class="step"><span class="step-num">6</span><span class="step-text">Use the <strong>Search</strong> tab to find any key or value</span></div>
+        </div>
+      </div>
+      <div class="tips-row">
+        <div class="tip"><span class="tip-icon">🔧</span><strong>Repair</strong> fixes: trailing commas like <code>{a:1,}</code>, unquoted keys like <code>{name:"val"}</code>, single-quoted strings, and <code>// comments</code>.</div>
+        <div class="tip"><span class="tip-icon">💡</span>The stats bar shows file size, line count, total key count, and max nesting depth — useful for understanding complexity at a glance.</div>
+      </div>
+    </div>
+
+    <!-- JSON SCHEMA VALIDATOR -->
+    <div class="tool-section" id="sec-json-schema">
+      <div class="tool-header">
+        <div class="tool-icon" style="background:#0d2e22;color:#3fb950;font-size:14px;font-family:monospace;font-weight:800">✓{}</div>
+        <div class="tool-meta">
+          <div class="tool-name">JSON Schema Validator</div>
+          <div class="tool-tagline">Validate JSON against a JSON Schema Draft-7 definition with line-numbered editors and detailed error cards.</div>
+          <a href="json-schema-validator.html" class="tool-link">Open tool →</a>
+        </div>
+      </div>
+      <div class="what-box">
+        <div class="what-label">What it does</div>
+        <div class="what-text">Checks whether a JSON document conforms to a JSON Schema. Shows exactly which fields failed, what was expected vs. what was found, and the dot-notation path to each error. Both editors have line numbers, cursor position (Ln/Col), character count, and error line highlighting so you can find problems instantly.</div>
+      </div>
+      <div class="two-col">
+        <div class="use-box">
+          <div class="use-label">When to use it</div>
+          <div class="use-item"><span class="use-dot">✓</span>Validating API request/response shapes</div>
+          <div class="use-item"><span class="use-dot">✓</span>Checking config files against a schema</div>
+          <div class="use-item"><span class="use-dot">✓</span>Testing data pipelines produce valid output</div>
+          <div class="use-item"><span class="use-dot">✓</span>Learning JSON Schema syntax interactively</div>
+        </div>
+        <div class="steps-box">
+          <div class="steps-label">How to use</div>
+          <div class="step"><span class="step-num">1</span><span class="step-text">Paste your <strong>JSON data</strong> in the left editor</span></div>
+          <div class="step"><span class="step-num">2</span><span class="step-text">Paste your <strong>JSON Schema</strong> in the right editor</span></div>
+          <div class="step"><span class="step-num">3</span><span class="step-text">Click <strong>▶ Validate</strong> — errors appear as cards with path + message</span></div>
+          <div class="step"><span class="step-num">4</span><span class="step-text">Click <strong>Format</strong> above either editor to pretty-print it</span></div>
+          <div class="step"><span class="step-num">5</span><span class="step-text">Try <strong>Sample: User</strong> or <strong>Sample: Product</strong> to see a working example</span></div>
+        </div>
+      </div>
+      <div class="tips-row">
+        <div class="tip"><span class="tip-icon">📍</span>When a parse error occurs, the <strong>line number in the gutter turns red</strong> — click it or look at the Ln indicator at the bottom to navigate directly.</div>
+        <div class="tip"><span class="tip-icon">💡</span>Supports full Draft-7: <code>type</code>, <code>required</code>, <code>enum</code>, <code>pattern</code>, <code>format</code> (email/uri/date/uuid/ipv4), <code>allOf</code>, <code>anyOf</code>, <code>oneOf</code>, <code>not</code>, <code>if/then/else</code>, <code>$ref</code>.</div>
+      </div>
+    </div>
+
+    <!-- CONFIG DIFF -->
+    <div class="tool-section" id="sec-config-diff">
+      <div class="tool-header">
+        <div class="tool-icon">⚙</div>
+        <div class="tool-meta">
+          <div class="tool-name">Config Diff</div>
+          <div class="tool-tagline">Compare two JSON, YAML, or INI config files structurally — not just line by line.</div>
+          <a href="config-diff.html" class="tool-link">Open tool →</a>
+        </div>
+      </div>
+      <div class="what-box">
+        <div class="what-label">What it does</div>
+        <div class="what-text">Parses both configs into objects and diffs them key-by-key. Shows Added (green), Removed (red), and Changed (amber with WAS → NOW values) as individual cards. Because it's structural, reordering keys or reformatting the file never creates false positives — only real value changes appear.</div>
+      </div>
+      <div class="two-col">
+        <div class="use-box">
+          <div class="use-label">When to use it</div>
+          <div class="use-item"><span class="use-dot">✓</span>Comparing dev vs prod config files</div>
+          <div class="use-item"><span class="use-dot">✓</span>Reviewing what changed in a deployment</div>
+          <div class="use-item"><span class="use-dot">✓</span>Auditing environment variable differences</div>
+          <div class="use-item"><span class="use-dot">✓</span>Spotting missing keys between environments</div>
+        </div>
+        <div class="steps-box">
+          <div class="steps-label">How to use</div>
+          <div class="step"><span class="step-num">1</span><span class="step-text">Paste <strong>Config A</strong> (original) on the left</span></div>
+          <div class="step"><span class="step-num">2</span><span class="step-text">Paste <strong>Config B</strong> (modified) on the right</span></div>
+          <div class="step"><span class="step-num">3</span><span class="step-text">Format is <strong>auto-detected</strong> (JSON / YAML / INI) and shown in the toolbar</span></div>
+          <div class="step"><span class="step-num">4</span><span class="step-text">Diff appears instantly — Added / Removed / Changed cards on the right</span></div>
+          <div class="step"><span class="step-num">5</span><span class="step-text">Click <strong>⎘ Copy report</strong> to get a plain text summary</span></div>
+        </div>
+      </div>
+      <div class="tips-row">
+        <div class="tip"><span class="tip-icon">💡</span>Try <strong>JSON sample</strong>, <strong>YAML sample</strong>, or <strong>INI sample</strong> in the topbar to see realistic dev/prod config differences immediately.</div>
+        <div class="tip"><span class="tip-icon">⇄</span>Use the <strong>Swap</strong> button to flip A and B — useful when you want to see the diff from the opposite direction.</div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         API TOOLS
+    ══════════════════════════════════════════ -->
+    <div class="cat-divider">
+      <div class="cat-divider-inner">
+        <div class="cat-divider-icon" style="background:#2a1f00">⚡</div>
+        <span class="cat-divider-name">API Tools</span>
+        <div class="cat-divider-line"></div>
+      </div>
+    </div>
+
+    <!-- API TESTER -->
+    <div class="tool-section" id="sec-api-tester">
+      <div class="tool-header">
+        <div class="tool-icon" style="background:#2a1f00">⚡</div>
+        <div class="tool-meta">
+          <div class="tool-name">API Tester</div>
+          <div class="tool-tagline">Send real HTTP requests from the browser. Headers, auth, body, response viewer, history, cURL import/export.</div>
+          <a href="api-tester.html" class="tool-link">Open tool →</a>
+        </div>
+      </div>
+      <div class="what-box">
+        <div class="what-label">What it does</div>
+        <div class="what-text">A lightweight browser-based HTTP client. Send GET, POST, PUT, PATCH, DELETE requests to any public API. Add custom headers, query params, a request body, and authenticate with Bearer tokens, Basic Auth, or API keys. The response panel shows the status code, response time, body (JSON highlighted), and headers. Keeps a history of the last 50 requests.</div>
+      </div>
+      <div class="two-col">
+        <div class="use-box">
+          <div class="use-label">When to use it</div>
+          <div class="use-item"><span class="use-dot">✓</span>Quick-testing a public REST API</div>
+          <div class="use-item"><span class="use-dot">✓</span>Verifying auth token formats</div>
+          <div class="use-item"><span class="use-dot">✓</span>Checking response shapes before coding</div>
+          <div class="use-item"><span class="use-dot">✓</span>Sharing a request as a cURL command</div>
+        </div>
+        <div class="steps-box">
+          <div class="steps-label">How to use</div>
+          <div class="step"><span class="step-num">1</span><span class="step-text">Select a <strong>method</strong> (GET/POST…) and enter the <strong>URL</strong></span></div>
+          <div class="step"><span class="step-num">2</span><span class="step-text">Add <strong>Headers</strong> or <strong>Query Params</strong> in the tab below — toggle rows on/off with the checkbox</span></div>
+          <div class="step"><span class="step-num">3</span><span class="step-text">For POST/PUT, paste your JSON in the <strong>Body</strong> tab and click <strong>Format</strong></span></div>
+          <div class="step"><span class="step-num">4</span><span class="step-text">Set auth in the <strong>Auth</strong> tab — Bearer, Basic, or API Key</span></div>
+          <div class="step"><span class="step-num">5</span><span class="step-text">Press <strong>Enter</strong> in the URL bar or click <strong>Send ▶</strong></span></div>
+        </div>
+      </div>
+      <div class="tips-row">
+        <div class="tip"><span class="tip-icon">⚠️</span>If you see a <strong>CORS error</strong>, the server doesn't allow browser requests from other origins. This is a server-side restriction — not a bug. Test from Postman or add CORS headers to your server.</div>
+        <div class="tip"><span class="tip-icon">📋</span>Use <strong>Export cURL</strong> to copy the request as a <code>curl</code> command you can share with teammates or run in a terminal.</div>
+      </div>
+    </div>
+
+    <!-- API MOCK GENERATOR -->
+    <div class="tool-section" id="sec-api-mock">
+      <div class="tool-header">
+        <div class="tool-icon" style="background:#1e0a3c">🎲</div>
+        <div class="tool-meta">
+          <div class="tool-name">API Mock Generator</div>
+          <div class="tool-tagline">Generate realistic JSON mock responses instantly — no server, no code.</div>
+          <a href="api-mock-generator.html" class="tool-link">Open tool →</a>
+        </div>
+      </div>
+      <div class="what-box">
+        <div class="what-label">What it does</div>
+        <div class="what-text">Builds a JSON response from a field schema you define. Each field has a name and type (uuid, email, name, phone, date, url, status, lorem, city, array, etc.) and the generator produces realistic-looking values. Wrap the result in a single object, array, paginated response, or an envelope with meta and links.</div>
+      </div>
+      <div class="two-col">
+        <div class="use-box">
+          <div class="use-label">When to use it</div>
+          <div class="use-item"><span class="use-dot">✓</span>Front-end development before the API is ready</div>
+          <div class="use-item"><span class="use-dot">✓</span>Populating UI components with realistic data</div>
+          <div class="use-item"><span class="use-dot">✓</span>Creating test fixtures for unit tests</div>
+          <div class="use-item"><span class="use-dot">✓</span>Demoing an app without a live backend</div>
+        </div>
+        <div class="steps-box">
+          <div class="steps-label">How to use</div>
+          <div class="step"><span class="step-num">1</span><span class="step-text">Click a <strong>Preset</strong> in the right panel (User, Product, Order…) to load a ready-made schema</span></div>
+          <div class="step"><span class="step-num">2</span><span class="step-text">Or click <strong>+ Add</strong> to define your own fields — set name and type</span></div>
+          <div class="step"><span class="step-num">3</span><span class="step-text">Choose <strong>Response Shape</strong> (array, single object, paginated, envelope)</span></div>
+          <div class="step"><span class="step-num">4</span><span class="step-text">Set the <strong>number of items</strong> for arrays (1–100)</span></div>
+          <div class="step"><span class="step-num">5</span><span class="step-text">Click <strong>▶ Generate</strong> — then <strong>Copy</strong> or <strong>Download .json</strong></span></div>
+        </div>
+      </div>
+      <div class="tips-row">
+        <div class="tip"><span class="tip-icon">💡</span>Field names are <strong>smart</strong> — a field named <code>email</code> auto-generates email addresses, <code>price</code> generates decimals, <code>firstName</code> generates first names. You don't need to pick the exact type.</div>
+        <div class="tip"><span class="tip-icon">🔄</span>Enable <strong>Randomise values each time</strong> to get different data on every Generate click — useful for testing edge cases.</div>
+      </div>
+    </div>
+
+    <!-- REGEX TESTER -->
+    <div class="tool-section" id="sec-regex">
+      <div class="tool-header">
+        <div class="tool-icon" style="background:#0d2044;color:#388bfd;font-size:14px;font-family:monospace;font-weight:800">.*</div>
+        <div class="tool-meta">
+          <div class="tool-name">Regex Tester</div>
+          <div class="tool-tagline">Test, debug and explore regular expressions with live highlighting, flag toggles, and a built-in pattern library.</div>
+          <a href="regex-tester.html" class="tool-link">Open tool →</a>
+        </div>
+      </div>
+      <div class="what-box">
+        <div class="what-label">What it does</div>
+        <div class="what-text">A live regex playground. Type a pattern and test text — matches highlight in colour-coded spans instantly. See every match as a card with position and capture groups. Test replacements with <code>$1</code>, <code>$&</code> syntax. Choose from 23 pre-built patterns (emails, URLs, JWTs, IPs, dates…) or build from the quick-reference panel.</div>
+      </div>
+      <div class="two-col">
+        <div class="use-box">
+          <div class="use-label">When to use it</div>
+          <div class="use-item"><span class="use-dot">✓</span>Writing and debugging regex patterns</div>
+          <div class="use-item"><span class="use-dot">✓</span>Validating input format patterns</div>
+          <div class="use-item"><span class="use-dot">✓</span>Building find-and-replace transforms</div>
+          <div class="use-item"><span class="use-dot">✓</span>Learning regex syntax interactively</div>
+        </div>
+        <div class="steps-box">
+          <div class="steps-label">How to use</div>
+          <div class="step"><span class="step-num">1</span><span class="step-text">Type your pattern between the <strong>/slashes/</strong> at the top</span></div>
+          <div class="step"><span class="step-num">2</span><span class="step-text">Paste test text in the <strong>Test text</strong> tab — matches highlight live</span></div>
+          <div class="step"><span class="step-num">3</span><span class="step-text">Toggle <strong>flags</strong> (g, m, i, s, u) as needed</span></div>
+          <div class="step"><span class="step-num">4</span><span class="step-text">Switch to <strong>Matches</strong> tab to see every match with position and groups</span></div>
+          <div class="step"><span class="step-num">5</span><span class="step-text">Switch to <strong>Replace</strong> tab, type a replacement, and see the result live</span></div>
+        </div>
+      </div>
+      <div class="tips-row">
+        <div class="tip"><span class="tip-icon">💡</span>Click any row in the <strong>Quick Reference</strong> panel to insert that token at the cursor. Great for learning — click <code>\b</code> to see it added and immediately see which words it matches.</div>
+        <div class="tip"><span class="tip-icon">📚</span>The <strong>Pattern Library</strong> (left panel) has 23 common patterns — click one to load it instantly. Search by name like "email" or "JWT".</div>
+      </div>
+      <div class="section-label">Keyboard shortcuts</div>
+      <div class="shortcuts-row">
+        <span class="shortcut"><kbd>/</kbd> Focus search</span>
+        <span class="shortcut"><kbd>g</kbd> flag: find all matches</span>
+        <span class="shortcut"><kbd>i</kbd> flag: case insensitive</span>
+        <span class="shortcut"><kbd>m</kbd> flag: multiline ^ $</span>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         SECURITY & LOGS
+    ══════════════════════════════════════════ -->
+    <div class="cat-divider">
+      <div class="cat-divider-inner">
+        <div class="cat-divider-icon" style="background:#2a0e0e">🔒</div>
+        <span class="cat-divider-name">Security &amp; Logs</span>
+        <div class="cat-divider-line"></div>
+      </div>
+    </div>
+
+    <!-- SECRET REDACTOR -->
+    <div class="tool-section" id="sec-redactor">
+      <div class="tool-header">
+        <div class="tool-icon" style="background:#2a0e0e">🔒</div>
+        <div class="tool-meta">
+          <div class="tool-name">Secret Redactor</div>
+          <div class="tool-tagline">Automatically detect and redact passwords, API keys, tokens, emails, and more before sharing text.</div>
+          <a href="redactor.html" class="tool-link">Open tool →</a>
+        </div>
+      </div>
+      <div class="what-box">
+        <div class="what-label">What it does</div>
+        <div class="what-text">Scans pasted text for 11 categories of sensitive data and replaces them with asterisks (★★★★★), black bars (█), or [REDACTED]. Works entirely in your browser — nothing is sent anywhere. Each category is togglable so you can keep emails visible but hide all API keys, for example.</div>
+      </div>
+      <div class="two-col">
+        <div class="use-box">
+          <div class="use-label">When to use it</div>
+          <div class="use-item"><span class="use-dot">✓</span>Sharing logs with teammates or in tickets</div>
+          <div class="use-item"><span class="use-dot">✓</span>Sanitising config files before committing</div>
+          <div class="use-item"><span class="use-dot">✓</span>Preparing screenshots or recordings</div>
+          <div class="use-item"><span class="use-dot">✓</span>Creating safe examples from real data</div>
+        </div>
+        <div class="steps-box">
+          <div class="steps-label">How to use</div>
+          <div class="step"><span class="step-num">1</span><span class="step-text">Paste any text into the left panel — secrets are highlighted immediately</span></div>
+          <div class="step"><span class="step-num">2</span><span class="step-text">Toggle <strong>pattern categories</strong> in the left panel to enable/disable types</span></div>
+          <div class="step"><span class="step-num">3</span><span class="step-text">Add <strong>custom keywords</strong> to catch company-specific secrets</span></div>
+          <div class="step"><span class="step-num">4</span><span class="step-text">Choose redaction style: <strong>★★★★★</strong>, <strong>█ bar</strong>, or <strong>[REDACTED]</strong></span></div>
+          <div class="step"><span class="step-num">5</span><span class="step-text">Click <strong>⎘ Copy</strong>, <strong>⬇ .txt</strong>, or <strong>⬇ PDF</strong> to export</span></div>
+        </div>
+      </div>
+      <div class="tips-row">
+        <div class="tip"><span class="tip-icon">🔒</span>Everything runs <strong>100% in your browser</strong>. Your secrets never leave your machine — not even to this server (there isn't one).</div>
+        <div class="tip"><span class="tip-icon">💡</span>Each category is colour-coded in the output: red = passwords, blue = API keys, green = emails, amber = tokens. This helps you verify redaction coverage at a glance.</div>
+      </div>
+    </div>
+
+    <!-- LOG HIGHLIGHTER -->
+    <div class="tool-section" id="sec-log-hl">
+      <div class="tool-header">
+        <div class="tool-icon" style="background:#0d1117">📄</div>
+        <div class="tool-meta">
+          <div class="tool-name">Log Highlighter</div>
+          <div class="tool-tagline">Paste logs to colour-code levels, filter noise, search keywords, and group by session.</div>
+          <a href="log-highlighter.html" class="tool-link">Open tool →</a>
+        </div>
+      </div>
+      <div class="what-box">
+        <div class="what-label">What it does</div>
+        <div class="what-text">Parses raw log text and applies colour-coded highlighting to ERROR (red), WARN (amber), INFO (green), DEBUG (blue), TRACE (purple). Auto-detects Apache, Nginx, JSON logs, and plain text. Filter to show only certain levels, search/highlight keywords, add custom watch words, and group log entries into session blocks by timestamp.</div>
+      </div>
+      <div class="two-col">
+        <div class="use-box">
+          <div class="use-label">When to use it</div>
+          <div class="use-item"><span class="use-dot">✓</span>Spotting errors in a wall of application logs</div>
+          <div class="use-item"><span class="use-dot">✓</span>Sharing a readable log snippet with teammates</div>
+          <div class="use-item"><span class="use-dot">✓</span>Filtering out INFO noise to see only warnings</div>
+          <div class="use-item"><span class="use-dot">✓</span>Searching for a specific request ID or IP</div>
+        </div>
+        <div class="steps-box">
+          <div class="steps-label">How to use</div>
+          <div class="step"><span class="step-num">1</span><span class="step-text">Paste log output in the left panel — auto-highlighted on the right</span></div>
+          <div class="step"><span class="step-num">2</span><span class="step-text">Click level buttons (<strong>ERROR / WARN / INFO…</strong>) to show/hide those lines</span></div>
+          <div class="step"><span class="step-num">3</span><span class="step-text">Type in <strong>Search</strong> to highlight matching lines and filter to them</span></div>
+          <div class="step"><span class="step-num">4</span><span class="step-text">Add <strong>Custom Keywords</strong> in the right panel — e.g. a request ID or service name</span></div>
+          <div class="step"><span class="step-num">5</span><span class="step-text">Toggle <strong>⊞ Group by session</strong> to insert section headers at timestamp boundaries</span></div>
+        </div>
+      </div>
+      <div class="tips-row">
+        <div class="tip"><span class="tip-icon">💡</span>The <strong>level counts</strong> panel on the right instantly shows you how many ERRORs and WARNs are in the log — great for a quick health check.</div>
+        <div class="tip"><span class="tip-icon">📂</span>Click <strong>Upload</strong> to load a <code>.log</code> or <code>.txt</code> file directly — no need to copy-paste large files.</div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         DESIGN
+    ══════════════════════════════════════════ -->
+    <div class="cat-divider">
+      <div class="cat-divider-inner">
+        <div class="cat-divider-icon" style="background:#fdf4ff">🎨</div>
+        <span class="cat-divider-name">Design</span>
+        <div class="cat-divider-line"></div>
+      </div>
+    </div>
+
+    <!-- COLOR PALETTE -->
+    <div class="tool-section" id="sec-color">
+      <div class="tool-header">
+        <div class="tool-icon">🎨</div>
+        <div class="tool-meta">
+          <div class="tool-name">Color Palette Manager</div>
+          <div class="tool-tagline">Pick colours, check WCAG contrast, generate palettes, and export to CSS/Tailwind/SCSS.</div>
+          <a href="color-palette.html" class="tool-link">Open tool →</a>
+        </div>
+      </div>
+      <div class="what-box">
+        <div class="what-label">What it does</div>
+        <div class="what-text">A full-featured colour tool for designers and front-end developers. Native colour picker synced with HEX input and RGB sliders. Checks WCAG AA/AAA contrast ratios against white and black. Generates palette variations (shades, tints, complementary, triadic, analogous, split-complementary). Saves a named palette and exports to CSS variables, Tailwind config, or SCSS.</div>
+      </div>
+      <div class="two-col">
+        <div class="use-box">
+          <div class="use-label">When to use it</div>
+          <div class="use-item"><span class="use-dot">✓</span>Building a design system colour palette</div>
+          <div class="use-item"><span class="use-dot">✓</span>Checking text contrast for accessibility</div>
+          <div class="use-item"><span class="use-dot">✓</span>Converting a HEX code to RGB or HSL</div>
+          <div class="use-item"><span class="use-dot">✓</span>Generating a full tint/shade scale from a brand colour</div>
+          <div class="use-item"><span class="use-dot">✓</span>Exporting colours for a Tailwind or CSS project</div>
+        </div>
+        <div class="steps-box">
+          <div class="steps-label">How to use</div>
+          <div class="step"><span class="step-num">1</span><span class="step-text">Click the <strong>colour swatch</strong> to open the native picker, or type a HEX into the input</span></div>
+          <div class="step"><span class="step-num">2</span><span class="step-text">Click any <strong>value box</strong> (HEX / RGB / HSL) to copy it instantly</span></div>
+          <div class="step"><span class="step-num">3</span><span class="step-text">Check <strong>WCAG contrast</strong> against white and black in the Accessibility section</span></div>
+          <div class="step"><span class="step-num">4</span><span class="step-text">Click a <strong>palette generator</strong> button (Shades, Tints, Triadic…) to add variations</span></div>
+          <div class="step"><span class="step-num">5</span><span class="step-text">Click <strong>+ Add to palette</strong> to save colours, then copy from the Export panel</span></div>
+        </div>
+      </div>
+      <div class="tips-row">
+        <div class="tip"><span class="tip-icon">♿</span><strong>WCAG AA</strong> requires a contrast ratio of 4.5:1 for normal text, 3:1 for large text. <strong>AAA</strong> requires 7:1. The badge turns green (AAA), amber (AA), or red (Fail) automatically.</div>
+        <div class="tip"><span class="tip-icon">💡</span>Click any colour in the <strong>palette strip</strong> at the top of the centre panel to load it into the picker and edit it.</div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         WRITING & DOCS
+    ══════════════════════════════════════════ -->
+    <div class="cat-divider">
+      <div class="cat-divider-inner">
+        <div class="cat-divider-icon" style="background:#eff6ff">📝</div>
+        <span class="cat-divider-name">Writing &amp; Docs</span>
+        <div class="cat-divider-line"></div>
+      </div>
+    </div>
+
+    <!-- MARKDOWN PREVIEWER -->
+    <div class="tool-section" id="sec-md-preview">
+      <div class="tool-header">
+        <div class="tool-icon">📝</div>
+        <div class="tool-meta">
+          <div class="tool-name">Markdown Previewer</div>
+          <div class="tool-tagline">Write markdown and see it rendered live in a split view. Syntax highlighting, toolbar, PDF export.</div>
+          <a href="markdown-previewer.html" class="tool-link">Open tool →</a>
+        </div>
+      </div>
+      <div class="what-box">
+        <div class="what-label">What it does</div>
+        <div class="what-text">A full markdown editor with a live rendered preview. Zero dependencies — the parser is built in. Supports headings, tables, task lists, code blocks with syntax highlighting (JS, Python, HTML, CSS, Bash), blockquotes, images, and links. The toolbar lets you apply formatting without memorising syntax.</div>
+      </div>
+      <div class="two-col">
+        <div class="use-box">
+          <div class="use-label">When to use it</div>
+          <div class="use-item"><span class="use-dot">✓</span>Writing README files</div>
+          <div class="use-item"><span class="use-dot">✓</span>Drafting technical documentation</div>
+          <div class="use-item"><span class="use-dot">✓</span>Previewing markdown before committing</div>
+          <div class="use-item"><span class="use-dot">✓</span>Creating formatted meeting notes</div>
+        </div>
+        <div class="steps-box">
+          <div class="steps-label">How to use</div>
+          <div class="step"><span class="step-num">1</span><span class="step-text">Type or paste markdown in the left editor — preview updates live on the right</span></div>
+          <div class="step"><span class="step-num">2</span><span class="step-text">Use the <strong>left toolbar</strong> to insert bold, italic, headings, lists, code blocks, links, tables</span></div>
+          <div class="step"><span class="step-num">3</span><span class="step-text">Toggle between <strong>Edit / Split / Preview</strong> modes in the topbar</span></div>
+          <div class="step"><span class="step-num">4</span><span class="step-text">Click <strong>⬇ PDF</strong> to print or save — switches to Preview mode for a clean page</span></div>
+          <div class="step"><span class="step-num">5</span><span class="step-text">Click <strong>⬇ .md</strong> to download the raw markdown file</span></div>
+        </div>
+      </div>
+      <div class="section-label">Keyboard shortcuts</div>
+      <div class="shortcuts-row">
+        <span class="shortcut"><kbd>Ctrl</kbd>+<kbd>B</kbd> Bold</span>
+        <span class="shortcut"><kbd>Ctrl</kbd>+<kbd>I</kbd> Italic</span>
+        <span class="shortcut"><kbd>Ctrl</kbd>+<kbd>K</kbd> Link</span>
+        <span class="shortcut"><kbd>Ctrl</kbd>+<kbd>S</kbd> Download .md</span>
+        <span class="shortcut"><kbd>Tab</kbd> Indent (2 spaces)</span>
+      </div>
+    </div>
+
+    <!-- MARKDOWN LINTER -->
+    <div class="tool-section" id="sec-md-linter">
+      <div class="tool-header">
+        <div class="tool-icon">📋</div>
+        <div class="tool-meta">
+          <div class="tool-name">Markdown Linter</div>
+          <div class="tool-tagline">Check markdown files for heading structure, broken links, missing alt text, and formatting issues.</div>
+          <a href="md-linter.html" class="tool-link">Open tool →</a>
+        </div>
+      </div>
+      <div class="what-box">
+        <div class="what-label">What it does</div>
+        <div class="what-text">Analyses markdown text against 13 rules and reports issues as severity-tagged cards (error / warning / info). Each card shows the rule name, line number, a plain English description, and a suggested fix. Click any line number to jump directly to that line in the editor.</div>
+      </div>
+      <div class="two-col">
+        <div class="use-box">
+          <div class="use-label">When to use it</div>
+          <div class="use-item"><span class="use-dot">✓</span>Reviewing documentation quality before publishing</div>
+          <div class="use-item"><span class="use-dot">✓</span>Checking README files in code reviews</div>
+          <div class="use-item"><span class="use-dot">✓</span>Ensuring consistent heading structure</div>
+          <div class="use-item"><span class="use-dot">✓</span>Catching accessibility issues (missing image alt)</div>
+        </div>
+        <div class="steps-box">
+          <div class="steps-label">How to use</div>
+          <div class="step"><span class="step-num">1</span><span class="step-text">Paste or upload a <code>.md</code> file — issues appear immediately on the right</span></div>
+          <div class="step"><span class="step-num">2</span><span class="step-text">Click any <strong>line number</strong> in a result card to jump to that line in the editor</span></div>
+          <div class="step"><span class="step-num">3</span><span class="step-text">Toggle individual <strong>rules</strong> at the bottom of the panel to focus on what matters</span></div>
+          <div class="step"><span class="step-num">4</span><span class="step-text">Click <strong>⎘ Copy report</strong> to get a plain text issue list you can paste into a PR comment</span></div>
+        </div>
+      </div>
+      <div class="tips-row">
+        <div class="tip"><span class="tip-icon">📏</span>The <strong>heading-order</strong> rule catches when you jump from H1 directly to H3 (skipping H2) — a common structural mistake that breaks screen readers and document parsers.</div>
+        <div class="tip"><span class="tip-icon">💡</span>Use <strong>Load sample</strong> to see a markdown file with intentional issues — great for understanding what each rule catches.</div>
+      </div>
+    </div>
+
+    <!-- TEXT DIFF -->
+    <div class="tool-section" id="sec-text-diff">
+      <div class="tool-header">
+        <div class="tool-icon">↔</div>
+        <div class="tool-meta">
+          <div class="tool-name">Text Diff Checker</div>
+          <div class="tool-tagline">Compare two text snippets side-by-side or in unified view with word-level precision.</div>
+          <a href="text-diff.html" class="tool-link">Open tool →</a>
+        </div>
+      </div>
+      <div class="what-box">
+        <div class="what-label">What it does</div>
+        <div class="what-text">Uses the LCS (Longest Common Subsequence) algorithm to find the minimal set of changes between two texts. Shows added lines in green and removed lines in red. Word-level diff mode highlights the exact words that changed within a modified line. Three view modes: Edit (two textareas), Side by side, and Unified (like git diff).</div>
+      </div>
+      <div class="two-col">
+        <div class="use-box">
+          <div class="use-label">When to use it</div>
+          <div class="use-item"><span class="use-dot">✓</span>Comparing two versions of a document</div>
+          <div class="use-item"><span class="use-dot">✓</span>Reviewing config changes before deploying</div>
+          <div class="use-item"><span class="use-dot">✓</span>Checking what changed in an email draft</div>
+          <div class="use-item"><span class="use-dot">✓</span>Spotting subtle differences in two code snippets</div>
+        </div>
+        <div class="steps-box">
+          <div class="steps-label">How to use</div>
+          <div class="step"><span class="step-num">1</span><span class="step-text">Paste <strong>original text</strong> in the left panel (A)</span></div>
+          <div class="step"><span class="step-num">2</span><span class="step-text">Paste <strong>modified text</strong> in the right panel (B)</span></div>
+          <div class="step"><span class="step-num">3</span><span class="step-text">Switch to <strong>Side by side</strong> or <strong>Unified</strong> view in the toolbar</span></div>
+          <div class="step"><span class="step-num">4</span><span class="step-text">Enable <strong>Word-level diff</strong> to highlight exact words changed within a line</span></div>
+          <div class="step"><span class="step-num">5</span><span class="step-text">Click <strong>⎘ Copy diff</strong> to copy a patch-format summary</span></div>
+        </div>
+      </div>
+      <div class="tips-row">
+        <div class="tip"><span class="tip-icon">💡</span>Enable <strong>Ignore whitespace</strong> when comparing code that was reformatted — it won't flag indentation changes as differences.</div>
+        <div class="tip"><span class="tip-icon">↔</span>Click <strong>⇄ Swap</strong> to flip A and B — useful for reviewing the diff from the other direction.</div>
+        <div class="tip"><span class="tip-icon">📂</span>Click <strong>Load sample</strong> to instantly see a realistic API docs diff — great for understanding all three view modes.</div>
+      </div>
+    </div>
+
+  </main><!-- /content -->
+</div><!-- /layout -->
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  <div class="footer-left">
+    <div class="footer-icon">🔥</div>
+    <div>
+      <div class="footer-name">GomathiBalan's Forge</div>
+      <div class="footer-tag">Tools you didn't know you needed.</div>
+    </div>
+  </div>
+  <div class="footer-right">
+    Built entirely with <strong style="color:var(--nav-ink)">Claude AI</strong> via prompt engineering<br/>
+    <span style="font-size:10px">© GomathiBalan · 0 servers · 0 data collected</span>
+  </div>
+</footer>
+
+<script>
+// ── SIDEBAR ACTIVE STATE ──────────────────────────────────
+const sections = {
+  standup:    'sec-standup',
+  timezone:   'sec-timezone',
+  checklist:  'sec-checklist',
+  celebration:'sec-celebration',
+  'json-fmt': 'sec-json-fmt',
+  'json-schema':'sec-json-schema',
+  'config-diff':'sec-config-diff',
+  'api-tester':'sec-api-tester',
+  'api-mock': 'sec-api-mock',
+  regex:      'sec-regex',
+  redactor:   'sec-redactor',
+  'log-hl':   'sec-log-hl',
+  color:      'sec-color',
+  'md-preview':'sec-md-preview',
+  'md-linter':'sec-md-linter',
+  'text-diff':'sec-text-diff',
+};
+
+function scrollTo(id) {
+  const el = document.getElementById('sec-' + id);
+  if (!el) return;
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  // Update active state
+  document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
+  const items = document.querySelectorAll('.sb-item');
+  items.forEach(item => {
+    if (item.getAttribute('onclick')?.includes(`'${id}'`)) item.classList.add('active');
+  });
+}
+
+// ── SCROLL SPY ────────────────────────────────────────────
+const content = document.getElementById('mainContent');
+content.addEventListener('scroll', () => {
+  const scrollTop = content.scrollTop + 80;
+  let current = null;
+  Object.entries(sections).forEach(([key, secId]) => {
+    const el = document.getElementById(secId);
+    if (el && el.offsetTop <= scrollTop) current = key;
+  });
+  if (current) {
+    document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
+    document.querySelectorAll('.sb-item').forEach(item => {
+      if (item.getAttribute('onclick')?.includes(`'${current}'`)) item.classList.add('active');
+    });
+    // Scroll sidebar to keep active item visible
+    const activeItem = document.querySelector('.sb-item.active');
+    if (activeItem) {
+      const sbScroll = document.getElementById('sbScroll');
+      const itemTop = activeItem.offsetTop;
+      const scrollArea = sbScroll.scrollTop;
+      const sbHeight = sbScroll.clientHeight;
+      if (itemTop < scrollArea || itemTop > scrollArea + sbHeight - 40) {
+        sbScroll.scrollTo({ top: itemTop - sbHeight / 2, behavior: 'smooth' });
+      }
+    }
+  }
+});
+
+// ── SIDEBAR SEARCH ────────────────────────────────────────
+function filterSidebar() {
+  const q = document.getElementById('sbSearch').value.toLowerCase().trim();
+  document.querySelectorAll('.sb-item').forEach(item => {
+    const name = item.querySelector('.sb-item-name')?.textContent.toLowerCase() || '';
+    item.classList.toggle('hidden', !!q && !name.includes(q));
+  });
+  // Hide category labels if all items below are hidden
+  document.querySelectorAll('.sb-cat').forEach(cat => {
+    let next = cat.nextElementSibling;
+    let allHidden = true;
+    while (next && !next.classList.contains('sb-cat')) {
+      if (!next.classList.contains('hidden')) { allHidden = false; break; }
+      next = next.nextElementSibling;
+    }
+    cat.style.display = allHidden && q ? 'none' : '';
+  });
+}
+
+// ── KEYBOARD ──────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  const sb = document.getElementById('sbSearch');
+  if (e.key === '/' && document.activeElement !== sb) { e.preventDefault(); sb.focus(); }
+  if (e.key === 'Escape') { sb.value = ''; filterSidebar(); }
+});
+
+// ── INIT: activate first item ─────────────────────────────
+document.querySelector('.sb-item')?.classList.add('active');
+</script>
+</body>
+</html>

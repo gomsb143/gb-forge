@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>JSON Schema Validator — GomathiBalan's Forge</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#0d1117;--bg-2:#161b22;--bg-3:#1c2330;--bg-4:#21262d;
+      --border:#30363d;--border-2:#3d444d;
+      --ink:#e6edf3;--ink-2:#8d96a0;--ink-3:#484f58;
+      --accent:#388bfd;--accent-soft:#0d2044;
+      --green:#3fb950;--green-soft:#0d2e22;
+      --red:#f85149;  --red-soft:#2a0e0e;
+      --amber:#d29922;--amber-soft:#2a1f00;
+      --font:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
+      --j-key:#79c0ff;--j-str:#a5d6ff;--j-num:#ffa657;--j-bool:#ff7b72;--j-null:#8b949e;
+    }
+    html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--ink);overflow:hidden}
+    .app{display:flex;flex-direction:column;height:100vh}
+    .topbar{height:52px;background:var(--bg-2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:10px;flex-shrink:0}
+    .back{font-size:12px;font-weight:500;color:var(--ink-3);text-decoration:none}
+    .back:hover{color:var(--ink-2)}
+    .sep{width:1px;height:18px;background:var(--border)}
+    .ptitle{font-size:13px;font-weight:600}
+    .ml{margin-left:auto}
+    .btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:7px;font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all .15s;white-space:nowrap;line-height:1}
+    .btn-ghost{background:transparent;color:var(--ink-2);border:1px solid var(--border)}
+    .btn-ghost:hover{background:var(--bg-4);color:var(--ink)}
+    .btn-green{background:var(--green);color:#0d1117}
+    .btn-green:hover{background:#2ea043}
+    .btn-sm{padding:4px 9px;font-size:11px}
+    .body{display:flex;flex:1;overflow:hidden}
+
+    .panel{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+    .panel+.panel{border-left:1px solid var(--border)}
+    .col-header{height:36px;background:var(--bg-3);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 12px;gap:8px;flex-shrink:0}
+    .col-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+    .code-area{flex:1;padding:14px;font-family:var(--mono);font-size:13px;line-height:1.7;background:var(--bg-2);border:none;outline:none;resize:none;color:var(--ink);tab-size:2;overflow-y:auto}
+    .code-area::-webkit-scrollbar{width:4px}
+    .code-area::-webkit-scrollbar-thumb{background:var(--border-2);border-radius:4px}
+    .code-area::placeholder{color:var(--ink-3);font-family:var(--font)}
+    .code-error-bar{padding:6px 12px;background:var(--red-soft);font-size:11px;color:var(--red);font-family:var(--mono);display:none;flex-shrink:0}
+    .code-error-bar.show{display:block}
+
+    /* Results panel */
+    .results-panel{width:360px;display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;border-left:1px solid var(--border)}
+    .status-bar{padding:12px 14px;background:var(--bg-2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0}
+    .status-icon{font-size:20px}
+    .status-text{font-size:14px;font-weight:700}
+    .status-sub{font-size:11px;color:var(--ink-3);margin-top:2px}
+    .results-body{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:6px}
+    .results-body::-webkit-scrollbar{width:4px}
+    .results-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+
+    /* Error card */
+    .err-card{background:var(--red-soft);border:1px solid rgba(248,81,73,.4);border-radius:8px;padding:10px 12px}
+    .ec-path{font-family:var(--mono);font-size:12px;color:var(--red);font-weight:600;margin-bottom:4px}
+    .ec-msg{font-size:13px;color:var(--ink);line-height:1.4}
+    .ec-detail{font-size:11px;color:var(--ink-3);font-family:var(--mono);margin-top:3px}
+
+    /* OK state */
+    .ok-card{background:var(--green-soft);border:1px solid rgba(63,185,80,.3);border-radius:8px;padding:14px;text-align:center}
+    .ok-icon{font-size:28px;margin-bottom:6px}
+    .ok-text{font-size:14px;font-weight:700;color:var(--green)}
+    .ok-sub{font-size:11px;color:var(--ink-3);margin-top:4px}
+
+    /* Schema tree */
+    .schema-tree{padding:8px;font-family:var(--mono);font-size:12px;line-height:1.8}
+    .st-key{color:var(--j-key)}
+    .st-req{color:var(--green);font-size:10px;margin-left:4px}
+    .st-type{color:var(--amber)}
+    .st-indent{display:inline-block;width:16px}
+
+    .j-key{color:var(--j-key)}.j-str{color:var(--j-str)}.j-num{color:var(--j-num)}.j-bool{color:var(--j-bool)}.j-null{color:var(--j-null)}
+
+    .sample-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0}
+    .stab{padding:6px 12px;font-size:11px;font-weight:600;color:var(--ink-3);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s}
+    .stab.on{color:var(--accent);border-bottom-color:var(--accent)}
+
+    .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(8px);background:var(--green);color:#0d1117;padding:8px 18px;border-radius:20px;font-size:12px;font-weight:700;opacity:0;transition:all .2s;pointer-events:none;z-index:999}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+    /* ── LINE-NUMBERED EDITOR ── */
+    .editor-wrap{flex:1;display:flex;overflow:hidden;position:relative;min-height:0}
+    .line-nums{width:44px;padding:14px 0;background:var(--bg-3);border-right:1px solid var(--border);flex-shrink:0;overflow:hidden;user-select:none;pointer-events:none}
+    .ln-inner{font-family:var(--mono);font-size:13px;line-height:1.7;color:var(--ink-3);text-align:right;padding-right:8px}
+    .ln-inner span{display:block;height:1.7em}
+    .ln-inner span.ln-err{color:var(--red);font-weight:700}
+    .code-area{flex:1;padding:14px;font-family:var(--mono);font-size:13px;line-height:1.7;background:var(--bg-2);border:none;outline:none;resize:none;color:var(--ink);tab-size:2;overflow-y:auto;overflow-x:auto;white-space:pre}
+    .code-area::-webkit-scrollbar{width:5px;height:5px}
+    .code-area::-webkit-scrollbar-thumb{background:var(--border-2);border-radius:4px}
+    .code-area::placeholder{color:var(--ink-3);font-family:var(--font);white-space:normal}
+
+    /* cursor info bar */
+    .cursor-bar{height:22px;background:var(--bg-3);border-top:1px solid var(--border);display:flex;align-items:center;padding:0 12px;gap:16px;flex-shrink:0}
+    .cursor-info{font-size:10px;font-family:var(--mono);color:var(--ink-3)}
+    .cursor-info strong{color:var(--ink-2)}
+  </style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <a href="index.html" class="back">← GomathiBalan's Forge</a>
+    <div class="sep"></div>
+    <span class="ptitle">✓ JSON Schema Validator</span>
+    <div class="ml" style="display:flex;gap:6px">
+      <button class="btn btn-ghost btn-sm" onclick="loadSample('user')">Sample: User</button>
+      <button class="btn btn-ghost btn-sm" onclick="loadSample('product')">Sample: Product</button>
+      <button class="btn btn-green btn-sm" onclick="validate()">▶ Validate</button>
+    </div>
+  </div>
+  <div class="body">
+
+    <!-- JSON INPUT -->
+    <div class="panel">
+      <div class="col-header">
+        <span class="col-label">JSON Data</span>
+        <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="formatJson('json')">Format</button>
+      </div>
+      <div class="code-error-bar" id="jsonErr"></div>
+      <div class="editor-wrap">
+        <div class="line-nums" id="jsonLineNums"><div class="ln-inner" id="jsonLnInner"><span>1</span></div></div>
+        <textarea class="code-area" id="jsonInput" placeholder='{"name": "Alice", "age": 30}'
+          oninput="onJsonInput();syncLines('json')" onscroll="syncScroll('json')"
+          onkeyup="updateCursor('json')" onclick="updateCursor('json')" spellcheck="false"></textarea>
+      </div>
+      <div class="cursor-bar">
+        <span class="cursor-info">Ln <strong id="jsonLn">1</strong>, Col <strong id="jsonCol">1</strong></span>
+        <span class="cursor-info">Chars: <strong id="jsonChars">0</strong></span>
+        <span class="cursor-info">Lines: <strong id="jsonLines">0</strong></span>
+      </div>
+    </div>
+
+    <!-- SCHEMA INPUT -->
+    <div class="panel">
+      <div class="col-header">
+        <span class="col-label">JSON Schema (Draft-7)</span>
+        <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="formatJson('schema')">Format</button>
+      </div>
+      <div class="code-error-bar" id="schemaErr"></div>
+      <div class="editor-wrap">
+        <div class="line-nums" id="schemaLineNums"><div class="ln-inner" id="schemaLnInner"><span>1</span></div></div>
+        <textarea class="code-area" id="schemaInput" placeholder='{"type": "object", "required": ["name"], "properties": {"name": {"type": "string"}}}'
+          oninput="onSchemaInput();syncLines('schema')" onscroll="syncScroll('schema')"
+          onkeyup="updateCursor('schema')" onclick="updateCursor('schema')" spellcheck="false"></textarea>
+      </div>
+      <div class="cursor-bar">
+        <span class="cursor-info">Ln <strong id="schemaLn">1</strong>, Col <strong id="schemaCol">1</strong></span>
+        <span class="cursor-info">Chars: <strong id="schemaChars">0</strong></span>
+        <span class="cursor-info">Lines: <strong id="schemaLines">0</strong></span>
+      </div>
+    </div>
+
+    <!-- RESULTS -->
+    <div class="results-panel">
+      <div class="col-header"><span class="col-label">Validation Results</span></div>
+      <div class="status-bar" id="statusBar">
+        <span class="status-icon">⏳</span>
+        <div><div class="status-text">Ready</div><div class="status-sub">Paste JSON and Schema then click Validate</div></div>
+      </div>
+      <div class="results-body" id="resultsBody">
+        <div style="padding:16px;font-size:12px;color:var(--ink-3);text-align:center;opacity:.4">Results will appear here after validation.</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+const $ = id => document.getElementById(id);
+
+// ── JSON SCHEMA VALIDATOR (Draft-7 subset) ─────────────────
+// Supports: type, required, properties, additionalProperties,
+//           minimum/maximum, minLength/maxLength, pattern,
+//           enum, const, items, minItems/maxItems,
+//           oneOf/anyOf/allOf/not, if/then/else, $ref (local)
+
+function validate() {
+  const jsonErr   = $('jsonErr');
+  const schemaErr = $('schemaErr');
+  jsonErr.className='code-error-bar'; schemaErr.className='code-error-bar';
+
+  let data, schema;
+  try { data   = JSON.parse($('jsonInput').value); }
+  catch(e) { jsonErr.className='code-error-bar show'; jsonErr.textContent='JSON parse error: '+e.message; setStatus('error','Invalid JSON','Fix the JSON data first'); return; }
+  try { schema = JSON.parse($('schemaInput').value); }
+  catch(e) { schemaErr.className='code-error-bar show'; schemaErr.textContent='Schema parse error: '+e.message; setStatus('error','Invalid Schema','Fix the JSON Schema first'); return; }
+
+  const errors = [];
+  validateValue(data, schema, '$', errors, schema);
+
+  if (errors.length === 0) {
+    setStatus('ok','✓ Valid','JSON matches the schema');
+    $('resultsBody').innerHTML = `<div class="ok-card"><div class="ok-icon">✅</div><div class="ok-text">Validation passed</div><div class="ok-sub">All ${countKeys(data)} fields validated successfully</div></div>`;
+  } else {
+    setStatus('error',`✕ ${errors.length} error${errors.length!==1?'s':''}`,`JSON does not match the schema`);
+    $('resultsBody').innerHTML = errors.map(e => `
+      <div class="err-card">
+        <div class="ec-path">${escHtml(e.path)}</div>
+        <div class="ec-msg">${escHtml(e.msg)}</div>
+        ${e.detail?`<div class="ec-detail">${escHtml(e.detail)}</div>`:''}
+      </div>`).join('');
+  }
+}
+
+function validateValue(value, schema, path, errors, rootSchema) {
+  if (!schema || typeof schema !== 'object') return;
+
+  // $ref
+  if (schema.$ref) {
+    const ref = resolveRef(schema.$ref, rootSchema);
+    if (ref) validateValue(value, ref, path, errors, rootSchema);
+    return;
+  }
+
+  // type
+  if (schema.type) {
+    const types = Array.isArray(schema.type) ? schema.type : [schema.type];
+    if (!types.some(t => checkType(value, t))) {
+      errors.push({path, msg:`Expected type "${types.join('|')}", got "${getType(value)}"`,
+        detail:`Value: ${JSON.stringify(value).slice(0,80)}`});
+      return; // no point continuing
+    }
+  }
+
+  // enum
+  if (schema.enum) {
+    if (!schema.enum.some(e => deepEqual(e, value))) {
+      errors.push({path, msg:`Value must be one of: ${schema.enum.map(e=>JSON.stringify(e)).join(', ')}`,
+        detail:`Got: ${JSON.stringify(value).slice(0,60)}`});
+    }
+  }
+
+  // const
+  if ('const' in schema && !deepEqual(schema.const, value)) {
+    errors.push({path, msg:`Value must be exactly: ${JSON.stringify(schema.const)}`,
+      detail:`Got: ${JSON.stringify(value).slice(0,60)}`});
+  }
+
+  // String checks
+  if (typeof value === 'string') {
+    if (schema.minLength !== undefined && value.length < schema.minLength)
+      errors.push({path, msg:`String too short: ${value.length} chars (min: ${schema.minLength})`});
+    if (schema.maxLength !== undefined && value.length > schema.maxLength)
+      errors.push({path, msg:`String too long: ${value.length} chars (max: ${schema.maxLength})`});
+    if (schema.pattern && !new RegExp(schema.pattern).test(value))
+      errors.push({path, msg:`String does not match pattern: ${schema.pattern}`, detail:`Value: "${value.slice(0,60)}"`});
+    if (schema.format) validateFormat(value, schema.format, path, errors);
+  }
+
+  // Number checks
+  if (typeof value === 'number') {
+    if (schema.minimum !== undefined && value < schema.minimum)
+      errors.push({path, msg:`${value} is less than minimum ${schema.minimum}`});
+    if (schema.maximum !== undefined && value > schema.maximum)
+      errors.push({path, msg:`${value} exceeds maximum ${schema.maximum}`});
+    if (schema.exclusiveMinimum !== undefined && value <= schema.exclusiveMinimum)
+      errors.push({path, msg:`${value} must be greater than ${schema.exclusiveMinimum}`});
+    if (schema.exclusiveMaximum !== undefined && value >= schema.exclusiveMaximum)
+      errors.push({path, msg:`${value} must be less than ${schema.exclusiveMaximum}`});
+    if (schema.multipleOf !== undefined && value % schema.multipleOf !== 0)
+      errors.push({path, msg:`${value} is not a multiple of ${schema.multipleOf}`});
+  }
+
+  // Object checks
+  if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+    if (schema.required) {
+      schema.required.forEach(key => {
+        if (!(key in value)) errors.push({path:`${path}.${key}`, msg:`Required field "${key}" is missing`});
+      });
+    }
+    if (schema.properties) {
+      Object.entries(schema.properties).forEach(([key, propSchema]) => {
+        if (key in value) validateValue(value[key], propSchema, `${path}.${key}`, errors, rootSchema);
+      });
+    }
+    if (schema.additionalProperties === false) {
+      const allowed = new Set(Object.keys(schema.properties || {}));
+      Object.keys(value).forEach(key => {
+        if (!allowed.has(key)) errors.push({path:`${path}.${key}`, msg:`Additional property "${key}" is not allowed`});
+      });
+    }
+    if (typeof schema.additionalProperties === 'object') {
+      const allowed = new Set(Object.keys(schema.properties || {}));
+      Object.entries(value).forEach(([key, val]) => {
+        if (!allowed.has(key)) validateValue(val, schema.additionalProperties, `${path}.${key}`, errors, rootSchema);
+      });
+    }
+    if (schema.minProperties !== undefined && Object.keys(value).length < schema.minProperties)
+      errors.push({path, msg:`Object has ${Object.keys(value).length} properties (min: ${schema.minProperties})`});
+    if (schema.maxProperties !== undefined && Object.keys(value).length > schema.maxProperties)
+      errors.push({path, msg:`Object has ${Object.keys(value).length} properties (max: ${schema.maxProperties})`});
+    if (schema.dependencies) {
+      Object.entries(schema.dependencies).forEach(([key, dep]) => {
+        if (key in value) {
+          if (Array.isArray(dep)) dep.forEach(d=>{ if(!(d in value)) errors.push({path,msg:`Field "${key}" requires "${d}" to also be present`}); });
+          else validateValue(value, dep, path, errors, rootSchema);
+        }
+      });
+    }
+  }
+
+  // Array checks
+  if (Array.isArray(value)) {
+    if (schema.minItems !== undefined && value.length < schema.minItems)
+      errors.push({path, msg:`Array has ${value.length} items (min: ${schema.minItems})`});
+    if (schema.maxItems !== undefined && value.length > schema.maxItems)
+      errors.push({path, msg:`Array has ${value.length} items (max: ${schema.maxItems})`});
+    if (schema.uniqueItems && new Set(value.map(v=>JSON.stringify(v))).size !== value.length)
+      errors.push({path, msg:'Array items must be unique'});
+    if (schema.items) {
+      if (Array.isArray(schema.items)) {
+        schema.items.forEach((s,i) => { if(i<value.length) validateValue(value[i],s,`${path}[${i}]`,errors,rootSchema); });
+      } else {
+        value.forEach((item,i) => validateValue(item, schema.items, `${path}[${i}]`, errors, rootSchema));
+      }
+    }
+  }
+
+  // Composition
+  if (schema.allOf) schema.allOf.forEach((s,i)=>validateValue(value,s,path,errors,rootSchema));
+  if (schema.anyOf) {
+    const anyErrors = schema.anyOf.map(s=>{ const e=[];validateValue(value,s,path,e,rootSchema);return e; });
+    if (anyErrors.every(e=>e.length>0)) errors.push({path, msg:'Value does not match any of the anyOf schemas'});
+  }
+  if (schema.oneOf) {
+    const matching = schema.oneOf.filter(s=>{ const e=[];validateValue(value,s,path,e,rootSchema);return e.length===0; });
+    if (matching.length !== 1) errors.push({path, msg:`Value must match exactly one of ${schema.oneOf.length} schemas (matched: ${matching.length})`});
+  }
+  if (schema.not) {
+    const notErrors=[]; validateValue(value,schema.not,path,notErrors,rootSchema);
+    if (notErrors.length===0) errors.push({path, msg:'Value must NOT match the "not" schema'});
+  }
+  if (schema.if) {
+    const ifErrors=[]; validateValue(value,schema.if,path,ifErrors,rootSchema);
+    if (ifErrors.length===0 && schema.then) validateValue(value,schema.then,path,errors,rootSchema);
+    if (ifErrors.length> 0 && schema.else) validateValue(value,schema.else,path,errors,rootSchema);
+  }
+}
+
+function validateFormat(value, format, path, errors) {
+  const formats = {
+    'email': /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+    'uri':   /^https?:\/\/.+/,
+    'date':  /^\d{4}-\d{2}-\d{2}$/,
+    'time':  /^\d{2}:\d{2}:\d{2}/,
+    'date-time': /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/,
+    'ipv4':  /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/,
+    'uuid':  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
+  };
+  if (formats[format] && !formats[format].test(value))
+    errors.push({path, msg:`String does not match format "${format}"`, detail:`Value: "${value.slice(0,60)}"`});
+}
+
+function checkType(value, type) {
+  if (type==='null')    return value === null;
+  if (type==='boolean') return typeof value === 'boolean';
+  if (type==='integer') return Number.isInteger(value);
+  if (type==='number')  return typeof value === 'number';
+  if (type==='string')  return typeof value === 'string';
+  if (type==='array')   return Array.isArray(value);
+  if (type==='object')  return typeof value==='object' && value!==null && !Array.isArray(value);
+  return false;
+}
+function getType(v) { if(v===null)return'null'; if(Array.isArray(v))return'array'; return typeof v; }
+function deepEqual(a,b) { return JSON.stringify(a)===JSON.stringify(b); }
+function countKeys(obj) { if(typeof obj!=='object'||!obj) return 0; return Object.keys(obj).length+Object.values(obj).reduce((s,v)=>s+countKeys(v),0); }
+function resolveRef(ref, root) {
+  if (!ref.startsWith('#/')) return null;
+  const parts = ref.slice(2).split('/');
+  let cur = root;
+  for (const p of parts) { cur=cur?.[p]; if(!cur) return null; }
+  return cur;
+}
+
+function setStatus(type, text, sub) {
+  const icons = {ok:'✅',error:'❌',ready:'⏳'};
+  $('statusBar').innerHTML = `<span class="status-icon">${icons[type]||'⏳'}</span>
+    <div><div class="status-text" style="color:${type==='ok'?'var(--green)':type==='error'?'var(--red)':'var(--ink)'}">${escHtml(text)}</div>
+    <div class="status-sub">${escHtml(sub)}</div></div>`;
+}
+
+function onJsonInput() {
+  const v = $('jsonInput').value;
+  try { JSON.parse(v); $('jsonErr').className='code-error-bar'; markErrorLines('json',null); }
+  catch(e) { $('jsonErr').className='code-error-bar show'; $('jsonErr').textContent=e.message; markErrorLines('json',e); }
+  syncLines('json');
+}
+function onSchemaInput() {
+  const v = $('schemaInput').value;
+  try { JSON.parse(v); $('schemaErr').className='code-error-bar'; markErrorLines('schema',null); }
+  catch(e) { $('schemaErr').className='code-error-bar show'; $('schemaErr').textContent=e.message; markErrorLines('schema',e); }
+  syncLines('schema');
+}
+function formatJson(which) {
+  const id = which==='json'?'jsonInput':'schemaInput';
+  try{ $(id).value=JSON.stringify(JSON.parse($(id).value),null,2); syncLines(which==='json'?'json':'schema'); }catch{}
+}
+
+// ── LINE NUMBERS ──────────────────────────────────────────
+function syncLines(which) {
+  const ta   = $(which==='json'?'jsonInput':'schemaInput');
+  const inner= $(which==='json'?'jsonLnInner':'schemaLnInner');
+  const lines = ta.value.split('\n');
+  const n = lines.length;
+  inner.innerHTML = Array.from({length:n},(_,i)=>`<span id="ln-${which}-${i+1}">${i+1}</span>`).join('');
+  // Update stats
+  $(which+'Chars').textContent = ta.value.length;
+  $(which+'Lines').textContent = n;
+  updateCursor(which);
+}
+
+function syncScroll(which) {
+  const ta  = $(which==='json'?'jsonInput':'schemaInput');
+  const lns = $(which==='json'?'jsonLineNums':'schemaLineNums');
+  lns.scrollTop = ta.scrollTop;
+}
+
+function updateCursor(which) {
+  const ta = $(which==='json'?'jsonInput':'schemaInput');
+  const pos = ta.selectionStart;
+  const text = ta.value.slice(0, pos);
+  const lines = text.split('\n');
+  const ln  = lines.length;
+  const col = lines[lines.length-1].length + 1;
+  $(which+'Ln').textContent  = ln;
+  $(which+'Col').textContent = col;
+}
+
+function markErrorLines(which, err) {
+  // Clear previous error marks
+  document.querySelectorAll(`[id^="ln-${which}-"]`).forEach(el=>el.classList.remove('ln-err'));
+  if (!err) return;
+  // Try to extract line number from parse error message
+  const m = err.message.match(/line (\d+)/i) || err.message.match(/(\d+)/);
+  if (m) {
+    const errLine = parseInt(m[1]);
+    const el = document.getElementById(`ln-${which}-${errLine}`);
+    if (el) el.classList.add('ln-err');
+  }
+}
+
+function loadSample(type) {
+  const samples = {
+    user: {
+      json: `{
+  "id": "usr_123",
+  "name": "Alice Johnson",
+  "email": "alice@example.com",
+  "age": 28,
+  "role": "admin",
+  "active": true,
+  "address": {
+    "street": "123 Main St",
+    "city": "Springfield",
+    "country": "US"
+  },
+  "tags": ["developer", "admin"]
+}`,
+      schema: `{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["id", "name", "email", "role"],
+  "additionalProperties": false,
+  "properties": {
+    "id":     { "type": "string", "pattern": "^usr_[a-z0-9]+$" },
+    "name":   { "type": "string", "minLength": 2, "maxLength": 100 },
+    "email":  { "type": "string", "format": "email" },
+    "age":    { "type": "integer", "minimum": 0, "maximum": 150 },
+    "role":   { "type": "string", "enum": ["admin", "editor", "viewer"] },
+    "active": { "type": "boolean" },
+    "address": {
+      "type": "object",
+      "required": ["street", "city"],
+      "properties": {
+        "street":  { "type": "string" },
+        "city":    { "type": "string" },
+        "country": { "type": "string", "minLength": 2, "maxLength": 2 }
+      }
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true
+    }
+  }
+}`
+    },
+    product: {
+      json: `{
+  "sku": "PROD-001",
+  "name": "Wireless Keyboard",
+  "price": 79.99,
+  "currency": "USD",
+  "inStock": true,
+  "quantity": 150,
+  "categories": ["electronics", "peripherals"],
+  "specs": {
+    "weight": "450g",
+    "connectivity": "Bluetooth 5.0"
+  }
+}`,
+      schema: `{
+  "type": "object",
+  "required": ["sku", "name", "price", "currency"],
+  "properties": {
+    "sku":        { "type": "string", "pattern": "^[A-Z]+-\\\\d+$" },
+    "name":       { "type": "string", "minLength": 1 },
+    "price":      { "type": "number", "minimum": 0, "exclusiveMinimum": 0 },
+    "currency":   { "type": "string", "enum": ["USD", "EUR", "GBP", "INR"] },
+    "inStock":    { "type": "boolean" },
+    "quantity":   { "type": "integer", "minimum": 0 },
+    "categories": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+    "specs":      { "type": "object" }
+  }
+}`
+    }
+  };
+  const s = samples[type];
+  $('jsonInput').value   = s.json;
+  $('schemaInput').value = s.schema;
+  onJsonInput(); onSchemaInput();
+  syncLines('json'); syncLines('schema');
+  validate();
+}
+
+function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function showToast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
+</script>
+
+<!-- ── TEAMKIT FOOTER ── -->
+<div style="
+  border-top:1px solid rgba(255,255,255,.07);
+  background:rgba(0,0,0,.25);
+  padding:10px 20px;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:8px;
+  font-family:'DM Sans',sans-serif;
+  font-size:11px;
+  flex-shrink:0;
+" id="tk-footer">
+  <span style="color:rgba(255,255,255,.35)">
+    🧰 <strong style="color:rgba(255,255,255,.6)">GomathiBalan's Forge</strong> &nbsp;·&nbsp;
+    Built by <strong style="color:rgba(255,255,255,.7)">GomathiBalan</strong>
+  </span>
+  <span style="color:rgba(255,255,255,.25);font-size:10px">
+    Designed with prompts &nbsp;·&nbsp; Crafted by 
+    <strong style="color:rgba(255,255,255,.4)">Claude AI</strong>
+  </span>
+</div>
+</body>
+</html>

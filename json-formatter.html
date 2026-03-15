@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>JSON Formatter — GomathiBalan's Forge</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:    #0d1117; --bg-2: #161b22; --bg-3: #1c2330; --bg-4: #21262d;
+      --border:#30363d; --border-2:#3d444d;
+      --ink:   #e6edf3; --ink-2: #8d96a0; --ink-3: #484f58;
+      --accent:#388bfd; --accent-soft:#0d2044;
+      --green: #3fb950; --green-soft:#0d1f0e;
+      --amber: #d29922; --amber-soft:#2a1f00;
+      --red:   #f85149; --red-soft:#2a0e0e;
+      --purple:#bc8cff;
+      /* JSON token colours */
+      --j-key:    #79c0ff; /* object keys */
+      --j-str:    #a5d6ff; /* string values */
+      --j-num:    #ffa657; /* numbers */
+      --j-bool:   #ff7b72; /* true/false */
+      --j-null:   #8b949e; /* null */
+      --j-punc:   #8d96a0; /* brackets/commas */
+      --font: 'DM Sans', sans-serif;
+      --mono: 'DM Mono', monospace;
+    }
+    html, body { height:100%; font-family:var(--font); background:var(--bg); color:var(--ink); overflow:hidden; }
+    .app { display:flex; flex-direction:column; height:100vh; }
+
+    /* TOPBAR */
+    .topbar { height:52px; background:var(--bg-2); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0 20px; flex-shrink:0; z-index:100; gap:8px; }
+    .tl { display:flex; align-items:center; gap:12px; }
+    .tr { display:flex; align-items:center; gap:6px; flex-shrink:0; flex-wrap:wrap; }
+    .back { font-size:12px; font-weight:500; color:var(--ink-3); text-decoration:none; transition:color .15s; }
+    .back:hover { color:var(--ink-2); }
+    .sep { width:1px; height:18px; background:var(--border); }
+    .ptitle { font-size:13px; font-weight:600; color:var(--ink); }
+    .btn { display:inline-flex; align-items:center; gap:5px; padding:6px 12px; border-radius:7px; font-family:var(--font); font-size:12px; font-weight:600; cursor:pointer; border:none; transition:all .15s; white-space:nowrap; line-height:1; }
+    .btn-ghost  { background:transparent; color:var(--ink-2); border:1px solid var(--border); }
+    .btn-ghost:hover  { background:var(--bg-4); color:var(--ink); }
+    .btn-ghost.active { background:var(--accent-soft); color:var(--accent); border-color:var(--accent); }
+    .btn-green  { background:var(--green); color:#0d1117; }
+    .btn-green:hover  { background:#2ea043; }
+    .btn-sm { padding:4px 9px; font-size:11px; }
+
+    /* BODY */
+    .body { display:flex; flex:1; overflow:hidden; }
+
+    /* PANELS */
+    .panel { flex:1; display:flex; flex-direction:column; overflow:hidden; min-width:0; }
+    .panel + .panel { border-left:1px solid var(--border); }
+
+    .panel-header { height:38px; background:var(--bg-3); border-bottom:1px solid var(--border); display:flex; align-items:center; padding:0 12px; gap:8px; flex-shrink:0; }
+    .panel-label  { font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); }
+    .panel-badge  { font-size:10px; font-weight:700; padding:2px 7px; border-radius:10px; }
+    .badge-ok     { background:var(--green-soft); color:var(--green); }
+    .badge-err    { background:var(--red-soft);   color:var(--red); }
+    .badge-warn   { background:var(--amber-soft); color:var(--amber); }
+    .ml-auto      { margin-left:auto; }
+
+    /* Indent selector */
+    .indent-sel { background:var(--bg-4); border:1px solid var(--border); border-radius:5px; padding:3px 6px; font-family:var(--font); font-size:11px; color:var(--ink-2); outline:none; cursor:pointer; }
+    .indent-sel:focus { border-color:var(--accent); }
+
+    /* Textareas */
+    .code-area { flex:1; padding:16px; font-family:var(--mono); font-size:13px; line-height:1.7; background:var(--bg-2); border:none; outline:none; resize:none; color:var(--ink); tab-size:2; overflow-y:auto; }
+    .code-area::-webkit-scrollbar { width:5px; }
+    .code-area::-webkit-scrollbar-thumb { background:var(--border-2); border-radius:4px; }
+    .code-area::placeholder { color:var(--ink-3); font-family:var(--font); }
+
+    /* Highlighted output */
+    .hl-output { flex:1; padding:16px; font-family:var(--mono); font-size:13px; line-height:1.7; background:var(--bg-2); overflow-y:auto; white-space:pre; overflow-x:auto; }
+    .hl-output::-webkit-scrollbar { width:5px; height:5px; }
+    .hl-output::-webkit-scrollbar-thumb { background:var(--border-2); border-radius:4px; }
+
+    /* Token colours */
+    .j-key   { color:var(--j-key); }
+    .j-str   { color:var(--j-str); }
+    .j-num   { color:var(--j-num); }
+    .j-bool  { color:var(--j-bool); }
+    .j-null  { color:var(--j-null); }
+    .j-punc  { color:var(--j-punc); }
+
+    /* Error overlay */
+    .error-bar { padding:8px 14px; background:var(--red-soft); border-bottom:1px solid var(--red); font-size:12px; color:var(--red); font-family:var(--mono); display:none; flex-shrink:0; }
+    .error-bar.show { display:block; }
+
+    /* STATS BAR */
+    .stats-bar { padding:6px 14px; background:var(--bg-3); border-top:1px solid var(--border); display:flex; gap:16px; flex-shrink:0; flex-wrap:wrap; }
+    .stat-item { font-size:11px; color:var(--ink-3); display:flex; gap:5px; }
+    .stat-item span { color:var(--ink-2); font-family:var(--mono); font-weight:500; }
+
+    /* TREE VIEW pane (right side) */
+    .right-col { width:320px; background:var(--bg-2); border-left:1px solid var(--border); display:flex; flex-direction:column; overflow:hidden; flex-shrink:0; }
+    .tabs-row   { display:flex; border-bottom:1px solid var(--border); background:var(--bg-3); flex-shrink:0; }
+    .tab        { padding:8px 14px; font-size:12px; font-weight:600; color:var(--ink-3); cursor:pointer; border-bottom:2px solid transparent; transition:all .15s; user-select:none; }
+    .tab:hover  { color:var(--ink-2); }
+    .tab.on     { color:var(--accent); border-bottom-color:var(--accent); }
+    .tab-body   { flex:1; overflow-y:auto; display:none; }
+    .tab-body::-webkit-scrollbar { width:4px; }
+    .tab-body::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
+    .tab-body.on { display:block; }
+
+    /* TREE */
+    .tree-root { padding:8px 0; }
+    .tree-node { font-family:var(--mono); font-size:12px; line-height:1.6; }
+    .tree-row  { display:flex; align-items:baseline; gap:0; padding:1px 0; cursor:pointer; transition:background .1s; border-radius:3px; }
+    .tree-row:hover { background:var(--bg-3); }
+    .tree-indent { display:inline-block; width:16px; flex-shrink:0; }
+    .tree-toggle { width:14px; text-align:center; flex-shrink:0; color:var(--ink-3); font-size:10px; user-select:none; }
+    .tree-key    { color:var(--j-key); }
+    .tree-colon  { color:var(--j-punc); margin:0 4px 0 0; }
+    .tree-val    { }
+    .tree-children { }
+    .tree-children.collapsed { display:none; }
+    .tree-type-badge { font-size:9px; padding:1px 5px; border-radius:4px; margin-left:6px; }
+    .badge-obj  { background:#1f4a8a33; color:var(--accent); }
+    .badge-arr  { background:#2a1f0033; color:var(--amber); }
+
+    /* PATH BAR */
+    .path-bar { padding:8px 12px; background:var(--bg-3); border-bottom:1px solid var(--border); font-family:var(--mono); font-size:11px; color:var(--ink-3); min-height:32px; flex-shrink:0; word-break:break-all; }
+    .path-seg { color:var(--accent); }
+
+    /* SEARCH pane */
+    .search-pane { padding:10px; display:flex; flex-direction:column; gap:8px; }
+    .search-input { width:100%; background:var(--bg-3); border:1px solid var(--border); border-radius:7px; padding:7px 10px; font-family:var(--mono); font-size:12px; color:var(--ink); outline:none; transition:border-color .15s; }
+    .search-input:focus { border-color:var(--accent); }
+    .search-input::placeholder { color:var(--ink-3); }
+    .search-result { padding:6px 8px; border-radius:6px; font-family:var(--mono); font-size:11px; background:var(--bg-3); border:1px solid var(--border); }
+    .sr-path  { color:var(--accent); margin-bottom:2px; }
+    .sr-val   { color:var(--j-str); }
+
+    /* Toast */
+    .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%) translateY(8px); background:var(--green); color:#0d1117; padding:8px 18px; border-radius:20px; font-size:12px; font-weight:700; opacity:0; transition:all .2s; pointer-events:none; z-index:999; }
+    .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="tl">
+      <a href="index.html" class="back">← GomathiBalan's Forge</a>
+      <div class="sep"></div>
+      <span class="ptitle">{ } JSON Formatter</span>
+    </div>
+    <div class="tr">
+      <select class="indent-sel" id="indentSel" onchange="format()" title="Indent size">
+        <option value="2">2 spaces</option>
+        <option value="4">4 spaces</option>
+        <option value="tab">Tab</option>
+      </select>
+      <button class="btn btn-ghost btn-sm" onclick="sortKeys()"     title="Sort keys alphabetically">⇅ Sort keys</button>
+      <button class="btn btn-ghost btn-sm" onclick="minify()"       title="Minify JSON">⟨⟩ Minify</button>
+      <button class="btn btn-ghost btn-sm" onclick="repair()"       title="Try to auto-fix common JSON errors">🔧 Repair</button>
+      <button class="btn btn-ghost btn-sm" onclick="copyFormatted()" >⎘ Copy</button>
+      <button class="btn btn-ghost btn-sm" onclick="downloadJson()"  >⬇ .json</button>
+      <button class="btn btn-green  btn-sm" onclick="format()"       >▶ Format</button>
+    </div>
+  </div>
+
+  <div class="body">
+
+    <!-- INPUT PANEL -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-label">Input JSON</span>
+        <button class="btn btn-ghost btn-sm ml-auto" onclick="loadSample()">Load sample</button>
+        <button class="btn btn-ghost btn-sm" onclick="clearInput()">↺ Clear</button>
+      </div>
+      <div class="error-bar" id="errorBar"></div>
+      <textarea class="code-area" id="inputArea"
+        placeholder="Paste JSON here… or click 'Load sample'"
+        oninput="onInput()" spellcheck="false"></textarea>
+      <div class="stats-bar" id="inputStats">
+        <div class="stat-item">Size: <span id="statSize">—</span></div>
+        <div class="stat-item">Lines: <span id="statLines">—</span></div>
+        <div class="stat-item">Keys: <span id="statKeys">—</span></div>
+        <div class="stat-item">Depth: <span id="statDepth">—</span></div>
+      </div>
+    </div>
+
+    <!-- OUTPUT PANEL -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-label">Formatted Output</span>
+        <div class="panel-badge" id="statusBadge"></div>
+      </div>
+      <div class="hl-output" id="outputArea"></div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="right-col">
+      <div class="path-bar" id="pathBar">Click a node in the tree to see its path</div>
+      <div class="tabs-row">
+        <div class="tab on" id="tabTree"   onclick="setRightTab('tree')">Tree</div>
+        <div class="tab"    id="tabSearch" onclick="setRightTab('search')">Search</div>
+      </div>
+      <div class="tab-body on" id="paneTree">
+        <div class="tree-root" id="treeRoot"></div>
+      </div>
+      <div class="tab-body" id="paneSearch">
+        <div class="search-pane">
+          <input class="search-input" id="searchInput" type="text" placeholder="Search key or value…" oninput="searchJson()"/>
+          <div id="searchResults"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+let parsedData = null;
+let activeRightTab = 'tree';
+
+// ── INDENT ────────────────────────────────────────────────
+function getIndent() {
+  const v = $('indentSel').value;
+  return v === 'tab' ? '\t' : ' '.repeat(parseInt(v));
+}
+
+// ── ON INPUT ──────────────────────────────────────────────
+function onInput() {
+  const raw = $('inputArea').value.trim();
+  if (!raw) {
+    clearOutput(); return;
+  }
+  format();
+  saveState();
+}
+
+function format() {
+  const raw = $('inputArea').value.trim();
+  if (!raw) { clearOutput(); return; }
+  try {
+    parsedData = JSON.parse(raw);
+    const formatted = JSON.stringify(parsedData, null, getIndent());
+    $('outputArea').innerHTML = highlight(formatted);
+    $('errorBar').className = 'error-bar';
+    setBadge('✓ Valid JSON', 'ok');
+    updateStats(parsedData, formatted);
+    renderTree(parsedData);
+  } catch(e) {
+    parsedData = null;
+    $('errorBar').className  = 'error-bar show';
+    $('errorBar').textContent = '⚠ ' + e.message;
+    setBadge('✗ Invalid', 'err');
+    $('outputArea').innerHTML = '';
+    clearStats();
+    $('treeRoot').innerHTML = '';
+  }
+}
+
+function clearOutput() {
+  parsedData = null;
+  $('outputArea').innerHTML = '';
+  $('errorBar').className = 'error-bar';
+  setBadge('','');
+  clearStats();
+  $('treeRoot').innerHTML = '';
+}
+
+function clearInput() {
+  $('inputArea').value = '';
+  clearOutput();
+  saveState();
+}
+
+function setBadge(text, type) {
+  const b = $('statusBadge');
+  b.textContent  = text;
+  b.className    = 'panel-badge' + (type ? ' badge-'+type : '');
+}
+
+// ── STATS ─────────────────────────────────────────────────
+function updateStats(data, formatted) {
+  $('statSize').textContent  = formatBytes(new Blob([formatted]).size);
+  $('statLines').textContent = formatted.split('\n').length;
+  $('statKeys').textContent  = countKeys(data);
+  $('statDepth').textContent = getDepth(data);
+}
+function clearStats() {
+  ['statSize','statLines','statKeys','statDepth'].forEach(id => $(id).textContent = '—');
+}
+function formatBytes(b) { return b < 1024 ? b+'B' : b < 1048576 ? (b/1024).toFixed(1)+'KB' : (b/1048576).toFixed(2)+'MB'; }
+function countKeys(obj, seen = new WeakSet()) {
+  if (typeof obj !== 'object' || obj === null) return 0;
+  if (seen.has(obj)) return 0; seen.add(obj);
+  const own = Array.isArray(obj) ? 0 : Object.keys(obj).length;
+  return own + Object.values(obj).reduce((s,v) => s + countKeys(v, seen), 0);
+}
+function getDepth(obj, d=0) {
+  if (typeof obj !== 'object' || obj === null) return d;
+  return Math.max(d, ...Object.values(obj).map(v => getDepth(v, d+1)));
+}
+
+// ── ACTIONS ───────────────────────────────────────────────
+function sortKeys() {
+  if (!parsedData) return;
+  parsedData = sortObj(parsedData);
+  const sorted = JSON.stringify(parsedData, null, getIndent());
+  $('inputArea').value = sorted;
+  format();
+  showToast('✓ Keys sorted alphabetically');
+}
+function sortObj(v) {
+  if (Array.isArray(v)) return v.map(sortObj);
+  if (typeof v === 'object' && v !== null) {
+    return Object.fromEntries(Object.keys(v).sort().map(k => [k, sortObj(v[k])]));
+  }
+  return v;
+}
+
+function minify() {
+  if (!parsedData) return;
+  const mini = JSON.stringify(parsedData);
+  $('inputArea').value = mini;
+  $('outputArea').innerHTML = highlight(mini);
+  updateStats(parsedData, mini);
+  showToast('✓ Minified — ' + formatBytes(new Blob([mini]).size));
+}
+
+function repair() {
+  let raw = $('inputArea').value.trim();
+  if (!raw) return;
+  // Common fixes:
+  raw = raw
+    .replace(/,\s*([}\]])/g, '$1')          // trailing commas
+    .replace(/([{,]\s*)(\w+)\s*:/g, '$1"$2":')  // unquoted keys
+    .replace(/'/g, '"')                      // single quotes → double
+    .replace(/\/\/[^\n]*/g, '')              // // comments
+    .replace(/\/\*[\s\S]*?\*\//g, '');       // /* comments */
+  try {
+    const parsed = JSON.parse(raw);
+    $('inputArea').value = raw;
+    format();
+    showToast('✓ Repaired successfully');
+  } catch {
+    showToast('⚠ Could not auto-repair — check manually');
+  }
+}
+
+function copyFormatted() {
+  if (!parsedData) { showToast('⚠ No valid JSON to copy'); return; }
+  const text = JSON.stringify(parsedData, null, getIndent());
+  navigator.clipboard.writeText(text)
+    .then(() => showToast('✓ Formatted JSON copied'))
+    .catch(() => {
+      const ta=document.createElement('textarea'); ta.value=text;
+      document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); document.body.removeChild(ta);
+      showToast('✓ Copied');
+    });
+}
+
+function downloadJson() {
+  if (!parsedData) { showToast('⚠ No valid JSON'); return; }
+  const text = JSON.stringify(parsedData, null, getIndent());
+  const blob = new Blob([text], { type:'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href=url; a.download='formatted.json';
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+  showToast('✓ Downloaded formatted.json');
+}
+
+// ── SYNTAX HIGHLIGHT ──────────────────────────────────────
+function highlight(json) {
+  // Tokenise JSON string into coloured spans
+  return json
+    // Strings (keys vs values handled separately)
+    .replace(/("(?:[^"\\]|\\.)*")\s*:/g, (m, k) =>
+      `<span class="j-key">${escHtml(k)}</span>:`)
+    .replace(/:\s*("(?:[^"\\]|\\.)*")/g, (m, v) =>
+      `: <span class="j-str">${escHtml(v)}</span>`)
+    // Standalone strings (array items)
+    .replace(/(?<=[\[,\s\n])("(?:[^"\\]|\\.)*")(?=[\],\s\n])/g,
+      (m, v) => `<span class="j-str">${escHtml(v)}</span>`)
+    // Numbers
+    .replace(/(?<=[:,\[\s\n])(-?\d+\.?\d*(?:[eE][+-]?\d+)?)(?=[\],},\s\n])/g,
+      m => `<span class="j-num">${m}</span>`)
+    // Booleans
+    .replace(/\b(true|false)\b/g, m => `<span class="j-bool">${m}</span>`)
+    // Null
+    .replace(/\bnull\b/g, '<span class="j-null">null</span>')
+    // Punctuation
+    .replace(/([{}\[\]])/g, m => `<span class="j-punc">${m}</span>`);
+}
+
+// ── TREE VIEW ─────────────────────────────────────────────
+function renderTree(data) {
+  const root = $('treeRoot');
+  root.innerHTML = '';
+  root.appendChild(buildNode(data, '', 0));
+}
+
+function buildNode(val, keyLabel, depth) {
+  const frag = document.createDocumentFragment();
+
+  if (typeof val === 'object' && val !== null) {
+    const isArr  = Array.isArray(val);
+    const keys   = isArr ? val.map((_,i)=>String(i)) : Object.keys(val);
+    const count  = keys.length;
+    const open   = isArr ? '[' : '{';
+    const close  = isArr ? ']' : '}';
+    const type   = isArr ? 'arr' : 'obj';
+
+    const row = document.createElement('div');
+    row.className = 'tree-row';
+    row.style.paddingLeft = (depth * 16) + 'px';
+
+    const toggle = document.createElement('span');
+    toggle.className = 'tree-toggle'; toggle.textContent = '▾';
+    row.appendChild(toggle);
+
+    if (keyLabel !== '') {
+      const k = document.createElement('span');
+      k.className = 'tree-key j-key'; k.textContent = `"${keyLabel}"`;
+      const c = document.createElement('span');
+      c.className='tree-colon'; c.textContent=': ';
+      row.appendChild(k); row.appendChild(c);
+    }
+
+    const preview = document.createElement('span');
+    preview.className = 'j-punc';
+    preview.textContent = open + (count > 0 ? '…' : '') + close;
+    const badge = document.createElement('span');
+    badge.className = `tree-type-badge badge-${type}`;
+    badge.textContent = count + (isArr ? ' items' : ' keys');
+    row.appendChild(preview); row.appendChild(badge);
+
+    // Path click
+    row.addEventListener('click', e => {
+      e.stopPropagation();
+      setPath(depth, keyLabel, val);
+      // Toggle collapse
+      children.classList.toggle('collapsed');
+      toggle.textContent = children.classList.contains('collapsed') ? '▸' : '▾';
+    });
+
+    const children = document.createElement('div');
+    children.className = 'tree-children';
+    keys.forEach(k => {
+      children.appendChild(buildNode(isArr ? val[parseInt(k)] : val[k], isArr ? `[${k}]` : k, depth+1));
+    });
+
+    frag.appendChild(row);
+    frag.appendChild(children);
+  } else {
+    const row = document.createElement('div');
+    row.className = 'tree-row';
+    row.style.paddingLeft = (depth * 16 + 14) + 'px';
+
+    if (keyLabel !== '') {
+      const k = document.createElement('span');
+      k.className = 'tree-key j-key'; k.textContent = typeof keyLabel === 'string' && !keyLabel.startsWith('[') ? `"${keyLabel}"` : keyLabel;
+      const c = document.createElement('span'); c.className='tree-colon'; c.textContent=': ';
+      row.appendChild(k); row.appendChild(c);
+    }
+
+    const v = document.createElement('span');
+    if      (val === null)            { v.className='j-null'; v.textContent='null'; }
+    else if (typeof val === 'boolean'){ v.className='j-bool'; v.textContent=String(val); }
+    else if (typeof val === 'number') { v.className='j-num';  v.textContent=String(val); }
+    else { v.className='j-str'; v.textContent=`"${String(val).length > 60 ? String(val).slice(0,60)+'…' : val}"`; }
+
+    row.appendChild(v);
+    row.addEventListener('click', e => { e.stopPropagation(); setPath(depth, keyLabel, val); });
+    frag.appendChild(row);
+  }
+  return frag;
+}
+
+let pathStack = [];
+function setPath(depth, key, val) {
+  // Rebuild path: keep first `depth` segments + add key
+  pathStack = pathStack.slice(0, depth);
+  if (key !== '') pathStack.push(key);
+  const pathStr = pathStack.map((s,i) =>
+    (s.startsWith('[') ? `<span class="j-punc">${escHtml(s)}</span>` : `<span class="path-seg">.${escHtml(s)}</span>`)
+  ).join('');
+  $('pathBar').innerHTML = '<span style="color:var(--ink-3)">root</span>' + pathStr;
+}
+
+// ── RIGHT TABS ────────────────────────────────────────────
+function setRightTab(t) {
+  activeRightTab = t;
+  ['tree','search'].forEach(k => {
+    $('tab'+k.charAt(0).toUpperCase()+k.slice(1)).classList.toggle('on', k===t);
+    $('pane'+k.charAt(0).toUpperCase()+k.slice(1)).classList.toggle('on', k===t);
+  });
+}
+
+// ── SEARCH ────────────────────────────────────────────────
+function searchJson() {
+  const q = $('searchInput').value.trim().toLowerCase();
+  const out = $('searchResults');
+  if (!parsedData || !q) { out.innerHTML=''; return; }
+  const results = [];
+  walkJson(parsedData, [], q, results);
+  if (!results.length) {
+    out.innerHTML = `<div style="font-size:12px;color:var(--ink-3);padding:8px">No results for "${escHtml(q)}"</div>`;
+    return;
+  }
+  out.innerHTML = results.slice(0,50).map(r =>
+    `<div class="search-result">
+      <div class="sr-path">${escHtml(r.path)}</div>
+      <div class="sr-val">${escHtml(JSON.stringify(r.val)).slice(0,80)}</div>
+    </div>`
+  ).join('');
+}
+
+function walkJson(obj, path, q, results) {
+  if (typeof obj === 'object' && obj !== null) {
+    const keys = Array.isArray(obj) ? obj.map((_,i)=>String(i)) : Object.keys(obj);
+    keys.forEach(k => {
+      const newPath = path.concat(Array.isArray(obj) ? `[${k}]` : k);
+      if (k.toLowerCase().includes(q)) results.push({ path: 'root' + newPath.map(s=>s.startsWith('[')?s:'.'+s).join(''), val: obj[Array.isArray(obj)?parseInt(k):k] });
+      walkJson(Array.isArray(obj)?obj[parseInt(k)]:obj[k], newPath, q, results);
+    });
+  } else {
+    if (String(obj).toLowerCase().includes(q)) {
+      results.push({ path: 'root' + path.map(s=>s.startsWith('[')?s:'.'+s).join(''), val: obj });
+    }
+  }
+}
+
+// ── SAMPLE ────────────────────────────────────────────────
+function loadSample() {
+  $('inputArea').value = JSON.stringify({
+    "project": "GomathiBalan's Forge",
+    "version": "1.0.0",
+    "description": "Tools you didn't know you needed.",
+    "author": { "name": "GomathiBalan's Forge", "email": "hello@teamkit.io", "url": "https://teamkit.io" },
+    "apps": [
+      { "id": 1, "name": "Celebration Card", "status": "live",    "tags": ["cards","slides"] },
+      { "id": 2, "name": "Timezone Clock",   "status": "live",    "tags": ["productivity","remote"] },
+      { "id": 3, "name": "Checklist Maker",  "status": "live",    "tags": ["productivity"] },
+      { "id": 4, "name": "Secret Redactor",  "status": "live",    "tags": ["security","devtools"] },
+      { "id": 5, "name": "Standup Timer",    "status": "live",    "tags": ["meetings","remote"] },
+      { "id": 6, "name": "Regex Tester",     "status": "live",    "tags": ["devtools"] },
+      { "id": 7, "name": "JSON Formatter",   "status": "live",    "tags": ["devtools"] }
+    ],
+    "config": {
+      "theme": "light",
+      "persist": true,
+      "analytics": false,
+      "maxItems": 100,
+      "supportedFormats": ["png","svg","pdf","txt","md","json"],
+      "features": { "darkMode": false, "export": true, "share": false }
+    },
+    "meta": { "createdAt": "2025-01-01T00:00:00Z", "updatedAt": "2025-03-15T10:00:00Z", "stars": 0, "license": "MIT" }
+  }, null, 2);
+  format();
+}
+
+// ── PERSIST ───────────────────────────────────────────────
+function saveState() {
+  try { localStorage.setItem('teamkit_json', $('inputArea').value); } catch {}
+}
+function loadState() {
+  try {
+    const v = localStorage.getItem('teamkit_json');
+    if (v) { $('inputArea').value = v; format(); }
+  } catch {}
+}
+
+// ── UTILS ─────────────────────────────────────────────────
+function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function showToast(msg) {
+  const t=$('toast'); t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+// ── INIT ──────────────────────────────────────────────────
+loadState();
+</script>
+
+<!-- ── TEAMKIT FOOTER ── -->
+<div style="
+  border-top:1px solid rgba(255,255,255,.07);
+  background:rgba(0,0,0,.25);
+  padding:10px 20px;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:8px;
+  font-family:'DM Sans',sans-serif;
+  font-size:11px;
+  flex-shrink:0;
+" id="tk-footer">
+  <span style="color:rgba(255,255,255,.35)">
+    🧰 <strong style="color:rgba(255,255,255,.6)">GomathiBalan's Forge</strong> &nbsp;·&nbsp;
+    Built by <strong style="color:rgba(255,255,255,.7)">GomathiBalan</strong>
+  </span>
+  <span style="color:rgba(255,255,255,.25);font-size:10px">
+    Designed with prompts &nbsp;·&nbsp; Crafted by 
+    <strong style="color:rgba(255,255,255,.4)">Claude AI</strong>
+  </span>
+</div>
+</body>
+</html>

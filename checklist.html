@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Checklist Maker — GomathiBalan's Forge</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:#f7f6f3; --bg-2:#ffffff; --bg-3:#f0ede8;
+      --border:#e5e1da; --border-2:#d4cfc6;
+      --ink:#1c1917; --ink-2:#6b6760; --ink-3:#a8a49e;
+      --accent:#2563eb; --accent-soft:#eff6ff;
+      --green:#16a34a; --red:#dc2626;
+      --priority:#e05f1e; --priority-soft:#fff4ed;
+      --section-bg:#1c1917; --section-ink:#f7f6f3;
+      --radius:10px; --radius-sm:7px;
+      --font:'DM Sans',sans-serif;
+      --font-serif:'DM Serif Display',serif;
+      --pw:340px;
+    }
+    html, body { height:100%; font-family:var(--font); background:var(--bg); color:var(--ink); overflow-x:hidden; }
+
+    /* ── PRINT ─────────────────────────────────────────────
+       Key: everything that clips the content must become
+       height:auto + overflow:visible so ALL pages render.    */
+    @media print {
+      html, body,
+      .app, .body,
+      .checklist-area, .canvas-inner { height:auto !important; overflow:visible !important; }
+
+      body  { background:#fff !important; }
+      .topbar, .panel, .print-hide { display:none !important; }
+      .body { display:block !important; }
+
+      .checklist-area {
+        padding:0 !important; background:#fff !important;
+        display:block !important;
+      }
+      .print-sheet {
+        width:100% !important; max-width:100% !important;
+        box-shadow:none !important; border:none !important;
+        border-radius:0 !important; padding:20px 28px !important;
+        min-height:unset !important;
+      }
+      /* Hide interactive chrome */
+      .item-drag-handle, .item-actions,
+      .section-actions, .add-item-row { display:none !important; }
+
+      /* Prevent items splitting across pages */
+      .checklist-item  { break-inside:avoid; page-break-inside:avoid; }
+      .checklist-section { break-inside:avoid; page-break-inside:avoid; }
+      .section-header  { break-after:avoid; page-break-after:avoid; }
+
+      /* Preserve colours in print */
+      .item-check, .priority-dot,
+      .section-header, .item-check.checked {
+        -webkit-print-color-adjust:exact;
+        print-color-adjust:exact;
+        color-adjust:exact;
+      }
+    }
+
+    .app { display:flex; flex-direction:column; height:100vh; }
+
+    /* TOPBAR */
+    .topbar { height:52px; background:var(--bg-2); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0 20px; flex-shrink:0; z-index:100; gap:12px; }
+    .tl { display:flex; align-items:center; gap:12px; min-width:0; }
+    .tr { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+    .back { font-size:12px; font-weight:500; color:var(--ink-3); text-decoration:none; transition:color .15s; white-space:nowrap; }
+    .back:hover { color:var(--ink); }
+    .sep  { width:1px; height:18px; background:var(--border); flex-shrink:0; }
+    .ptitle { font-size:13px; font-weight:600; color:var(--ink); white-space:nowrap; }
+    .btn { display:inline-flex; align-items:center; gap:6px; padding:7px 14px; border-radius:var(--radius-sm); font-family:var(--font); font-size:12px; font-weight:600; cursor:pointer; border:none; transition:all .15s; white-space:nowrap; line-height:1; }
+    .btn-ghost { background:transparent; color:var(--ink-2); border:1px solid var(--border); }
+    .btn-ghost:hover { background:var(--bg-3); color:var(--ink); border-color:var(--border-2); }
+    .btn-dark  { background:var(--ink); color:#fff; }
+    .btn-dark:hover  { background:#333; }
+    .btn-accent { background:var(--accent); color:#fff; }
+    .btn-accent:hover { background:#1d4ed8; }
+    .btn-sm { padding:5px 10px; font-size:11px; }
+
+    /* LAYOUT */
+    .body { display:flex; flex:1; overflow:hidden; }
+
+    /* PANEL */
+    .panel { width:var(--pw); background:var(--bg-2); border-right:1px solid var(--border); display:flex; flex-direction:column; overflow:hidden; flex-shrink:0; }
+    .pscroll { overflow-y:auto; flex:1; }
+    .pscroll::-webkit-scrollbar { width:3px; }
+    .pscroll::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
+    .psec { padding:16px; border-bottom:1px solid var(--border); }
+    .psec:last-child { border-bottom:none; }
+    .plbl { font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); margin-bottom:12px; }
+
+    .title-input { width:100%; padding:9px 12px; border:1.5px solid var(--border); border-radius:var(--radius); font-family:var(--font); font-size:14px; font-weight:600; color:var(--ink); background:var(--bg); outline:none; transition:border-color .15s; }
+    .title-input:focus { border-color:var(--accent); background:#fff; }
+
+    .add-row { display:flex; gap:6px; }
+    .add-row input, .section-row input { flex:1; padding:8px 11px; border:1.5px solid var(--border); border-radius:var(--radius-sm); font-family:var(--font); font-size:12px; color:var(--ink); background:var(--bg); outline:none; transition:border-color .15s; }
+    .add-row input:focus, .section-row input:focus { border-color:var(--accent); background:#fff; }
+    .section-row { display:flex; gap:6px; }
+
+    .paste-area { width:100%; min-height:100px; padding:9px 11px; border:1.5px solid var(--border); border-radius:var(--radius); font-family:var(--font); font-size:12px; color:var(--ink); background:var(--bg); outline:none; resize:vertical; line-height:1.6; transition:border-color .15s; }
+    .paste-area:focus { border-color:var(--accent); background:#fff; }
+    .paste-area::placeholder { color:var(--ink-3); }
+    .paste-hint { font-size:11px; color:var(--ink-3); margin-top:5px; line-height:1.5; }
+
+    .upload-zone { border:2px dashed var(--border); border-radius:var(--radius); padding:16px; text-align:center; cursor:pointer; transition:all .18s; background:var(--bg); }
+    .upload-zone:hover { border-color:var(--accent); background:var(--accent-soft); }
+    .upload-zone .uzi { font-size:22px; margin-bottom:4px; }
+    .upload-zone strong { display:block; font-size:12px; color:var(--ink); }
+    .upload-zone p { font-size:11px; color:var(--ink-3); }
+
+    .stats-row { display:flex; gap:8px; }
+    .stat-box { flex:1; background:var(--bg-3); border-radius:var(--radius-sm); padding:10px 12px; text-align:center; }
+    .stat-num { font-size:20px; font-weight:700; color:var(--ink); line-height:1; }
+    .stat-lbl { font-size:10px; color:var(--ink-3); margin-top:2px; letter-spacing:.04em; text-transform:uppercase; }
+    .progress-track { height:5px; background:var(--border); border-radius:5px; overflow:hidden; margin-top:10px; }
+    .progress-fill  { height:100%; background:var(--green); border-radius:5px; transition:width .3s; }
+    .progress-label { font-size:11px; color:var(--ink-3); margin-top:4px; text-align:right; }
+
+    /* CHECKLIST AREA */
+    .checklist-area { flex:1; overflow-y:auto; padding:32px; background:var(--bg); display:flex; flex-direction:column; align-items:center; }
+    .checklist-area::-webkit-scrollbar { width:4px; }
+    .checklist-area::-webkit-scrollbar-thumb { background:var(--border-2); border-radius:4px; }
+
+    .print-sheet { background:#fff; width:100%; max-width:680px; border-radius:14px; border:1px solid var(--border); box-shadow:0 4px 24px rgba(0,0,0,.06); padding:36px 40px 40px; min-height:400px; }
+
+    .sheet-title { font-family:var(--font-serif); font-size:28px; color:var(--ink); margin-bottom:4px; word-break:break-word; }
+    .sheet-meta  { font-size:12px; color:var(--ink-3); margin-bottom:20px; }
+    .sheet-divider { height:1px; background:var(--border); margin-bottom:20px; }
+
+    .sheet-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:48px 20px; gap:10px; opacity:.35; }
+    .sheet-empty .ei { font-size:40px; }
+    .sheet-empty p { font-size:13px; color:var(--ink-2); text-align:center; }
+
+    /* SECTION */
+    .checklist-section { margin-bottom:12px; }
+    .section-header { display:flex; align-items:center; gap:10px; padding:8px 14px; background:var(--section-bg); border-radius:var(--radius-sm); user-select:none; margin-bottom:6px; }
+    .section-drag-handle { color:rgba(255,255,255,.3); font-size:13px; flex-shrink:0; cursor:grab; }
+    .section-name { font-size:12px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--section-ink); flex:1; outline:none; background:transparent; border:none; font-family:var(--font); cursor:text; }
+    .section-name:focus { background:rgba(255,255,255,.1); border-radius:3px; padding:0 4px; }
+    .section-count { font-size:11px; color:rgba(255,255,255,.35); white-space:nowrap; }
+    .section-actions { display:flex; gap:4px; }
+    .section-btn { width:22px; height:22px; border-radius:50%; background:rgba(255,255,255,.1); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:11px; color:rgba(255,255,255,.5); transition:all .15s; }
+    .section-btn:hover { background:rgba(255,255,255,.2); color:#fff; }
+
+    /* Section items drop target — full area */
+    .section-items { display:flex; flex-direction:column; gap:4px; min-height:8px; border-radius:var(--radius-sm); padding:2px 0; transition:background .15s; }
+    .section-items.drop-active { background:var(--accent-soft); outline:2px dashed var(--accent); outline-offset:-2px; min-height:40px; border-radius:var(--radius-sm); }
+
+    /* Unsectioned drop zone */
+    .unsectioned { display:flex; flex-direction:column; gap:4px; margin-bottom:12px; min-height:8px; border-radius:var(--radius-sm); padding:2px 0; transition:background .15s; }
+    .unsectioned.drop-active { background:var(--accent-soft); outline:2px dashed var(--accent); outline-offset:-2px; min-height:40px; }
+
+    /* ITEM */
+    .checklist-item { display:flex; align-items:flex-start; gap:10px; padding:10px 12px; border-radius:var(--radius-sm); border:1px solid var(--border); background:#fff; transition:all .15s; position:relative; }
+    .checklist-item:hover { border-color:var(--border-2); box-shadow:0 2px 8px rgba(0,0,0,.04); }
+    .checklist-item.done .item-text { text-decoration:line-through; color:var(--ink-3); }
+    .checklist-item.done { background:var(--bg-3); }
+    .checklist-item.priority-item { border-left:3px solid var(--priority); }
+    .checklist-item.is-dragging { opacity:.35; }
+    .checklist-item.drop-target  { outline:2px dashed var(--accent); outline-offset:-1px; background:var(--accent-soft); }
+
+    .item-drag-handle { color:var(--ink-3); font-size:13px; cursor:grab; flex-shrink:0; margin-top:1px; opacity:0; transition:opacity .15s; padding:0 2px; }
+    .checklist-item:hover .item-drag-handle { opacity:1; }
+    .item-drag-handle:active { cursor:grabbing; }
+
+    .item-check { width:18px; height:18px; border-radius:5px; border:2px solid var(--border-2); flex-shrink:0; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .15s; background:#fff; margin-top:1px; }
+    .item-check:hover { border-color:var(--accent); }
+    .item-check.checked { background:var(--green); border-color:var(--green); }
+    .item-check.checked::after { content:'✓'; color:#fff; font-size:11px; font-weight:700; }
+
+    .priority-dot { width:8px; height:8px; border-radius:50%; background:var(--priority); flex-shrink:0; margin-top:5px; }
+
+    .item-body { flex:1; min-width:0; }
+    .item-text { font-size:13px; color:var(--ink); line-height:1.5; word-break:break-word; outline:none; }
+    .item-text:focus { background:var(--accent-soft); border-radius:3px; padding:0 2px; }
+    .item-note { font-size:11px; color:var(--ink-3); margin-top:3px; line-height:1.4; word-break:break-word; outline:none; font-style:italic; }
+    .item-note:empty::before { content:'Add note…'; color:var(--ink-3); opacity:.4; }
+    .item-note:focus { background:#fff8f0; border-radius:3px; padding:0 2px; }
+    .item-note:focus::before { content:none; }
+
+    .item-actions { display:flex; gap:3px; flex-shrink:0; opacity:0; transition:opacity .15s; }
+    .checklist-item:hover .item-actions { opacity:1; }
+    .ia-btn { width:22px; height:22px; border-radius:5px; background:transparent; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:12px; color:var(--ink-3); transition:all .15s; }
+    .ia-btn:hover { background:var(--bg-3); color:var(--ink); }
+    .ia-btn.active { color:var(--priority); }
+
+    /* Inline add row */
+    .add-item-row { display:flex; gap:8px; margin-top:6px; }
+    .add-item-row input { flex:1; padding:8px 12px; border:1.5px dashed var(--border); border-radius:var(--radius-sm); font-family:var(--font); font-size:12px; color:var(--ink); background:transparent; outline:none; transition:all .15s; }
+    .add-item-row input:focus { border-color:var(--accent); background:var(--accent-soft); border-style:solid; }
+    .add-item-row input::placeholder { color:var(--ink-3); }
+
+    /* Toast */
+    .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(10px); background:var(--ink); color:#fff; padding:10px 20px; border-radius:20px; font-size:13px; font-weight:600; opacity:0; transition:all .25s; pointer-events:none; z-index:999; white-space:nowrap; }
+    .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="tl">
+      <a href="index.html" class="back">← GomathiBalan's Forge</a>
+      <div class="sep"></div>
+      <span class="ptitle">☑️ Checklist Maker</span>
+    </div>
+    <div class="tr">
+      <button class="btn btn-ghost btn-sm print-hide" onclick="copyText()">⎘ Copy as text</button>
+      <button class="btn btn-ghost btn-sm print-hide" onclick="clearAll()">↺ Clear</button>
+      <button class="btn btn-dark  btn-sm print-hide" onclick="downloadPDF()">⬇ Download PDF</button>
+    </div>
+  </div>
+
+  <div class="body">
+
+    <!-- PANEL -->
+    <div class="panel print-hide">
+      <div class="pscroll">
+
+        <div class="psec">
+          <div class="plbl">Checklist Title</div>
+          <input class="title-input" id="checklistTitle" type="text" placeholder="e.g. Sprint Review Checklist…" oninput="updateTitle()"/>
+        </div>
+
+        <div class="psec">
+          <div class="plbl">Add Item</div>
+          <div class="add-row">
+            <input id="singleItemInput" type="text" placeholder="Type an item, press Enter…"
+                   onkeydown="if(event.key==='Enter') addSingleItem()"/>
+            <button class="btn btn-accent btn-sm" onclick="addSingleItem()">+</button>
+          </div>
+        </div>
+
+        <div class="psec">
+          <div class="plbl">Add Section Header</div>
+          <div class="section-row">
+            <input id="sectionInput" type="text" placeholder="e.g. Setup, Testing, Deploy…"
+                   onkeydown="if(event.key==='Enter') addSection()"/>
+            <button class="btn btn-dark btn-sm" onclick="addSection()">+</button>
+          </div>
+        </div>
+
+        <div class="psec">
+          <div class="plbl">Paste List</div>
+          <textarea class="paste-area" id="pasteArea"
+            placeholder="Paste items here, one per line…&#10;&#10;Lines starting with # become sections:&#10;# Setup&#10;Install dependencies&#10;Configure environment&#10;# Testing&#10;Run unit tests"></textarea>
+          <p class="paste-hint">Lines starting with <strong>#</strong> become section headers.</p>
+          <button class="btn btn-ghost btn-sm" style="margin-top:8px;width:100%" onclick="importPaste()">↓ Import</button>
+        </div>
+
+        <div class="psec">
+          <div class="plbl">Upload File</div>
+          <div class="upload-zone" onclick="document.getElementById('fileUpload').click()">
+            <div class="uzi">📄</div>
+            <strong>Upload .txt or .csv</strong>
+            <p>One item per line · # for sections</p>
+          </div>
+          <input type="file" id="fileUpload" accept=".txt,.csv" style="display:none" onchange="handleUpload(this)"/>
+        </div>
+
+        <div class="psec">
+          <div class="plbl">Progress</div>
+          <div class="stats-row">
+            <div class="stat-box"><div class="stat-num" id="statTotal">0</div><div class="stat-lbl">Total</div></div>
+            <div class="stat-box"><div class="stat-num" id="statDone"  style="color:var(--green)">0</div><div class="stat-lbl">Done</div></div>
+            <div class="stat-box"><div class="stat-num" id="statPri"   style="color:var(--priority)">0</div><div class="stat-lbl">Priority</div></div>
+          </div>
+          <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+          <div class="progress-label" id="progressLabel">0%</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- SHEET -->
+    <div class="checklist-area" id="checklistArea">
+      <div class="print-sheet" id="printSheet">
+        <div class="sheet-title"   id="sheetTitle">Untitled Checklist</div>
+        <div class="sheet-meta"    id="sheetMeta"></div>
+        <div class="sheet-divider"></div>
+        <div id="sheetBody"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ── STATE ──────────────────────────────────────────────────
+let state = { title:'', sections:[], items:[] };
+let nextId = 1;
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const newId = () => nextId++;
+
+// ── PERSIST ───────────────────────────────────────────────
+function save() {
+  try { localStorage.setItem('teamkit_checklist', JSON.stringify({state,nextId})); } catch {}
+}
+function load() {
+  try {
+    const r = localStorage.getItem('teamkit_checklist');
+    if (r) { const d=JSON.parse(r); state=d.state; nextId=d.nextId||1; }
+  } catch {}
+}
+
+// ── INPUTS ────────────────────────────────────────────────
+function updateTitle() {
+  state.title = $('checklistTitle').value.trim();
+  $('sheetTitle').textContent = state.title || 'Untitled Checklist';
+  save();
+}
+
+function addSingleItem() {
+  const inp = $('singleItemInput');
+  const text = inp.value.trim(); if (!text) return;
+  state.items.push({id:newId(),text,note:'',done:false,priority:false,sectionId:null});
+  inp.value=''; saveAndRender(); inp.focus();
+}
+
+function addSection() {
+  const inp = $('sectionInput');
+  const name = inp.value.trim(); if (!name) return;
+  state.sections.push({id:newId(),name});
+  inp.value=''; saveAndRender(); inp.focus();
+}
+
+function importPaste() {
+  const raw = $('pasteArea').value.trim(); if (!raw) return;
+  parseLines(raw);
+  $('pasteArea').value=''; saveAndRender();
+}
+
+function handleUpload(input) {
+  const file = input.files[0]; if (!file) return;
+  const r = new FileReader();
+  r.onload = e => { parseLines(e.target.result); saveAndRender(); };
+  r.readAsText(file); input.value='';
+}
+
+function parseLines(raw) {
+  const lines = raw.split('\n').map(l=>l.trim()).filter(Boolean);
+  let curSecId = null;
+  for (const line of lines) {
+    if (line.startsWith('#')) {
+      const name = line.replace(/^#+\s*/,'').trim();
+      if (!name) continue;
+      const sec = {id:newId(),name};
+      state.sections.push(sec);
+      curSecId = sec.id;
+    } else {
+      state.items.push({id:newId(),text:line,note:'',done:false,priority:false,sectionId:curSecId});
+    }
+  }
+}
+
+// ── MUTATIONS ─────────────────────────────────────────────
+function toggleDone(id)     { const i=state.items.find(x=>x.id===id); if(i){i.done=!i.done;       saveAndRender();} }
+function togglePriority(id) { const i=state.items.find(x=>x.id===id); if(i){i.priority=!i.priority;saveAndRender();} }
+function deleteItem(id)     { state.items=state.items.filter(i=>i.id!==id);     saveAndRender(); }
+function deleteSection(id)  {
+  state.sections=state.sections.filter(s=>s.id!==id);
+  state.items.forEach(i=>{if(i.sectionId===id) i.sectionId=null;});
+  saveAndRender();
+}
+function updateItemText(id,v)    { const i=state.items.find(x=>x.id===id);    if(i){i.text=v;save();updateStats();} }
+function updateItemNote(id,v)    { const i=state.items.find(x=>x.id===id);    if(i){i.note=v;save();} }
+function updateSectionName(id,v) { const s=state.sections.find(x=>x.id===id); if(s){s.name=v;save();} }
+
+function addItemInSection(secId, inp) {
+  const text=inp.value.trim(); if(!text) return;
+  state.items.push({id:newId(),text,note:'',done:false,priority:false,sectionId:secId});
+  inp.value=''; saveAndRender();
+  setTimeout(()=>{ const el=$('inline-add-'+secId); if(el) el.focus(); },40);
+}
+function addItemUnsectioned(inp) {
+  const text=inp.value.trim(); if(!text) return;
+  state.items.push({id:newId(),text,note:'',done:false,priority:false,sectionId:null});
+  inp.value=''; saveAndRender();
+  setTimeout(()=>{ const el=$('inline-add-null'); if(el) el.focus(); },40);
+}
+
+function clearAll() {
+  if((state.items.length||state.sections.length)&&!confirm('Clear the entire checklist?')) return;
+  state={title:state.title,sections:[],items:[]}; saveAndRender();
+}
+
+// ── STATS ─────────────────────────────────────────────────
+function updateStats() {
+  const items=state.items, total=items.length;
+  const done=items.filter(i=>i.done).length, pri=items.filter(i=>i.priority).length;
+  const pct=total?Math.round(done/total*100):0;
+  $('statTotal').textContent=total; $('statDone').textContent=done; $('statPri').textContent=pri;
+  $('progressFill').style.width=pct+'%'; $('progressLabel').textContent=pct+'%';
+  const d=new Date();
+  $('sheetMeta').textContent=
+    [total+' item'+(total!==1?'s':''), done+' completed', pri+' priority',
+     d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})].join('  ·  ');
+}
+
+// ── RENDER ────────────────────────────────────────────────
+function render() {
+  const body=$('sheetBody'); body.innerHTML='';
+  $('sheetTitle').textContent=state.title||'Untitled Checklist';
+
+  if (!state.items.length && !state.sections.length) {
+    body.innerHTML=`<div class="sheet-empty"><div class="ei">☑️</div><p>Add items from the panel,<br/>paste a list, or upload a .txt file.</p></div>`;
+    return;
+  }
+
+  // ── Unsectioned drop zone ──
+  const unsecWrap = document.createElement('div');
+  unsecWrap.className = 'unsectioned';
+  unsecWrap.id = 'zone-null';
+  unsecWrap.dataset.zoneSecId = 'null';
+  state.items.filter(i=>i.sectionId===null).forEach(i=>unsecWrap.appendChild(buildItem(i)));
+  const unsecAdd = document.createElement('div');
+  unsecAdd.className='add-item-row';
+  unsecAdd.innerHTML=`<input id="inline-add-null" type="text" placeholder="+ Add item…"
+    onkeydown="if(event.key==='Enter') addItemUnsectioned(this)"/>`;
+  unsecWrap.appendChild(unsecAdd);
+  wireZone(unsecWrap, null);
+  body.appendChild(unsecWrap);
+
+  // ── Sections ──
+  state.sections.forEach(sec=>{
+    const secEl=document.createElement('div');
+    secEl.className='checklist-section';
+    secEl.id='section-'+sec.id;
+    secEl.dataset.dragSecId=sec.id;
+
+    const hdr=document.createElement('div');
+    hdr.className='section-header';
+    hdr.setAttribute('draggable','true');
+    hdr.innerHTML=`
+      <span class="section-drag-handle">⠿</span>
+      <input class="section-name" type="text" value="${esc(sec.name)}" spellcheck="false"
+             onchange="updateSectionName(${sec.id},this.value)"
+             onkeydown="if(event.key==='Enter') this.blur()"/>
+      <span class="section-count" id="sc-${sec.id}"></span>
+      <div class="section-actions">
+        <button class="section-btn" onclick="deleteSection(${sec.id})" title="Delete section">✕</button>
+      </div>`;
+    hdr.addEventListener('dragstart', e=>{
+      dragState.type='section'; dragState.secId=sec.id;
+      hdr.style.opacity='.4'; e.dataTransfer.effectAllowed='move';
+      e.stopPropagation();
+    });
+    hdr.addEventListener('dragend', ()=>{ hdr.style.opacity=''; cleanDragUI(); });
+    secEl.appendChild(hdr);
+
+    const itemsZone=document.createElement('div');
+    itemsZone.className='section-items';
+    itemsZone.id='zone-'+sec.id;
+    itemsZone.dataset.zoneSecId=sec.id;
+    state.items.filter(i=>i.sectionId===sec.id).forEach(i=>itemsZone.appendChild(buildItem(i)));
+
+    // Section count
+    const scEl=secEl.querySelector('#sc-'+sec.id);
+    const cnt=state.items.filter(i=>i.sectionId===sec.id).length;
+    if(scEl) scEl.textContent=cnt+' item'+(cnt!==1?'s':'');
+
+    wireZone(itemsZone, sec.id);
+    secEl.appendChild(itemsZone);
+
+    // Section drop (for reordering sections when dropping header onto another section)
+    secEl.addEventListener('dragover', e=>{
+      if(dragState.type!=='section') return;
+      e.preventDefault(); e.dataTransfer.dropEffect='move';
+    });
+    secEl.addEventListener('drop', e=>{
+      if(dragState.type!=='section') return;
+      e.preventDefault(); e.stopPropagation();
+      const fromId=dragState.secId, toId=sec.id;
+      if(fromId===toId) return;
+      const fi=state.sections.findIndex(s=>s.id===fromId);
+      const ti=state.sections.findIndex(s=>s.id===toId);
+      if(fi===-1||ti===-1) return;
+      const [dragged]=state.sections.splice(fi,1);
+      state.sections.splice(ti,0,dragged);
+      dragState.type=null; dragState.secId=null;
+      saveAndRender();
+    });
+
+    const addRow=document.createElement('div');
+    addRow.className='add-item-row';
+    addRow.innerHTML=`<input id="inline-add-${sec.id}" type="text"
+      placeholder="+ Add item to ${esc(sec.name)}…"
+      onkeydown="if(event.key==='Enter') addItemInSection(${sec.id},this)"/>`;
+    secEl.appendChild(addRow);
+
+    body.appendChild(secEl);
+  });
+}
+
+// ── BUILD ONE ITEM ELEMENT ─────────────────────────────────
+function buildItem(item) {
+  const el=document.createElement('div');
+  el.className='checklist-item'+(item.done?' done':'')+(item.priority?' priority-item':'');
+  el.id='item-'+item.id;
+  el.setAttribute('draggable','true');
+  el.dataset.itemId=item.id;
+
+  el.innerHTML=`
+    <span class="item-drag-handle" title="Drag to reorder">⠿</span>
+    <div class="item-check${item.done?' checked':''}" onclick="toggleDone(${item.id})"></div>
+    ${item.priority?'<span class="priority-dot"></span>':''}
+    <div class="item-body">
+      <div class="item-text" contenteditable="true" spellcheck="false"
+           onblur="updateItemText(${item.id},this.textContent.trim())"
+           onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}">${esc(item.text)}</div>
+      <div class="item-note" contenteditable="true" spellcheck="false"
+           onblur="updateItemNote(${item.id},this.textContent.trim())">${esc(item.note)}</div>
+    </div>
+    <div class="item-actions">
+      <button class="ia-btn${item.priority?' active':''}" onclick="togglePriority(${item.id})" title="Priority">🔥</button>
+      <button class="ia-btn" onclick="deleteItem(${item.id})" title="Delete">✕</button>
+    </div>`;
+
+  // Item drag
+  el.addEventListener('dragstart', e=>{
+    dragState.type='item'; dragState.itemId=item.id; dragState.fromSecId=item.sectionId;
+    el.classList.add('is-dragging');
+    e.dataTransfer.effectAllowed='move';
+    e.stopPropagation();
+  });
+  el.addEventListener('dragend', ()=>{ el.classList.remove('is-dragging'); cleanDragUI(); });
+
+  // Drop onto another item → insert before it
+  el.addEventListener('dragover', e=>{
+    if(dragState.type!=='item') return;
+    e.preventDefault(); e.stopPropagation();
+    e.dataTransfer.dropEffect='move';
+    document.querySelectorAll('.checklist-item.drop-target').forEach(x=>x.classList.remove('drop-target'));
+    el.classList.add('drop-target');
+  });
+  el.addEventListener('drop', e=>{
+    if(dragState.type!=='item') return;
+    e.preventDefault(); e.stopPropagation();
+    el.classList.remove('drop-target');
+    const fromId=dragState.itemId, toId=item.id;
+    if(fromId===toId) return;
+    // The drop zone's section id comes from the item we're dropping onto
+    moveItem(fromId, toId, item.sectionId, 'before');
+  });
+
+  return el;
+}
+
+// ── WIRE A DROP ZONE (section-items or unsectioned) ────────
+// Items dragged into the zone area (not onto a specific item) go to end of zone
+function wireZone(zone, secId) {
+  zone.addEventListener('dragover', e=>{
+    if(dragState.type!=='item') return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect='move';
+    // Only highlight zone if not hovering over a child item
+    if(!e.target.closest('.checklist-item')) zone.classList.add('drop-active');
+  });
+  zone.addEventListener('dragleave', e=>{
+    if(!zone.contains(e.relatedTarget)) zone.classList.remove('drop-active');
+  });
+  zone.addEventListener('drop', e=>{
+    zone.classList.remove('drop-active');
+    if(dragState.type!=='item') return;
+    // If dropped on a child item, the item's own drop handler fires — skip here
+    if(e.target.closest('.checklist-item')) return;
+    e.preventDefault(); e.stopPropagation();
+    moveItem(dragState.itemId, null, secId, 'end');
+  });
+}
+
+// ── CORE MOVE FUNCTION ─────────────────────────────────────
+// Moves item `fromId`:
+//   mode='before' → insert before item `refId` and adopt refItem's sectionId
+//   mode='end'    → append to end of section `targetSecId`
+function moveItem(fromId, refId, targetSecId, mode) {
+  const fromIdx = state.items.findIndex(i=>i.id===fromId);
+  if (fromIdx===-1) return;
+  const [dragged] = state.items.splice(fromIdx, 1);
+  dragged.sectionId = targetSecId ?? null;
+
+  if (mode==='before' && refId!=null) {
+    const toIdx = state.items.findIndex(i=>i.id===refId);
+    if (toIdx!==-1) { state.items.splice(toIdx,0,dragged); }
+    else             { state.items.push(dragged); }
+  } else {
+    // Append after last item in targetSecId (or at very end)
+    let insertAt = state.items.length;
+    // Find the last item in the target section to insert right after it
+    for (let i=state.items.length-1; i>=0; i--) {
+      if (state.items[i].sectionId === (targetSecId??null)) { insertAt=i+1; break; }
+    }
+    state.items.splice(insertAt,0,dragged);
+  }
+  dragState.type=null; dragState.itemId=null;
+  saveAndRender();
+}
+
+// ── DRAG STATE ────────────────────────────────────────────
+const dragState = { type:null, itemId:null, fromSecId:null, secId:null };
+
+function cleanDragUI() {
+  document.querySelectorAll('.drop-target,.drop-active,.is-dragging').forEach(el=>{
+    el.classList.remove('drop-target','drop-active','is-dragging');
+  });
+}
+
+// ── COPY AS TEXT ──────────────────────────────────────────
+function copyText() {
+  const lines=[];
+  if(state.title) lines.push(state.title.toUpperCase(),'');
+  state.items.filter(i=>i.sectionId===null).forEach(i=>{
+    lines.push((i.done?'[x]':'[ ]')+' '+i.text+(i.priority?' ★':''));
+    if(i.note) lines.push('    ↳ '+i.note);
+  });
+  state.sections.forEach(sec=>{
+    lines.push('','── '+sec.name.toUpperCase()+' ──');
+    state.items.filter(i=>i.sectionId===sec.id).forEach(i=>{
+      lines.push((i.done?'[x]':'[ ]')+' '+i.text+(i.priority?' ★':''));
+      if(i.note) lines.push('    ↳ '+i.note);
+    });
+  });
+  const text=lines.join('\n');
+  navigator.clipboard.writeText(text)
+    .then(()=>showToast('✓ Copied to clipboard'))
+    .catch(()=>{
+      const ta=document.createElement('textarea');
+      ta.value=text; document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); document.body.removeChild(ta);
+      showToast('✓ Copied to clipboard');
+    });
+}
+
+// ── DOWNLOAD PDF ──────────────────────────────────────────
+// window.print() with the print stylesheet above handles multi-page correctly
+// by setting height:auto on all clipping containers.
+function downloadPDF() { window.print(); }
+
+// ── TOAST ─────────────────────────────────────────────────
+function showToast(msg) {
+  const t=$('toast'); t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+// ── COMBINED ──────────────────────────────────────────────
+function saveAndRender() { save(); render(); updateStats(); }
+
+// ── INIT ──────────────────────────────────────────────────
+load();
+if(state.title) $('checklistTitle').value=state.title;
+saveAndRender();
+</script>
+
+<!-- ── TEAMKIT FOOTER ── -->
+<div style="
+  border-top:1px solid #e6e1da;
+  background:#f0ede8;
+  padding:10px 20px;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:8px;
+  font-family:'DM Sans',sans-serif;
+  font-size:11px;
+  flex-shrink:0;
+" id="tk-footer">
+  <span style="color:#a8a49e">
+    🧰 <strong style="color:#6b6760">GomathiBalan's Forge</strong> &nbsp;·&nbsp;
+    Built by <strong style="color:#1c1917">GomathiBalan</strong>
+  </span>
+  <span style="color:#c4bfb8;font-size:10px">
+    Designed with prompts &nbsp;·&nbsp; Crafted by 
+    <strong style="color:#a8a49e">Claude AI</strong>
+  </span>
+</div>
+</body>
+</html>

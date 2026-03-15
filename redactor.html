@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Secret Redactor — GomathiBalan's Forge</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:      #0f1117;
+      --bg-2:    #161b22;
+      --bg-3:    #1c2333;
+      --bg-4:    #21262d;
+      --border:  #30363d;
+      --border-2:#3d444d;
+      --ink:     #e6edf3;
+      --ink-2:   #8d96a0;
+      --ink-3:   #484f58;
+      --accent:  #388bfd;
+      --accent-2:#1f4a8a;
+      --accent-soft:#0d2044;
+      --green:   #3fb950;
+      --green-bg:#0d1f0e;
+      --amber:   #d29922;
+      --amber-bg:#2a1f00;
+      --red:     #f85149;
+      --red-bg:  #2a0e0e;
+      --redact:  #ff6b35;
+      --redact-bg:#2a1200;
+      --font:    'DM Sans', sans-serif;
+      --mono:    'DM Mono', monospace;
+    }
+
+    html, body { height:100%; font-family:var(--font); background:var(--bg); color:var(--ink); overflow-x:hidden; }
+
+    /* ── PRINT ── */
+    @media print {
+      html,body,.app,.body,.right-col { height:auto!important; overflow:visible!important; }
+      body { background:#fff!important; color:#000!important; }
+      .topbar,.left-col,.print-hide { display:none!important; }
+      .body { display:block!important; }
+      .right-col { padding:24px!important; background:#fff!important; }
+      .output-card { box-shadow:none!important; border:none!important; border-radius:0!important; background:#fff!important; }
+      .redact-bar { background:#000!important; color:#000!important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+      .card-actions, .pattern-tag .tag-del { display:none!important; }
+    }
+
+    .app { display:flex; flex-direction:column; height:100vh; }
+
+    /* TOPBAR */
+    .topbar { height:52px; background:var(--bg-2); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0 20px; flex-shrink:0; z-index:100; gap:12px; }
+    .tl { display:flex; align-items:center; gap:12px; }
+    .tr { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+    .back { font-size:12px; font-weight:500; color:var(--ink-3); text-decoration:none; transition:color .15s; }
+    .back:hover { color:var(--ink-2); }
+    .sep { width:1px; height:18px; background:var(--border); }
+    .ptitle { font-size:13px; font-weight:600; color:var(--ink); white-space:nowrap; }
+    .btn { display:inline-flex; align-items:center; gap:6px; padding:7px 14px; border-radius:7px; font-family:var(--font); font-size:12px; font-weight:600; cursor:pointer; border:none; transition:all .15s; white-space:nowrap; line-height:1; }
+    .btn-ghost  { background:transparent; color:var(--ink-2); border:1px solid var(--border); }
+    .btn-ghost:hover  { background:var(--bg-4); color:var(--ink); border-color:var(--border-2); }
+    .btn-accent { background:var(--accent); color:#fff; }
+    .btn-accent:hover { background:#1a6dda; }
+    .btn-green  { background:var(--green); color:#fff; }
+    .btn-green:hover  { background:#2ea043; }
+    .btn-sm { padding:5px 10px; font-size:11px; }
+    .btn:disabled { opacity:.4; cursor:not-allowed; }
+
+    /* BODY */
+    .body { display:flex; flex:1; overflow:hidden; }
+
+    /* LEFT PANEL */
+    .left-col { width:320px; background:var(--bg-2); border-right:1px solid var(--border); display:flex; flex-direction:column; overflow:hidden; flex-shrink:0; }
+    .pscroll { overflow-y:auto; flex:1; }
+    .pscroll::-webkit-scrollbar { width:3px; }
+    .pscroll::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
+    .psec { padding:16px; border-bottom:1px solid var(--border); }
+    .psec:last-child { border-bottom:none; }
+    .plbl { font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); margin-bottom:12px; display:flex; align-items:center; justify-content:space-between; }
+    .plbl-note { font-size:10px; font-weight:400; text-transform:none; letter-spacing:0; color:var(--ink-3); }
+
+    /* Pattern toggle */
+    .pattern-list { display:flex; flex-direction:column; gap:6px; }
+    .pattern-row { display:flex; align-items:center; justify-content:space-between; padding:8px 11px; border:1px solid var(--border); border-radius:8px; background:var(--bg-3); transition:border-color .15s; }
+    .pattern-row:hover { border-color:var(--border-2); }
+    .pattern-row.active { border-color:var(--accent-2); background:var(--accent-soft); }
+    .pattern-info { display:flex; flex-direction:column; gap:2px; }
+    .pattern-name { font-size:12px; font-weight:600; color:var(--ink); }
+    .pattern-example { font-size:10px; font-family:var(--mono); color:var(--ink-3); }
+    .toggle { width:36px; height:20px; border-radius:10px; background:var(--border); border:none; cursor:pointer; position:relative; transition:background .2s; flex-shrink:0; }
+    .toggle::after { content:''; position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:50%; background:#fff; transition:transform .2s; }
+    .toggle.on { background:var(--accent); }
+    .toggle.on::after { transform:translateX(16px); }
+
+    /* Custom keywords */
+    .keyword-input-row { display:flex; gap:6px; }
+    .keyword-input-row input { flex:1; padding:8px 10px; border:1px solid var(--border); border-radius:7px; font-family:var(--mono); font-size:12px; color:var(--ink); background:var(--bg-3); outline:none; transition:border-color .15s; }
+    .keyword-input-row input:focus { border-color:var(--accent); background:var(--bg-4); }
+    .keyword-input-row input::placeholder { color:var(--ink-3); font-family:var(--font); }
+    .tag-list { display:flex; flex-wrap:wrap; gap:5px; margin-top:8px; }
+    .pattern-tag { display:inline-flex; align-items:center; gap:5px; background:var(--redact-bg); border:1px solid var(--redact); border-radius:5px; padding:3px 8px; font-size:11px; font-family:var(--mono); color:var(--redact); }
+    .tag-del { background:none; border:none; color:var(--redact); cursor:pointer; font-size:13px; line-height:1; padding:0; opacity:.7; transition:opacity .15s; }
+    .tag-del:hover { opacity:1; }
+
+    /* Redaction style */
+    .style-seg { display:flex; border:1px solid var(--border); border-radius:7px; overflow:hidden; background:var(--bg-3); }
+    .style-btn { flex:1; padding:8px 6px; font-family:var(--font); font-size:12px; font-weight:500; border:none; background:transparent; cursor:pointer; color:var(--ink-2); transition:all .15s; display:flex; align-items:center; justify-content:center; gap:4px; }
+    .style-btn.on { background:var(--bg-4); color:var(--ink); font-weight:600; box-shadow:0 1px 3px rgba(0,0,0,.3); }
+
+    /* Stats */
+    .stats-row { display:flex; gap:8px; }
+    .stat-box { flex:1; background:var(--bg-3); border-radius:7px; padding:10px; text-align:center; }
+    .stat-num { font-size:22px; font-weight:700; line-height:1; }
+    .stat-lbl { font-size:10px; color:var(--ink-3); margin-top:2px; letter-spacing:.04em; text-transform:uppercase; }
+
+    /* RIGHT SIDE */
+    .right-col { flex:1; display:flex; flex-direction:column; overflow:hidden; background:var(--bg); }
+
+    /* Input area */
+    .input-section { flex:1; display:flex; flex-direction:column; padding:20px; gap:12px; min-height:0; border-bottom:1px solid var(--border); }
+    .area-label { font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); display:flex; align-items:center; justify-content:space-between; }
+    .input-textarea {
+      flex:1; width:100%; padding:14px 16px;
+      background:var(--bg-2); border:1px solid var(--border); border-radius:10px;
+      font-family:var(--mono); font-size:13px; color:var(--ink);
+      line-height:1.7; resize:none; outline:none; transition:border-color .15s;
+      min-height:0;
+    }
+    .input-textarea:focus { border-color:var(--accent); }
+    .input-textarea::placeholder { color:var(--ink-3); font-family:var(--font); }
+
+    /* Output area */
+    .output-section { flex:1; display:flex; flex-direction:column; padding:20px; gap:12px; min-height:0; }
+    .card-actions { display:flex; gap:8px; align-items:center; }
+
+    /* The rendered output */
+    .output-card {
+      flex:1; padding:16px; background:var(--bg-2); border:1px solid var(--border);
+      border-radius:10px; overflow-y:auto; font-family:var(--mono); font-size:13px;
+      line-height:1.8; color:var(--ink); white-space:pre-wrap; word-break:break-all;
+      min-height:0;
+    }
+    .output-card::-webkit-scrollbar { width:4px; }
+    .output-card::-webkit-scrollbar-thumb { background:var(--border-2); border-radius:4px; }
+
+    /* Redaction mark styles */
+    .redact-bar {
+      display:inline;
+      background:var(--redact);
+      color:transparent;
+      border-radius:2px;
+      padding:0 1px;
+      user-select:none;
+      font-family:var(--mono);
+    }
+    .redact-asterisk {
+      display:inline;
+      color:var(--redact);
+      font-family:var(--mono);
+      font-weight:500;
+      letter-spacing:.04em;
+    }
+    .redact-custom {
+      display:inline;
+      background:var(--redact-bg);
+      color:var(--redact);
+      font-family:var(--mono);
+      font-size:11px;
+      font-weight:700;
+      border-radius:3px;
+      padding:0 3px;
+      border:1px solid var(--redact);
+    }
+
+    /* Highlight categories */
+    .hl-password { background:rgba(248,81,73,.15); border-bottom:1px solid var(--red); }
+    .hl-api      { background:rgba(56,139,253,.12); border-bottom:1px solid var(--accent); }
+    .hl-email    { background:rgba(63,185,80,.12);  border-bottom:1px solid var(--green); }
+    .hl-token    { background:rgba(210,153,34,.12); border-bottom:1px solid var(--amber); }
+    .hl-custom   { background:rgba(255,107,53,.15); border-bottom:1px solid var(--redact); }
+
+    /* Legend */
+    .legend { display:flex; flex-wrap:wrap; gap:8px; padding:10px 16px; border-top:1px solid var(--border); flex-shrink:0; }
+    .legend-item { display:flex; align-items:center; gap:5px; font-size:10px; font-weight:600; color:var(--ink-3); letter-spacing:.04em; text-transform:uppercase; }
+    .legend-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+
+    /* Empty / placeholder */
+    .output-placeholder { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:10px; opacity:.25; pointer-events:none; }
+    .output-placeholder .pi { font-size:36px; }
+    .output-placeholder p { font-size:12px; color:var(--ink-2); text-align:center; }
+
+    /* Toast */
+    .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(10px); background:var(--green); color:#fff; padding:10px 20px; border-radius:20px; font-size:13px; font-weight:600; opacity:0; transition:all .25s; pointer-events:none; z-index:999; white-space:nowrap; }
+    .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="tl">
+      <a href="index.html" class="back">← GomathiBalan's Forge</a>
+      <div class="sep"></div>
+      <span class="ptitle">🔒 Secret Redactor</span>
+    </div>
+    <div class="tr print-hide">
+      <button class="btn btn-ghost btn-sm" onclick="copyRedacted()" id="btnCopy" disabled>⎘ Copy</button>
+      <button class="btn btn-ghost btn-sm" onclick="downloadTxt()" id="btnTxt"  disabled>⬇ .txt</button>
+      <button class="btn btn-accent btn-sm" onclick="downloadPDF()" id="btnPdf" disabled>⬇ PDF</button>
+    </div>
+  </div>
+
+  <div class="body">
+
+    <!-- LEFT PANEL -->
+    <div class="left-col print-hide">
+      <div class="pscroll">
+
+        <!-- Auto-detect patterns -->
+        <div class="psec">
+          <div class="plbl">Auto-detect Patterns</div>
+          <div class="pattern-list" id="patternList"></div>
+        </div>
+
+        <!-- Custom keywords -->
+        <div class="psec">
+          <div class="plbl">
+            Custom Keywords
+            <span class="plbl-note">exact match</span>
+          </div>
+          <div class="keyword-input-row">
+            <input id="kwInput" type="text" placeholder="Type a word or phrase…"
+                   onkeydown="if(event.key==='Enter') addKeyword()"/>
+            <button class="btn btn-ghost btn-sm" onclick="addKeyword()">+</button>
+          </div>
+          <div class="tag-list" id="tagList"></div>
+        </div>
+
+        <!-- Redaction style -->
+        <div class="psec">
+          <div class="plbl">Redaction Style</div>
+          <div class="style-seg">
+            <button class="style-btn on" id="styleAsterisk" onclick="setStyle('asterisk')">★★★★★ Asterisks</button>
+            <button class="style-btn"    id="styleBar"      onclick="setStyle('bar')">█ Black bar</button>
+            <button class="style-btn"    id="styleCustom"   onclick="setStyle('custom')">[REDACTED]</button>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="psec">
+          <div class="plbl">Detections</div>
+          <div class="stats-row">
+            <div class="stat-box"><div class="stat-num" id="statTotal" style="color:var(--redact)">0</div><div class="stat-lbl">Redacted</div></div>
+            <div class="stat-box"><div class="stat-num" id="statTypes" style="color:var(--amber)">0</div><div class="stat-lbl">Types</div></div>
+            <div class="stat-box"><div class="stat-num" id="statChars" style="color:var(--ink-2)">0</div><div class="stat-lbl">Chars hidden</div></div>
+          </div>
+        </div>
+
+        <!-- Legend -->
+        <div class="psec">
+          <div class="plbl">Colour Legend</div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>Passwords / secrets</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div>API keys / tokens</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>Email addresses</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div>Auth tokens / JWTs</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--redact)"></div>Custom keywords</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- RIGHT: INPUT + OUTPUT -->
+    <div class="right-col">
+
+      <!-- Input -->
+      <div class="input-section">
+        <div class="area-label">
+          <span>📋 Paste your text</span>
+          <button class="btn btn-ghost btn-sm" onclick="clearInput()">↺ Clear</button>
+        </div>
+        <textarea class="input-textarea" id="inputText"
+          placeholder="Paste any text containing secrets — config files, logs, emails, API responses…&#10;&#10;Example:&#10;API_KEY=sk-abc123XYZ789secret&#10;password: myP@ssw0rd!&#10;Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.payload.signature&#10;email: user@example.com"
+          oninput="processInput()"></textarea>
+      </div>
+
+      <!-- Output -->
+      <div class="output-section">
+        <div class="area-label">
+          <span>🔒 Redacted output</span>
+          <div class="card-actions">
+            <button class="btn btn-ghost btn-sm print-hide" onclick="copyRedacted()" id="btnCopy2" disabled>⎘ Copy</button>
+          </div>
+        </div>
+        <div class="output-card" id="outputCard">
+          <div class="output-placeholder">
+            <div class="pi">🔒</div>
+            <p>Paste text on the left to see<br/>redacted output here.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ─────────────────────────────────────────────────────────
+//  PATTERN DEFINITIONS
+//  Each pattern: { id, name, example, category, regex }
+//  category → CSS class suffix for highlight colour
+// ─────────────────────────────────────────────────────────
+const PATTERNS = [
+  {
+    id: 'password_kv',
+    name: 'Passwords (key=value)',
+    example: 'password=mySecret123',
+    category: 'password',
+    // matches: password/passwd/secret/pass followed by = or : then the value
+    regex: /(?<![a-zA-Z])(?:password|passwd|secret|pass|pwd|api_secret|client_secret|auth_secret)(?![a-zA-Z])["'\"]?\s*[=:]\s*["']?\s*([^\s"',;{}\n\r]{4,})\s*["']?/gi,
+    captureGroup: 1,
+  },
+  {
+    id: 'api_key',
+    name: 'API Keys',
+    example: 'sk-abc123... / AKIA...',
+    category: 'api',
+    // Generic API key patterns: sk-, pk-, rk-, AIza, AKIA, ghp_, glpat-, etc.
+    regex: /(?:sk-(?:live-|test-)?[a-zA-Z0-9]{16,}|pk(?:_test|_live)?_[a-zA-Z0-9]{16,}|(?:rk|uk|wk)-[a-zA-Z0-9]{16,}|AIza[0-9A-Za-z\-_]{32,}|AKIA[0-9A-Za-z]{14,}|ASIA[0-9A-Za-z]{14,}|ghp_[a-zA-Z0-9]{30,}|gho_[a-zA-Z0-9]{30,}|glpat-[a-zA-Z0-9\-_]{16,}|xox[baprs]-[0-9A-Za-z\-]{10,}|ya29\.[0-9A-Za-z\-_]+)/g,
+    captureGroup: 0,
+  },
+  {
+    id: 'generic_secret',
+    name: 'Generic Secret Values',
+    example: 'token=abc123xyz',
+    category: 'api',
+    // Matches: token/key/apikey/access_key/secret_key = value
+    regex: /(?<![a-zA-Z])(?:token|key|oauth|apikey|api_key|access_key|secret_key|private_key|auth_token|access_token|refresh_token|client_id|client_secret|aws_session|github_oauth|github_token)(?![a-zA-Z])\s*["']?\s*[=:]\s*["']?\s*([a-zA-Z0-9\/+_\-\.]{8,})/gi,
+    captureGroup: 1,
+  },
+  {
+    id: 'email',
+    name: 'Email Addresses',
+    example: 'user@example.com',
+    category: 'email',
+    regex: /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g,
+    captureGroup: 0,
+  },
+  {
+    id: 'jwt',
+    name: 'JWT Tokens',
+    example: 'eyJhbGci…',
+    category: 'token',
+    regex: /eyJ[a-zA-Z0-9_\-=+/]{4,}\.[a-zA-Z0-9_\-=+/]{4,}\.[a-zA-Z0-9_\-=+/]{4,}/g,
+    captureGroup: 0,
+  },
+  {
+    id: 'bearer',
+    name: 'Bearer / Auth headers',
+    example: 'Bearer abc123token',
+    category: 'token',
+    regex: /(?:Bearer|Basic|Token)\s+([a-zA-Z0-9\/+_\-\.=]{8,})/gi,
+    captureGroup: 1,
+  },
+  {
+    id: 'connection_string',
+    name: 'Connection Strings',
+    example: 'mongodb://user:pass@host',
+    category: 'password',
+    regex: /(?:mongodb|mysql|postgres|postgresql|redis|amqp|smtp):\/\/[^\s"'<>]+/gi,
+    captureGroup: 0,
+  },
+  {
+    id: 'private_key_block',
+    name: 'Private Key Blocks',
+    example: '-----BEGIN RSA PRIVATE KEY-----',
+    category: 'password',
+    regex: /-----BEGIN [A-Z ]+PRIVATE KEY-----[\s\S]+?-----END [A-Z ]+PRIVATE KEY-----/g,
+    captureGroup: 0,
+  },
+  {
+    id: 'ip_address',
+    name: 'IP Addresses',
+    example: '192.168.1.1',
+    category: 'api',
+    regex: /\b(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\b/g,
+    captureGroup: 0,
+  },
+  {
+    id: 'credit_card',
+    name: 'Credit Card Numbers',
+    example: '4111 1111 1111 1111',
+    category: 'password',
+    regex: /\b(?:4\d{3}[\s\-]?\d{4}[\s\-]?\d{4}[\s\-]?\d{4}|(?:5[1-5]\d{2}|222[1-9]|22[3-9]\d|2[3-6]\d{2}|27[01]\d|2720)[\s\-]?\d{4}[\s\-]?\d{4}[\s\-]?\d{4}|3[47]\d{2}[\s\-]?\d{6}[\s\-]?\d{5}|3(?:0[0-5]|[68]\d)\d{2}[\s\-]?\d{6}[\s\-]?\d{4}|6(?:011|5\d{2})[\s\-]?\d{4}[\s\-]?\d{4}[\s\-]?\d{4}|(?:2131|1800|35\d{3})[\s\-]?\d{4}[\s\-]?\d{3}[\s\-]?\d{4})\b/g,
+    captureGroup: 0,
+  },
+  {
+    id: 'phone',
+    name: 'Phone Numbers',
+    example: '+1-555-867-5309',
+    category: 'email',
+    regex: /(?:tel:)?(?:(?:\+|00)\d{1,3}[\s\-.]?\d{4,5}[\s\-.]?\d{4,6}|(?:\+?\d{1,3}[\s\-.]?)?\(?\d{3}\)?[\s\-.]?\d{3}[\s\-.]?\d{4,6})/g,
+    captureGroup: 0,
+  },
+];
+
+// ── STATE ──────────────────────────────────────────────────
+let enabledPatterns = new Set(PATTERNS.map(p => p.id));
+let customKeywords  = [];
+let redactStyle     = 'asterisk'; // 'asterisk' | 'bar' | 'custom'
+
+// Detection results for stats
+let lastMatches = [];
+
+const $ = id => document.getElementById(id);
+
+// ── BUILD PATTERN LIST ─────────────────────────────────────
+function buildPatternList() {
+  const list = $('patternList');
+  list.innerHTML = '';
+  PATTERNS.forEach(p => {
+    const row = document.createElement('div');
+    row.className = 'pattern-row' + (enabledPatterns.has(p.id) ? ' active' : '');
+    row.id = 'pr-' + p.id;
+    row.innerHTML = `
+      <div class="pattern-info">
+        <span class="pattern-name">${p.name}</span>
+        <span class="pattern-example">${p.example}</span>
+      </div>
+      <button class="toggle${enabledPatterns.has(p.id)?' on':''}" id="tog-${p.id}"
+              onclick="togglePattern('${p.id}')"></button>`;
+    list.appendChild(row);
+  });
+}
+
+function togglePattern(id) {
+  if (enabledPatterns.has(id)) enabledPatterns.delete(id);
+  else enabledPatterns.add(id);
+  const tog = $('tog-' + id);
+  const row = $('pr-'  + id);
+  tog.classList.toggle('on',  enabledPatterns.has(id));
+  row.classList.toggle('active', enabledPatterns.has(id));
+  processInput();
+}
+
+// ── CUSTOM KEYWORDS ────────────────────────────────────────
+function addKeyword() {
+  const inp = $('kwInput');
+  const kw  = inp.value.trim();
+  if (!kw || customKeywords.includes(kw)) { inp.value=''; return; }
+  customKeywords.push(kw);
+  inp.value = '';
+  renderTags();
+  processInput();
+}
+
+function removeKeyword(kw) {
+  customKeywords = customKeywords.filter(k => k !== kw);
+  renderTags();
+  processInput();
+}
+
+function renderTags() {
+  const list = $('tagList');
+  list.innerHTML = '';
+  customKeywords.forEach(kw => {
+    const tag = document.createElement('span');
+    tag.className = 'pattern-tag';
+    tag.innerHTML = `${escHtml(kw)}<button class="tag-del" onclick="removeKeyword(${JSON.stringify(kw)})">×</button>`;
+    list.appendChild(tag);
+  });
+}
+
+// ── STYLE ─────────────────────────────────────────────────
+function setStyle(s) {
+  redactStyle = s;
+  ['asterisk','bar','custom'].forEach(k => {
+    $('style'+k.charAt(0).toUpperCase()+k.slice(1)).classList.toggle('on', k===s);
+  });
+  processInput();
+}
+
+// ── CORE REDACTION ENGINE ──────────────────────────────────
+// Returns array of match objects: { start, end, value, category }
+// Overlapping matches are resolved (longest wins).
+function findMatches(text) {
+  const raw = [];
+
+  // Auto-detect patterns
+  PATTERNS.forEach(p => {
+    if (!enabledPatterns.has(p.id)) return;
+    const re = new RegExp(p.regex.source, p.regex.flags);
+    let m;
+    while ((m = re.exec(text)) !== null) {
+      let start = m.index;
+      let value = m[0];
+      // If pattern has a capture group for just the secret part
+      if (p.captureGroup === 1 && m[1]) {
+        start = m.index + m[0].indexOf(m[1]);
+        value = m[1];
+      }
+      if (value.length < 2) continue;
+      raw.push({ start, end: start + value.length, value, category: p.category });
+    }
+  });
+
+  // Custom keywords (exact, case-insensitive)
+  customKeywords.forEach(kw => {
+    const re = new RegExp(escRegex(kw), 'gi');
+    let m;
+    while ((m = re.exec(text)) !== null) {
+      raw.push({ start: m.index, end: m.index + m[0].length, value: m[0], category: 'custom' });
+    }
+  });
+
+  if (!raw.length) return [];
+
+  // Sort by start, then by length descending (longest match wins)
+  raw.sort((a, b) => a.start - b.start || (b.end - b.start) - (a.end - a.start));
+
+  // Remove overlaps — keep earliest/longest
+  const merged = [];
+  let cursor = 0;
+  for (const m of raw) {
+    if (m.start < cursor) continue; // overlaps previous — skip
+    merged.push(m);
+    cursor = m.end;
+  }
+  return merged;
+}
+
+// ── PROCESS INPUT ──────────────────────────────────────────
+function processInput() {
+  const text = $('inputText').value;
+  const out  = $('outputCard');
+
+  if (!text.trim()) {
+    out.innerHTML = `<div class="output-placeholder"><div class="pi">🔒</div><p>Paste text on the left to see<br/>redacted output here.</p></div>`;
+    updateStats([]);
+    setExportEnabled(false);
+    return;
+  }
+
+  lastMatches = findMatches(text);
+  updateStats(lastMatches);
+  out.innerHTML = buildOutputHTML(text, lastMatches);
+  setExportEnabled(true);
+}
+
+function buildOutputHTML(text, matches) {
+  if (!matches.length) {
+    return `<span style="color:var(--green)">✓ No secrets detected.</span>\n\n` + escHtml(text);
+  }
+
+  let html = '';
+  let cursor = 0;
+
+  for (const m of matches) {
+    // Plain text before match
+    if (m.start > cursor) {
+      html += escHtml(text.slice(cursor, m.start));
+    }
+    // Redacted span
+    html += buildRedactSpan(m.value, m.category);
+    cursor = m.end;
+  }
+  // Trailing text
+  if (cursor < text.length) {
+    html += escHtml(text.slice(cursor));
+  }
+  return html;
+}
+
+function buildRedactSpan(value, category) {
+  const hlClass = 'hl-' + category;
+  if (redactStyle === 'asterisk') {
+    const stars = '★'.repeat(Math.min(value.length, 12));
+    return `<span class="redact-asterisk ${hlClass}" title="Redacted (${category})">${stars}</span>`;
+  } else if (redactStyle === 'bar') {
+    const bars = '█'.repeat(Math.min(value.length, 16));
+    return `<span class="redact-bar ${hlClass}" title="Redacted (${category})">${bars}</span>`;
+  } else {
+    return `<span class="redact-custom ${hlClass}" title="Redacted (${category})">[REDACTED]</span>`;
+  }
+}
+
+// ── STATS ─────────────────────────────────────────────────
+function updateStats(matches) {
+  const total = matches.length;
+  const types = new Set(matches.map(m => m.category)).size;
+  const chars = matches.reduce((s, m) => s + m.value.length, 0);
+  $('statTotal').textContent = total;
+  $('statTypes').textContent = types;
+  $('statChars').textContent = chars;
+}
+
+// ── PLAIN REDACTED TEXT (for copy/download) ────────────────
+function getRedactedPlainText() {
+  const text = $('inputText').value;
+  if (!text) return '';
+  const matches = lastMatches;
+  let result = '';
+  let cursor = 0;
+  for (const m of matches) {
+    if (m.start > cursor) result += text.slice(cursor, m.start);
+    if (redactStyle === 'asterisk') result += '★'.repeat(Math.min(m.value.length, 12));
+    else if (redactStyle === 'bar')  result += '█'.repeat(Math.min(m.value.length, 16));
+    else result += '[REDACTED]';
+    cursor = m.end;
+  }
+  if (cursor < text.length) result += text.slice(cursor);
+  return result;
+}
+
+// ── EXPORT ────────────────────────────────────────────────
+function copyRedacted() {
+  const text = getRedactedPlainText();
+  if (!text) return;
+  navigator.clipboard.writeText(text)
+    .then(() => showToast('✓ Redacted text copied'))
+    .catch(() => {
+      const ta = document.createElement('textarea');
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); document.body.removeChild(ta);
+      showToast('✓ Redacted text copied');
+    });
+}
+
+function downloadTxt() {
+  const text = getRedactedPlainText();
+  if (!text) return;
+  const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = 'redacted.txt';
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+  showToast('✓ Downloaded redacted.txt');
+}
+
+function downloadPDF() { window.print(); }
+
+function setExportEnabled(on) {
+  ['btnCopy','btnTxt','btnPdf','btnCopy2'].forEach(id => {
+    const el = $(id); if (el) el.disabled = !on;
+  });
+}
+
+// ── CLEAR ─────────────────────────────────────────────────
+function clearInput() {
+  $('inputText').value = '';
+  processInput();
+}
+
+// ── TOAST ─────────────────────────────────────────────────
+function showToast(msg) {
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+// ── UTILS ─────────────────────────────────────────────────
+function escHtml(s) {
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+function escRegex(s) { return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
+
+// ── INIT ──────────────────────────────────────────────────
+buildPatternList();
+</script>
+
+<!-- ── TEAMKIT FOOTER ── -->
+<div style="
+  border-top:1px solid rgba(255,255,255,.07);
+  background:rgba(0,0,0,.25);
+  padding:10px 20px;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:8px;
+  font-family:'DM Sans',sans-serif;
+  font-size:11px;
+  flex-shrink:0;
+" id="tk-footer">
+  <span style="color:rgba(255,255,255,.35)">
+    🧰 <strong style="color:rgba(255,255,255,.6)">GomathiBalan's Forge</strong> &nbsp;·&nbsp;
+    Built by <strong style="color:rgba(255,255,255,.7)">GomathiBalan</strong>
+  </span>
+  <span style="color:rgba(255,255,255,.25);font-size:10px">
+    Designed with prompts &nbsp;·&nbsp; Crafted by 
+    <strong style="color:rgba(255,255,255,.4)">Claude AI</strong>
+  </span>
+</div>
+</body>
+</html>
