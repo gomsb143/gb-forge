@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>About — GomathiBalan's Forge</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:      #f5f3ef;
+      --bg-2:    #ffffff;
+      --bg-3:    #eceae5;
+      --border:  #dedad2;
+      --border-2:#ccc8be;
+      --ink:     #18120e;
+      --ink-2:   #5c554e;
+      --ink-3:   #9c968e;
+      --accent:  #c84b00;
+      --accent-2:#f97316;
+      --accent-soft:#fff4ed;
+      --nav-bg:  #18120e;
+      --nav-ink: #f5ede6;
+      --nav-ink-2:#8a7e76;
+      --font:    'DM Sans', sans-serif;
+      --serif:   'DM Serif Display', serif;
+    }
+    html, body { min-height: 100%; font-family: var(--font); background: var(--bg); color: var(--ink); }
+
+    /* ── NAV ── */
+    .nav { background: var(--nav-bg); height: 52px; display: flex; align-items: center; justify-content: space-between; padding: 0 28px; position: sticky; top: 0; z-index: 200; border-bottom: 1px solid rgba(255,255,255,.06); }
+    .nav-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .brand-icon { width: 30px; height: 30px; background: var(--accent); border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+    .brand-name { font-size: 14px; font-weight: 700; color: var(--nav-ink); letter-spacing: -.01em; }
+    .brand-tag  { font-size: 10px; color: var(--nav-ink-2); }
+    .nav-right  { display: flex; align-items: center; gap: 6px; }
+    .nav-chip   { font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 6px; color: var(--nav-ink-2); background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.08); text-decoration: none; transition: all .15s; }
+    .nav-chip:hover { color: var(--nav-ink); background: rgba(255,255,255,.1); }
+    .nav-chip.active { color: var(--accent-2); background: rgba(200,75,0,.15); border-color: rgba(200,75,0,.3); }
+
+    /* ── PAGE ── */
+    .page { max-width: 760px; margin: 0 auto; padding: 64px 28px 96px; }
+
+    /* ── PROFILE BLOCK ── */
+    .profile { display: flex; align-items: flex-start; gap: 32px; margin-bottom: 52px; }
+    .avatar-wrap { flex-shrink: 0; }
+    .avatar {
+      width: 110px; height: 110px; border-radius: 50%;
+      background: var(--bg-3); border: 3px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 42px; overflow: hidden; position: relative;
+    }
+    /* Replace the emoji with an <img> once you have a photo:
+       <img src="your-photo.jpg" style="width:100%;height:100%;object-fit:cover"/> */
+    .avatar-hint { font-size: 9px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); text-align: center; margin-top: 6px; }
+
+    .profile-info { flex: 1; padding-top: 4px; }
+    .profile-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+    .profile-name  { font-family: var(--serif); font-size: 38px; color: var(--ink); line-height: 1.1; margin-bottom: 8px; }
+    .profile-role  { font-size: 15px; color: var(--ink-2); font-weight: 500; margin-bottom: 4px; }
+    .profile-company { font-size: 13px; color: var(--ink-3); margin-bottom: 20px; }
+
+    /* Social links */
+    .links-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .social-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 14px; border-radius: 8px;
+      border: 1.5px solid var(--border); background: var(--bg-2);
+      font-size: 12px; font-weight: 600; color: var(--ink-2);
+      text-decoration: none; transition: all .15s;
+    }
+    .social-link:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+    .social-icon { font-size: 14px; }
+
+    /* ── SECTIONS ── */
+    .section { margin-bottom: 44px; }
+    .section-label {
+      font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+      color: var(--ink-3); margin-bottom: 16px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    /* Bio */
+    .bio-text { font-size: 15px; color: var(--ink-2); line-height: 1.8; }
+    .bio-text p + p { margin-top: 14px; }
+    .bio-text strong { color: var(--ink); font-weight: 600; }
+
+    /* Role card */
+    .role-card {
+      background: var(--bg-2); border: 1.5px solid var(--border);
+      border-left: 3px solid var(--accent);
+      border-radius: 12px; padding: 20px 22px;
+      display: flex; align-items: center; gap: 18px;
+    }
+    .role-icon { font-size: 28px; flex-shrink: 0; }
+    .role-title { font-size: 16px; font-weight: 700; color: var(--ink); margin-bottom: 3px; }
+    .role-company-name { font-size: 13px; color: var(--ink-2); font-weight: 500; }
+    .role-detail { font-size: 12px; color: var(--ink-3); margin-top: 2px; }
+
+    /* Inspiration block */
+    .inspiration-card {
+      background: var(--accent-soft); border: 1.5px solid #fed7aa;
+      border-radius: 12px; padding: 24px 26px;
+    }
+    .insp-quote {
+      font-family: var(--serif); font-size: 20px; color: var(--ink);
+      line-height: 1.5; margin-bottom: 14px; font-style: italic;
+    }
+    .insp-quote span { color: var(--accent); }
+    .insp-body { font-size: 13px; color: var(--ink-2); line-height: 1.75; }
+    .insp-body p + p { margin-top: 10px; }
+    .insp-body strong { color: var(--ink); }
+
+    /* Built with Claude badge */
+    .claude-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      margin-top: 16px; padding: 8px 16px;
+      background: var(--nav-bg); border-radius: 8px;
+      font-size: 12px; font-weight: 600; color: var(--nav-ink);
+    }
+    .claude-badge span { color: var(--accent-2); }
+
+    /* ── BOOK CARD ── */
+    .book-card {
+      background: var(--bg-2); border: 1.5px solid var(--border);
+      border-radius: 12px; padding: 22px 24px;
+      display: flex; align-items: flex-start; gap: 20px;
+      transition: all .2s;
+    }
+    .book-card:hover { border-color: var(--accent); box-shadow: 0 4px 20px rgba(0,0,0,.07); }
+    .book-icon { font-size: 36px; flex-shrink: 0; margin-top: 2px; }
+    .book-title { font-size: 16px; font-weight: 700; color: var(--ink); line-height: 1.3; margin-bottom: 4px; }
+    .book-meta  { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 10px; }
+    .book-line  { font-size: 13px; color: var(--ink-2); font-style: italic; line-height: 1.6; margin-bottom: 14px; }
+    .book-link  {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 8px 18px; border-radius: 8px;
+      background: var(--accent); color: #fff;
+      font-size: 12px; font-weight: 700; text-decoration: none;
+      transition: all .15s;
+    }
+    .book-link:hover { background: #a83a00; }
+
+    /* ── FOOTER ── */
+    .site-footer { background: var(--nav-bg); padding: 24px 28px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+    .footer-left { display: flex; align-items: center; gap: 10px; }
+    .footer-icon { width: 28px; height: 28px; background: var(--accent); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+    .footer-name { font-size: 13px; font-weight: 700; color: var(--nav-ink); }
+    .footer-tag  { font-size: 11px; color: var(--nav-ink-2); }
+    .footer-right { font-size: 11px; color: var(--nav-ink-2); text-align: right; line-height: 1.6; }
+
+    @media (max-width: 600px) {
+      .profile { flex-direction: column; align-items: center; text-align: center; gap: 20px; }
+      .links-row { justify-content: center; }
+      .page { padding: 40px 16px 72px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <a href="index.html" class="nav-brand">
+    <div class="brand-icon">🔥</div>
+    <div>
+      <div class="brand-name">GomathiBalan's Forge</div>
+      <div class="brand-tag">Tools you didn't know you needed.</div>
+    </div>
+  </a>
+  <div class="nav-right">
+    <a href="index.html"  class="nav-chip">← All Tools</a>
+    <a href="manual.html" class="nav-chip">📖 Manual</a>
+    <span class="nav-chip active">👤 About</span>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- ── PROFILE ── -->
+  <div class="profile">
+    <div class="avatar-wrap">
+      <div class="avatar">
+        <!--
+          TO ADD YOUR PHOTO:
+          Replace the emoji below with:
+          <img src="your-photo.jpg" style="width:100%;height:100%;object-fit:cover;border-radius:50%"/>
+        -->
+        🧑‍💻
+      </div>
+      <div class="avatar-hint">← Add your photo</div>
+    </div>
+    <div class="profile-info">
+      <div class="profile-eyebrow">Program Manager · Co-creator · Prompt Engineer (apparently)</div>
+      <h1 class="profile-name">GomathiBalan</h1>
+      <!-- ✏️ Replace with your actual role -->
+      <div class="profile-role">[ Your Role Here ]</div>
+      <!-- ✏️ Replace with your actual company -->
+      <div class="profile-company">[ Company / Organisation ]</div>
+      <div class="links-row">
+        <!-- ✏️ Replace href="#" with your actual URLs. Remove any you don't use. -->
+        <a href="#" class="social-link" title="GitHub">
+          <span class="social-icon">🐙</span> GitHub
+        </a>
+        <a href="#" class="social-link" title="LinkedIn">
+          <span class="social-icon">💼</span> LinkedIn
+        </a>
+        <a href="#" class="social-link" title="Twitter / X">
+          <span class="social-icon">𝕏</span> Twitter
+        </a>
+        <a href="#" class="social-link" title="Personal website">
+          <span class="social-icon">🌐</span> Website
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── BIO ── -->
+  <div class="section">
+    <div class="section-label">About me</div>
+    <div class="bio-text">
+      <!--
+        ✏️ Replace the paragraphs below with your own bio.
+        Keep it 2–3 short paragraphs. Write in first person.
+        Example structure:
+          Para 1 — who you are and what you do
+          Para 2 — background, experience, or interests
+          Para 3 — outside of work / personal note
+      -->
+      <p>
+        I'm <strong>GomathiBalan</strong> — a Senior Program Manager with over a decade of experience turning complex, cross-functional work into clear, delivered outcomes. I work at the intersection of people, process, and technology, helping enterprise teams move faster without losing alignment.
+      </p>
+      <p>
+        My day-to-day spans software delivery, Agile coaching, stakeholder management, and driving AI and emerging tech initiatives across the organisation. I care deeply about the human side of delivery — the clarity of a well-run meeting, the confidence of a team that knows exactly what they're doing and why.
+      </p>
+      <p>
+        Outside of work, I'm fascinated by what AI can genuinely unlock for everyday professionals — not just engineers. This toolkit and my book are both proof that you don't need to write code or prose for a living to build something worth sharing.
+      </p>
+    </div>
+  </div>
+
+  <!-- ── CURRENT ROLE ── -->
+  <div class="section">
+    <div class="section-label">Currently</div>
+    <div class="role-card">
+      <span class="role-icon">🏢</span>
+      <div>
+        <!-- ✏️ Fill in your role, company, and a one-line description -->
+        <div class="role-title">Senior Program Manager</div>
+        <div class="role-company-name">[ Your Company Name ]</div>
+        <div class="role-detail">Leading software delivery and AI initiatives across cross-functional enterprise teams.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── BOOK ── -->
+  <div class="section">
+    <div class="section-label">Book</div>
+    <div class="book-card">
+      <div class="book-icon">📖</div>
+      <div class="book-info">
+        <div class="book-title">Coffee, Chaos &amp; Jira: One Release, Infinite Excuses</div>
+        <div class="book-meta">Kindle eBook · Available on Amazon.in</div>
+        <div class="book-line">"Every war story from a software release — co-created with AI, because honestly, that felt appropriate."</div>
+        <a href="#" class="book-link" title="✏️ Replace # with your Amazon link">
+          Buy on Amazon →
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── WHAT INSPIRED THIS ── -->
+  <div class="section">
+    <div class="section-label">What inspired this project</div>
+    <div class="inspiration-card">
+      <div class="insp-quote">
+        "I'm not a developer. I'm not a writer. <span>Turns out, that didn't matter.</span>"
+      </div>
+      <div class="insp-body">
+        <p>
+          I've spent my career helping developers, designers, and product teams deliver great software. I understand the tools they need, the pain points they hit, and the small utilities they wish existed but never have time to build.
+        </p>
+        <p>
+          At some point I started wondering: <strong>what if the prompt was the skill?</strong> I co-created a book — <em>Coffee, Chaos &amp; Jira</em> — with AI. Then I built 16 browser-based tools the same way. No IDE, no terminal, no staring at a blank page. Just clear thinking, sharp prompts, and fast feedback loops.
+        </p>
+        <p>
+          It turns out good prompting has a lot in common with good program management: define the outcome clearly, iterate quickly, and know when to push back on the first answer you get.
+        </p>
+      </div>
+      <div class="claude-badge">
+        <span>✦</span> Every line of HTML, CSS &amp; JavaScript written by <span>Claude AI</span> via prompt engineering
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  <div class="footer-left">
+    <div class="footer-icon">🔥</div>
+    <div>
+      <div class="footer-name">GomathiBalan's Forge</div>
+      <div class="footer-tag">Tools you didn't know you needed.</div>
+    </div>
+  </div>
+  <div class="footer-right">
+    Built entirely with <strong style="color:var(--nav-ink)">Claude AI</strong> via prompt engineering<br/>
+    <span style="font-size:10px">© GomathiBalan · 0 servers · 0 data collected</span>
+  </div>
+</footer>
+
+</body>
+</html>
