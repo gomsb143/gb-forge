@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LinkedIn Formatter — GomathiBalan's Forge</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:#f5f3ef; --bg-2:#fff; --bg-3:#eceae5; --bg-4:#e3e0d9;
+      --border:#dedad2; --border-2:#ccc8be;
+      --ink:#18120e; --ink-2:#5c554e; --ink-3:#9c968e;
+      --accent:#c84b00; --accent-2:#f97316; --accent-soft:#fff4ed;
+      --nav-bg:#18120e; --nav-ink:#f5ede6; --nav-ink-2:#8a7e76;
+      --green:#16a34a; --green-soft:#f0fdf4;
+      --font:'DM Sans',sans-serif; --mono:'DM Mono',monospace;
+    }
+    html,body { min-height:100%; font-family:var(--font); background:var(--bg); color:var(--ink); }
+
+    /* NAV */
+    .nav { background:var(--nav-bg); height:52px; display:flex; align-items:center; justify-content:space-between; padding:0 28px; position:sticky; top:0; z-index:100; border-bottom:1px solid rgba(255,255,255,.06); }
+    .nav-brand { display:flex; align-items:center; gap:10px; text-decoration:none; }
+    .brand-icon { width:30px; height:30px; background:var(--accent); border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:15px; flex-shrink:0; }
+    .brand-name { font-size:14px; font-weight:700; color:var(--nav-ink); letter-spacing:-.01em; }
+    .brand-tag  { font-size:10px; color:var(--nav-ink-2); }
+    .nav-right  { display:flex; align-items:center; gap:6px; }
+    .nav-chip   { font-size:11px; font-weight:600; padding:4px 10px; border-radius:6px; color:var(--nav-ink-2); background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.08); text-decoration:none; transition:all .15s; }
+    .nav-chip:hover { color:var(--nav-ink); background:rgba(255,255,255,.1); }
+    .nav-chip.active { color:var(--accent-2); background:rgba(200,75,0,.15); border-color:rgba(200,75,0,.3); }
+
+    /* PAGE */
+    .page { max-width:1100px; margin:0 auto; padding:32px 28px 80px; }
+    .page-header { margin-bottom:24px; }
+    .page-title { font-size:22px; font-weight:700; color:var(--ink); letter-spacing:-.02em; margin-bottom:4px; }
+    .page-sub   { font-size:13px; color:var(--ink-3); }
+
+    /* MAIN LAYOUT */
+    .editor-layout { display:grid; grid-template-columns:1fr 1fr; gap:16px; align-items:start; }
+
+    /* PANEL */
+    .panel { background:var(--bg-2); border:1px solid var(--border); border-radius:14px; overflow:hidden; }
+    .panel-header { padding:12px 16px; background:var(--bg-3); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:8px; }
+    .panel-label  { font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); }
+
+    /* TOOLBAR */
+    .toolbar { padding:8px 12px; border-bottom:1px solid var(--border); display:flex; flex-wrap:wrap; gap:4px; background:var(--bg-2); }
+    .tb-group { display:flex; gap:3px; padding-right:8px; border-right:1px solid var(--border); margin-right:4px; }
+    .tb-group:last-child { border-right:none; padding-right:0; margin-right:0; }
+    .tb-btn {
+      height:30px; padding:0 10px; border-radius:6px; border:1px solid var(--border);
+      background:var(--bg-2); cursor:pointer; font-family:var(--font); font-size:12px;
+      font-weight:600; color:var(--ink-2); transition:all .15s; white-space:nowrap;
+      display:flex; align-items:center; gap:4px;
+    }
+    .tb-btn:hover { background:var(--bg-3); color:var(--ink); border-color:var(--border-2); }
+    .tb-btn.active { background:var(--accent-soft); color:var(--accent); border-color:var(--accent); }
+    .tb-btn .tb-preview { font-size:13px; }
+
+    /* TEXTAREA */
+    .editor-area {
+      width:100%; min-height:420px; padding:16px;
+      font-family:var(--font); font-size:14px; line-height:1.75;
+      color:var(--ink); background:var(--bg-2);
+      border:none; outline:none; resize:vertical;
+    }
+    .editor-area::placeholder { color:var(--ink-3); }
+
+    /* CHAR COUNT */
+    .char-bar { padding:8px 14px; border-top:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; background:var(--bg-3); }
+    .char-count { font-size:11px; color:var(--ink-3); font-family:var(--mono); }
+    .char-count.warn { color:var(--accent); font-weight:700; }
+
+    /* PREVIEW */
+    .preview-area {
+      min-height:420px; padding:16px;
+      font-size:14px; line-height:1.75; color:var(--ink);
+      white-space:pre-wrap; word-break:break-word;
+      font-family:var(--font);
+    }
+    .preview-placeholder { color:var(--ink-3); font-style:italic; }
+
+    /* COPY ROW */
+    .copy-row { padding:10px 14px; border-top:1px solid var(--border); display:flex; gap:8px; align-items:center; background:var(--bg-3); }
+    .btn { display:inline-flex; align-items:center; gap:6px; padding:7px 14px; border-radius:7px; font-family:var(--font); font-size:12px; font-weight:600; cursor:pointer; border:none; transition:all .15s; white-space:nowrap; }
+    .btn-ghost  { background:transparent; color:var(--ink-2); border:1px solid var(--border); }
+    .btn-ghost:hover { background:var(--bg-4); color:var(--ink); }
+    .btn-accent { background:var(--accent); color:#fff; }
+    .btn-accent:hover { background:#a83a00; }
+    .btn-green  { background:var(--green); color:#fff; }
+    .btn-green:hover  { background:#15803d; }
+
+    /* QUICK INSERT */
+    .quick-section { margin-top:16px; background:var(--bg-2); border:1px solid var(--border); border-radius:14px; overflow:hidden; }
+    .quick-header { padding:10px 16px; background:var(--bg-3); border-bottom:1px solid var(--border); font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); }
+    .quick-grid { padding:12px; display:flex; flex-wrap:wrap; gap:6px; }
+    .quick-btn { padding:5px 11px; border-radius:6px; border:1px solid var(--border); background:var(--bg-2); cursor:pointer; font-size:13px; color:var(--ink-2); transition:all .15s; font-family:var(--font); }
+    .quick-btn:hover { border-color:var(--accent); color:var(--accent); background:var(--accent-soft); }
+
+    /* TIPS */
+    .tips { margin-top:16px; background:var(--accent-soft); border:1px solid #fed7aa; border-radius:14px; padding:14px 18px; }
+    .tips-title { font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--accent); margin-bottom:8px; }
+    .tip-item { font-size:12px; color:var(--ink-2); line-height:1.6; margin-bottom:4px; display:flex; gap:7px; }
+    .tip-item:last-child { margin-bottom:0; }
+
+    /* TOAST */
+    .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(10px); background:var(--green); color:#fff; padding:9px 20px; border-radius:20px; font-size:13px; font-weight:600; opacity:0; transition:all .2s; pointer-events:none; z-index:999; }
+    .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+    /* FOOTER */
+    .site-footer { background:var(--nav-bg); padding:20px 28px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; }
+    .footer-left { display:flex; align-items:center; gap:10px; }
+    .footer-icon { width:26px; height:26px; background:var(--accent); border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:13px; }
+    .footer-name { font-size:13px; font-weight:700; color:var(--nav-ink); }
+    .footer-tag  { font-size:11px; color:var(--nav-ink-2); }
+    .footer-right { font-size:11px; color:var(--nav-ink-2); }
+
+    @media(max-width:768px) {
+      .editor-layout { grid-template-columns:1fr; }
+      .page { padding:20px 16px 60px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <a href="index.html" class="nav-brand">
+    <div class="brand-icon">🔥</div>
+    <div>
+      <div class="brand-name">GomathiBalan's Forge</div>
+      <div class="brand-tag">Tools you didn't know you needed.</div>
+    </div>
+  </a>
+  <div class="nav-right">
+    <a href="index.html"  class="nav-chip">← All Tools</a>
+    <a href="manual.html" class="nav-chip">📖 Manual</a>
+    <a href="about.html"  class="nav-chip">👤 About</a>
+    <span class="nav-chip active">💼 LinkedIn</span>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="page-header">
+    <div class="page-title">💼 LinkedIn Post Formatter</div>
+    <div class="page-sub">Write your post on the left · Select text and apply a style · See the unicode preview on the right · Copy and paste into LinkedIn</div>
+  </div>
+
+  <div class="editor-layout">
+
+    <!-- LEFT: EDITOR -->
+    <div>
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-label">✏️ Write your post</span>
+          <button class="btn btn-ghost" style="padding:4px 10px;font-size:11px" onclick="clearEditor()">↺ Clear</button>
+        </div>
+
+        <!-- TOOLBAR -->
+        <div class="toolbar">
+          <div class="tb-group">
+            <button class="tb-btn" onclick="applyStyle('bold')"        title="Bold — select text first"><span class="tb-preview">𝗕</span> Bold</button>
+            <button class="tb-btn" onclick="applyStyle('italic')"      title="Italic"><span class="tb-preview">𝘐</span> Italic</button>
+            <button class="tb-btn" onclick="applyStyle('boldItalic')"  title="Bold Italic"><span class="tb-preview">𝙱𝙸</span> Bold Italic</button>
+          </div>
+          <div class="tb-group">
+            <button class="tb-btn" onclick="applyStyle('strike')"      title="Strikethrough"><span style="text-decoration:line-through">S</span> Strike</button>
+            <button class="tb-btn" onclick="applyStyle('mono')"        title="Monospace / code"><span class="tb-preview" style="font-family:monospace">M</span> Mono</button>
+            <button class="tb-btn" onclick="applyStyle('underline')"   title="Underline (via combining)"><span style="text-decoration:underline">U</span> Underline</button>
+          </div>
+          <div class="tb-group">
+            <button class="tb-btn" onclick="applyStyle('sans')"        title="Sans serif normal (reset)">𝖠 Sans</button>
+            <button class="tb-btn" onclick="applyStyle('sansBold')"    title="Sans bold (default LinkedIn bold)"><span class="tb-preview">𝗔</span> Sans Bold</button>
+            <button class="tb-btn" onclick="applyStyle('sansItalic')"  title="Sans italic"><span class="tb-preview">𝘈</span> Sans Italic</button>
+          </div>
+          <div class="tb-group">
+            <button class="tb-btn" onclick="applyStyle('script')"      title="Script / cursive"><span class="tb-preview">𝒜</span> Script</button>
+            <button class="tb-btn" onclick="applyStyle('scriptBold')"  title="Bold script"><span class="tb-preview">𝓐</span> Script Bold</button>
+            <button class="tb-btn" onclick="applyStyle('fraktur')"     title="Fraktur / Gothic"><span class="tb-preview">𝔄</span> Fraktur</button>
+          </div>
+          <div class="tb-group">
+            <button class="tb-btn" onclick="applyStyle('double')"      title="Double-struck"><span class="tb-preview">𝔸</span> Double</button>
+            <button class="tb-btn" onclick="applyStyle('caps')"        title="Small caps"><span class="tb-preview" style="font-variant:small-caps">Sᴍᴀʟʟ</span> Small Caps</button>
+          </div>
+          <div class="tb-group">
+            <button class="tb-btn" onclick="clearStyleFromSelection()" title="Remove unicode styling from selection">✕ Clear style</button>
+          </div>
+        </div>
+
+        <textarea class="editor-area" id="editorArea"
+          placeholder="Write your LinkedIn post here...
+
+Select any text, then click a style button above to apply bold, italic, script and more.
+
+Or type normally and use the Quick Insert section below for bullets and separators."
+          oninput="syncPreview(); updateCharCount();"
+          onselect="updateSelectionInfo()"
+          onmouseup="updateSelectionInfo()"
+          onkeyup="updateSelectionInfo(); syncPreview(); updateCharCount();">
+        </textarea>
+
+        <div class="char-bar">
+          <span class="char-count" id="charCount">0 characters</span>
+          <span style="font-size:11px;color:var(--ink-3)" id="selInfo"></span>
+        </div>
+      </div>
+
+      <!-- QUICK INSERT -->
+      <div class="quick-section">
+        <div class="quick-header">Quick Insert — click to add at cursor</div>
+        <div class="quick-grid" id="quickGrid"></div>
+      </div>
+
+      <!-- TIPS -->
+      <div class="tips">
+        <div class="tips-title">💡 Tips</div>
+        <div class="tip-item"><span>1.</span>Select text first, then click a style button to convert it.</div>
+        <div class="tip-item"><span>2.</span>Mix styles freely — bold a heading, italicise a quote, monospace a keyword.</div>
+        <div class="tip-item"><span>3.</span>LinkedIn strips HTML — unicode is the only way to get real formatting.</div>
+        <div class="tip-item"><span>4.</span>Don't overdo it — 2–3 styles per post reads well. More looks cluttered.</div>
+        <div class="tip-item"><span>5.</span>Always post your link as the first comment, not in the body.</div>
+      </div>
+    </div>
+
+    <!-- RIGHT: PREVIEW -->
+    <div>
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-label">👁 LinkedIn Preview</span>
+          <span style="font-size:11px;color:var(--ink-3)">What your followers will see</span>
+        </div>
+        <div class="preview-area" id="previewArea">
+          <span class="preview-placeholder">Your formatted post will appear here as you type…</span>
+        </div>
+        <div class="copy-row">
+          <button class="btn btn-accent" onclick="copyPost()" style="flex:1">⎘ Copy formatted post</button>
+          <button class="btn btn-ghost"  onclick="copyPlain()">Copy plain text</button>
+        </div>
+      </div>
+
+      <!-- STYLE REFERENCE -->
+      <div class="quick-section" style="margin-top:16px">
+        <div class="quick-header">Style reference — how each style looks</div>
+        <div style="padding:12px 16px;display:flex;flex-direction:column;gap:6px" id="styleRef"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  <div class="footer-left">
+    <div class="footer-icon">🔥</div>
+    <div>
+      <div class="footer-name">GomathiBalan's Forge</div>
+      <div class="footer-tag">Tools you didn't know you needed.</div>
+    </div>
+  </div>
+  <div class="footer-right">Built with Claude AI · © GomathiBalan</div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── UNICODE MAPS ───────────────────────────────────────────
+const MAPS = {
+  bold: {
+    lower:'𝗮𝗯𝗰𝗱𝗲𝗳𝗴𝗵𝗶𝗷𝗸𝗹𝗺𝗻𝗼𝗽𝗾𝗿𝘀𝘁𝘂𝘃𝘄𝘅𝘆𝘇',
+    upper:'𝗔𝗕𝗖𝗗𝗘𝗙𝗚𝗛𝗜𝗝𝗞𝗟𝗠𝗡𝗢𝗣𝗤𝗥𝗦𝗧𝗨𝗩𝗪𝗫𝗬𝗭',
+    digit:'𝟬𝟭𝟮𝟯𝟰𝟱𝟲𝟳𝟴𝟵'
+  },
+  italic: {
+    lower:'𝘢𝘣𝘤𝘥𝘦𝘧𝘨𝘩𝘪𝘫𝘬𝘭𝘮𝘯𝘰𝘱𝘲𝘳𝘴𝘵𝘶𝘷𝘸𝘹𝘺𝘻',
+    upper:'𝘈𝘉𝘊𝘋𝘌𝘍𝘎𝘏𝘐𝘑𝘒𝘓𝘔𝘕𝘖𝘗𝘘𝘙𝘚𝘛𝘜𝘝𝘞𝘟𝘠𝘡',
+    digit:'0123456789'
+  },
+  boldItalic: {
+    lower:'𝙖𝙗𝙘𝙙𝙚𝙛𝙜𝙝𝙞𝙟𝙠𝙡𝙢𝙣𝙤𝙥𝙦𝙧𝙨𝙩𝙪𝙫𝙬𝙭𝙮𝙯',
+    upper:'𝘼𝘽𝘾𝘿𝙀𝙁𝙂𝙃𝙄𝙅𝙆𝙇𝙈𝙉𝙊𝙋𝙌𝙍𝙎𝙏𝙐𝙑𝙒𝙓𝙔𝙕',
+    digit:'0123456789'
+  },
+  mono: {
+    lower:'𝚊𝚋𝚌𝚍𝚎𝚏𝚐𝚑𝚒𝚓𝚔𝚕𝚖𝚗𝚘𝚙𝚚𝚛𝚜𝚝𝚞𝚟𝚠𝚡𝚢𝚣',
+    upper:'𝙰𝙱𝙲𝙳𝙴𝙵𝙶𝙷𝙸𝙹𝙺𝙻𝙼𝙽𝙾𝙿𝚀𝚁𝚂𝚃𝚄𝚅𝚆𝚇𝚈𝚉',
+    digit:'𝟶𝟷𝟸𝟹𝟺𝟻𝟼𝟽𝟾𝟿'
+  },
+  sans: {
+    lower:'𝖺𝖻𝖼𝖽𝖾𝖿𝗀𝗁𝗂𝗃𝗄𝗅𝗆𝗇𝗈𝗉𝗊𝗋𝗌𝗍𝗎𝗏𝗐𝗑𝗒𝗓',
+    upper:'𝖠𝖡𝖢𝖣𝖤𝖥𝖦𝖧𝖨𝖩𝖪𝖫𝖬𝖭𝖮𝖯𝖰𝖱𝖲𝖳𝖴𝖵𝖶𝖷𝖸𝖹',
+    digit:'𝟢𝟣𝟤𝟥𝟦𝟧𝟨𝟩𝟪𝟫'
+  },
+  sansBold: {
+    lower:'𝗮𝗯𝗰𝗱𝗲𝗳𝗴𝗵𝗶𝗷𝗸𝗹𝗺𝗻𝗼𝗽𝗾𝗿𝘀𝘁𝘂𝘃𝘄𝘅𝘆𝘇',
+    upper:'𝗔𝗕𝗖𝗗𝗘𝗙𝗚𝗛𝗜𝗝𝗞𝗟𝗠𝗡𝗢𝗣𝗤𝗥𝗦𝗧𝗨𝗩𝗪𝗫𝗬𝗭',
+    digit:'𝟬𝟭𝟮𝟯𝟰𝟱𝟲𝟳𝟴𝟵'
+  },
+  sansItalic: {
+    lower:'𝘢𝘣𝘤𝘥𝘦𝘧𝘨𝘩𝘪𝘫𝘬𝘭𝘮𝘯𝘰𝘱𝘲𝘳𝘴𝘵𝘶𝘷𝘸𝘹𝘺𝘻',
+    upper:'𝘈𝘉𝘊𝘋𝘌𝘍𝘎𝘏𝘐𝘑𝘒𝘓𝘔𝘕𝘖𝘗𝘘𝘙𝘚𝘛𝘜𝘝𝘞𝘟𝘠𝘡',
+    digit:'0123456789'
+  },
+  script: {
+    lower:'𝒶𝒷𝒸𝒹𝑒𝒻𝑔𝒽𝒾𝒿𝓀𝓁𝓂𝓃𝑜𝓅𝓆𝓇𝓈𝓉𝓊𝓋𝓌𝓍𝓎𝓏',
+    upper:'𝒜𝐵𝒞𝒟𝐸𝐹𝒢𝐻𝐼𝒥𝒦𝐿𝑀𝒩𝒪𝒫𝒬𝑅𝒮𝒯𝒰𝒱𝒲𝒳𝒴𝒵',
+    digit:'0123456789'
+  },
+  scriptBold: {
+    lower:'𝓪𝓫𝓬𝓭𝓮𝓯𝓰𝓱𝓲𝓳𝓴𝓵𝓶𝓷𝓸𝓹𝓺𝓻𝓼𝓽𝓾𝓿𝔀𝔁𝔂𝔃',
+    upper:'𝓐𝓑𝓒𝓓𝓔𝓕𝓖𝓗𝓘𝓙𝓚𝓛𝓜𝓝𝓞𝓟𝓠𝓡𝓢𝓣𝓤𝓥𝓦𝓧𝓨𝓩',
+    digit:'0123456789'
+  },
+  fraktur: {
+    lower:'𝔞𝔟𝔠𝔡𝔢𝔣𝔤𝔥𝔦𝔧𝔨𝔩𝔪𝔫𝔬𝔭𝔮𝔯𝔰𝔱𝔲𝔳𝔴𝔵𝔶𝔷',
+    upper:'𝔄𝔅ℭ𝔇𝔈𝔉𝔊ℌℑ𝔍𝔎𝔏𝔐𝔑𝔒𝔓𝔔ℜ𝔖𝔗𝔘𝔙𝔚𝔛𝔜ℨ',
+    digit:'0123456789'
+  },
+  double: {
+    lower:'𝕒𝕓𝕔𝕕𝕖𝕗𝕘𝕙𝕚𝕛𝕜𝕝𝕞𝕟𝕠𝕡𝕢𝕣𝕤𝕥𝕦𝕧𝕨𝕩𝕪𝕫',
+    upper:'𝔸𝔹ℂ𝔻𝔼𝔽𝔾ℍ𝕀𝕁𝕂𝕃𝕄ℕ𝕆ℙℚℝ𝕊𝕋𝕌𝕍𝕎𝕏𝕐ℤ',
+    digit:'𝟘𝟙𝟚𝟛𝟜𝟝𝟞𝟟𝟠𝟡'
+  },
+  caps: {
+    lower:'ᴀʙᴄᴅᴇꜰɢʜɪᴊᴋʟᴍɴᴏᴘQʀsᴛᴜᴠᴡxʏᴢ',
+    upper:'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+    digit:'0123456789'
+  }
+};
+
+// Strikethrough and underline use combining chars
+function applyStrike(text) {
+  return text.split('').map(c => c === ' ' || c === '\n' ? c : c + '\u0336').join('');
+}
+function applyUnderline(text) {
+  return text.split('').map(c => c === ' ' || c === '\n' ? c : c + '\u0332').join('');
+}
+
+// Plain reverse map to strip unicode back to ASCII
+function buildReverseMap() {
+  const rev = {};
+  Object.entries(MAPS).forEach(([style, map]) => {
+    'lower upper digit'.split(' ').forEach(group => {
+      const src  = group==='lower'?'abcdefghijklmnopqrstuvwxyz':group==='upper'?'ABCDEFGHIJKLMNOPQRSTUVWXYZ':'0123456789';
+      const dest = map[group];
+      if (!dest) return;
+      [...dest].forEach((ch, i) => { rev[ch] = src[i]; });
+    });
+  });
+  return rev;
+}
+const REVERSE = buildReverseMap();
+
+function toPlain(text) {
+  // Strip combining chars, then map unicode letters back to ASCII
+  return [...text]
+    .filter(c => c !== '\u0336' && c !== '\u0332')
+    .map(c => REVERSE[c] || c)
+    .join('');
+}
+
+function convertText(text, style) {
+  if (style === 'strike')    return applyStrike(text);
+  if (style === 'underline') return applyUnderline(text);
+  const map = MAPS[style];
+  if (!map) return text;
+  return [...text].map(ch => {
+    const li = 'abcdefghijklmnopqrstuvwxyz'.indexOf(ch);
+    const ui = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.indexOf(ch);
+    const di = '0123456789'.indexOf(ch);
+    if (li >= 0 && map.lower) return [...map.lower][li] || ch;
+    if (ui >= 0 && map.upper) return [...map.upper][ui] || ch;
+    if (di >= 0 && map.digit) return [...map.digit][di] || ch;
+    return ch;
+  }).join('');
+}
+
+// ── APPLY STYLE TO SELECTION ──────────────────────────────
+function applyStyle(style) {
+  const ta = document.getElementById('editorArea');
+  const start = ta.selectionStart;
+  const end   = ta.selectionEnd;
+  if (start === end) { showToast('⚠ Select some text first'); return; }
+
+  const before = ta.value.slice(0, start);
+  const sel    = ta.value.slice(start, end);
+  const after  = ta.value.slice(end);
+
+  // Strip existing unicode first then apply new style
+  const plain    = toPlain(sel);
+  const converted = convertText(plain, style);
+
+  ta.value = before + converted + after;
+  ta.selectionStart = start;
+  ta.selectionEnd   = start + [...converted].length;
+  ta.focus();
+  syncPreview();
+  updateCharCount();
+}
+
+function clearStyleFromSelection() {
+  const ta = document.getElementById('editorArea');
+  const start = ta.selectionStart;
+  const end   = ta.selectionEnd;
+  if (start === end) { showToast('⚠ Select some text first'); return; }
+  const before = ta.value.slice(0, start);
+  const sel    = ta.value.slice(start, end);
+  const after  = ta.value.slice(end);
+  const plain  = toPlain(sel);
+  ta.value = before + plain + after;
+  ta.selectionStart = start;
+  ta.selectionEnd   = start + plain.length;
+  ta.focus();
+  syncPreview(); updateCharCount();
+}
+
+// ── PREVIEW ───────────────────────────────────────────────
+function syncPreview() {
+  const text = document.getElementById('editorArea').value;
+  const prev = document.getElementById('previewArea');
+  if (!text.trim()) {
+    prev.innerHTML = '<span class="preview-placeholder">Your formatted post will appear here as you type…</span>';
+    return;
+  }
+  prev.textContent = text;
+}
+
+// ── CHAR COUNT ────────────────────────────────────────────
+function updateCharCount() {
+  const text = document.getElementById('editorArea').value;
+  const len  = text.length;
+  const el   = document.getElementById('charCount');
+  el.textContent = len.toLocaleString() + ' characters' + (len > 2800 ? ' — LinkedIn limit is ~3000' : '');
+  el.classList.toggle('warn', len > 2500);
+}
+
+function updateSelectionInfo() {
+  const ta  = document.getElementById('editorArea');
+  const len = ta.selectionEnd - ta.selectionStart;
+  document.getElementById('selInfo').textContent = len > 0 ? len + ' chars selected' : '';
+}
+
+// ── COPY ──────────────────────────────────────────────────
+function copyPost() {
+  const text = document.getElementById('editorArea').value;
+  if (!text.trim()) { showToast('⚠ Nothing to copy'); return; }
+  navigator.clipboard.writeText(text).then(() => showToast('✓ Formatted post copied — paste into LinkedIn'));
+}
+function copyPlain() {
+  const text = toPlain(document.getElementById('editorArea').value);
+  if (!text.trim()) { showToast('⚠ Nothing to copy'); return; }
+  navigator.clipboard.writeText(text).then(() => showToast('✓ Plain text copied'));
+}
+
+function clearEditor() {
+  document.getElementById('editorArea').value = '';
+  syncPreview(); updateCharCount();
+}
+
+// ── QUICK INSERT ──────────────────────────────────────────
+const QUICK = [
+  { label:'🔹 Blue diamond',  val:'🔹 ' },
+  { label:'🔸 Orange diamond',val:'🔸 ' },
+  { label:'▪ Small square',  val:'▪ ' },
+  { label:'✅ Check',         val:'✅ ' },
+  { label:'❌ Cross',         val:'❌ ' },
+  { label:'💡 Idea',          val:'💡 ' },
+  { label:'🚀 Rocket',        val:'🚀 ' },
+  { label:'📌 Pin',           val:'📌 ' },
+  { label:'👉 Point',         val:'👉 ' },
+  { label:'⭐ Star',          val:'⭐ ' },
+  { label:'🔑 Key',           val:'🔑 ' },
+  { label:'💼 Briefcase',     val:'💼 ' },
+  { label:'─── divider',      val:'\n───────────────\n' },
+  { label:'═══ divider',      val:'\n═══════════════\n' },
+  { label:'· · · divider',   val:'\n· · · · · · · ·\n' },
+  { label:'blank line',       val:'\n\n' },
+];
+
+function buildQuickGrid() {
+  const grid = document.getElementById('quickGrid');
+  QUICK.forEach(item => {
+    const btn = document.createElement('button');
+    btn.className = 'quick-btn';
+    btn.textContent = item.label;
+    btn.title = 'Insert: ' + item.val.trim();
+    btn.onclick = () => insertAtCursor(item.val);
+    grid.appendChild(btn);
+  });
+}
+
+function insertAtCursor(text) {
+  const ta    = document.getElementById('editorArea');
+  const start = ta.selectionStart;
+  const end   = ta.selectionEnd;
+  ta.value    = ta.value.slice(0, start) + text + ta.value.slice(end);
+  ta.selectionStart = ta.selectionEnd = start + text.length;
+  ta.focus();
+  syncPreview(); updateCharCount();
+}
+
+// ── STYLE REFERENCE ───────────────────────────────────────
+const STYLE_REF = [
+  { name:'Bold (Sans)',     style:'sansBold',   sample:'Hello LinkedIn' },
+  { name:'Italic (Sans)',   style:'sansItalic', sample:'Hello LinkedIn' },
+  { name:'Bold Italic',     style:'boldItalic', sample:'Hello LinkedIn' },
+  { name:'Monospace',       style:'mono',       sample:'Hello LinkedIn' },
+  { name:'Script',          style:'script',     sample:'Hello LinkedIn' },
+  { name:'Bold Script',     style:'scriptBold', sample:'Hello LinkedIn' },
+  { name:'Fraktur',         style:'fraktur',    sample:'Hello LinkedIn' },
+  { name:'Double-struck',   style:'double',     sample:'Hello LinkedIn' },
+  { name:'Small Caps',      style:'caps',       sample:'Hello LinkedIn' },
+  { name:'Strikethrough',   style:'strike',     sample:'Hello LinkedIn' },
+  { name:'Underline',       style:'underline',  sample:'Hello LinkedIn' },
+];
+
+function buildStyleRef() {
+  const ref = document.getElementById('styleRef');
+  STYLE_REF.forEach(s => {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:12px;padding:5px 0;border-bottom:1px solid var(--border);font-size:13px;';
+    const label = document.createElement('span');
+    label.style.cssText = 'color:var(--ink-3);min-width:110px;font-size:11px;font-weight:600;';
+    label.textContent = s.name;
+    const preview = document.createElement('span');
+    preview.style.cssText = 'color:var(--ink);flex:1;';
+    preview.textContent = convertText(s.sample, s.style);
+    row.appendChild(label);
+    row.appendChild(preview);
+    ref.appendChild(row);
+  });
+}
+
+// ── TOAST ─────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ── INIT ──────────────────────────────────────────────────
+buildQuickGrid();
+buildStyleRef();
+
+// Load saved draft
+try {
+  const saved = localStorage.getItem('gb_linkedin_draft');
+  if (saved) { document.getElementById('editorArea').value = saved; syncPreview(); updateCharCount(); }
+} catch {}
+
+// Auto-save draft
+setInterval(() => {
+  try { localStorage.setItem('gb_linkedin_draft', document.getElementById('editorArea').value); } catch {}
+}, 3000);
+
+// Keyboard shortcut Ctrl+B = bold, Ctrl+I = italic
+document.getElementById('editorArea').addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'b') { e.preventDefault(); applyStyle('sansBold'); }
+  if ((e.ctrlKey || e.metaKey) && e.key === 'i') { e.preventDefault(); applyStyle('sansItalic'); }
+});
+</script>
+</body>
+</html>
