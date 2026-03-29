@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Meeting Agenda Builder — GomathiBalan's Forge</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:      #f5f3ef;
+      --bg-2:    #ffffff;
+      --bg-3:    #eceae5;
+      --border:  #dedad2;
+      --ink:     #18120e;
+      --ink-2:   #5c554e;
+      --ink-3:   #9c968e;
+      --accent:  #c84b00;
+      --accent-2:#f97316;
+      --nav-bg:  #18120e;
+      --nav-ink: #f5ede6;
+      --font:    'DM Sans', sans-serif;
+      --serif:   'DM Serif Display', serif;
+      --mono:    'DM Mono', monospace;
+    }
+    html, body { height: 100%; font-family: var(--font); background: var(--bg); color: var(--ink); }
+
+    /* ─── NAV ─────────────────────────────────── */
+    .nav {
+      background: var(--nav-bg); height: 52px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 28px; border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+    .nav-left { display: flex; align-items: center; gap: 16px; }
+    .nav-back { font-size: 14px; font-weight: 700; color: var(--nav-ink); text-decoration: none; transition: opacity .15s; }
+    .nav-back:hover { opacity: .7; }
+    .nav-title { font-size: 13px; color: var(--nav-ink-2); }
+    .nav-right { display: flex; align-items: center; gap: 6px; }
+    .nav-chip {
+      font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 6px;
+      color: var(--nav-ink-2); background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.08); cursor: pointer; transition: all .15s;
+      text-decoration: none; white-space: nowrap;
+    }
+    .nav-chip:hover { color: var(--nav-ink); background: rgba(255,255,255,.1); }
+
+    /* ─── LAYOUT ─────────────────────────────── */
+    .container { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; max-width: 1200px; margin: 0 auto; padding: 32px 28px 80px; min-height: calc(100vh - 52px); }
+    @media (max-width: 900px) { .container { grid-template-columns: 1fr; gap: 20px; padding: 24px 16px 60px; } }
+
+    /* ─── LEFT PANEL (Input) ───────────────────── */
+    .left-panel { display: flex; flex-direction: column; gap: 20px; }
+    .panel-title { font-family: var(--serif); font-size: 20px; font-weight: 700; color: var(--ink); margin-bottom: 4px; }
+    .panel-sub { font-size: 12px; color: var(--ink-3); margin-bottom: 16px; }
+
+    /* Input row */
+    .input-row { display: grid; grid-template-columns: 1fr 80px auto; gap: 10px; align-items: center; }
+    input.agenda-title {
+      padding: 11px 14px; border: 1px solid var(--border); border-radius: 9px;
+      font-family: var(--font); font-size: 13px; color: var(--ink);
+      background: var(--bg-2); outline: none; transition: all .15s;
+    }
+    input.agenda-title:focus { border-color: var(--accent); background: var(--bg-2); box-shadow: 0 2px 8px rgba(200,75,0,.08); }
+    input.agenda-time {
+      padding: 11px 14px; border: 1px solid var(--border); border-radius: 9px;
+      font-family: var(--mono); font-size: 12px; color: var(--ink);
+      background: var(--bg-2); outline: none; transition: all .15s; text-align: center;
+    }
+    input.agenda-time:focus { border-color: var(--accent); }
+    .btn-add {
+      padding: 11px 16px; border: none; border-radius: 9px; background: var(--accent);
+      color: white; font-weight: 700; font-size: 12px; cursor: pointer;
+      transition: all .15s; white-space: nowrap;
+    }
+    .btn-add:hover { background: #b83d00; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(200,75,0,.2); }
+    .btn-add:active { transform: translateY(0); }
+
+    /* Settings box */
+    .settings-box { background: var(--bg-2); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+    .settings-title { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 10px; }
+    .setting-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .setting-row:last-child { margin-bottom: 0; }
+    .setting-label { font-size: 12px; color: var(--ink-2); flex: 1; }
+    input[type="number"].setting-input {
+      width: 70px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px;
+      font-family: var(--mono); font-size: 12px; color: var(--ink); background: var(--bg);
+      outline: none; transition: all .15s;
+    }
+    input[type="number"].setting-input:focus { border-color: var(--accent); background: var(--bg-2); }
+
+    /* ─── RIGHT PANEL (Agenda Display) ────────── */
+    .right-panel { display: flex; flex-direction: column; gap: 16px; }
+    .agenda-list { background: var(--bg-2); border: 1px solid var(--border); border-radius: 12px; padding: 0; overflow: hidden; }
+    .agenda-list.empty { opacity: .5; }
+    .agenda-item {
+      display: grid; grid-template-columns: 40px 1fr 60px 40px; gap: 12px;
+      align-items: center; padding: 14px 16px; border-bottom: 1px solid var(--border);
+      cursor: grab; transition: background .15s; position: relative;
+    }
+    .agenda-item:last-child { border-bottom: none; }
+    .agenda-item:hover { background: var(--bg-3); }
+    .agenda-item.dragging { opacity: .5; background: var(--accent-soft); }
+    .drag-handle { font-size: 12px; color: var(--ink-3); cursor: grab; user-select: none; text-align: center; }
+    .drag-handle:active { cursor: grabbing; }
+    .item-title { font-size: 13px; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .item-time { font-family: var(--mono); font-size: 12px; color: var(--accent); font-weight: 700; text-align: right; }
+    .btn-delete {
+      width: 28px; height: 28px; border: none; border-radius: 6px;
+      background: none; color: var(--ink-3); cursor: pointer; font-size: 14px;
+      transition: all .15s; display: flex; align-items: center; justify-content: center;
+    }
+    .btn-delete:hover { background: rgba(200,75,0,.1); color: #f85149; }
+
+    /* Empty state */
+    .empty-state { padding: 40px 20px; text-align: center; opacity: .5; }
+    .empty-icon { font-size: 32px; margin-bottom: 10px; }
+    .empty-text { font-size: 12px; color: var(--ink-3); }
+
+    /* Summary box */
+    .summary-box {
+      background: linear-gradient(135deg, var(--accent-soft) 0%, rgba(200,75,0,.05) 100%);
+      border: 1px solid rgba(200,75,0,.2); border-radius: 12px; padding: 14px 16px;
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;
+    }
+    @media (max-width: 900px) { .summary-box { grid-template-columns: 1fr; } }
+    .summary-stat { display: flex; flex-direction: column; gap: 2px; }
+    .summary-label { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
+    .summary-value { font-family: var(--serif); font-size: 24px; font-weight: 700; color: var(--accent); }
+
+    /* Buttons row */
+    .button-row { display: flex; gap: 10px; }
+    .btn-primary, .btn-secondary {
+      flex: 1; padding: 12px 16px; border: none; border-radius: 9px;
+      font-family: var(--font); font-size: 12px; font-weight: 700; cursor: pointer;
+      transition: all .15s; white-space: nowrap; text-decoration: none;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-primary:hover { background: #b83d00; box-shadow: 0 4px 12px rgba(200,75,0,.2); }
+    .btn-secondary { background: var(--bg-3); color: var(--ink-2); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: var(--border); color: var(--ink); }
+    .btn-secondary:disabled { opacity: .4; cursor: not-allowed; }
+
+    /* Warning */
+    .warning-box {
+      background: #fff3cd; border: 1px solid #ffe69c; border-radius: 9px;
+      padding: 12px 14px; display: flex; gap: 10px; align-items: flex-start;
+      font-size: 12px; color: #856404; display: none;
+    }
+    .warning-box.show { display: flex; }
+    .warning-icon { flex-shrink: 0; font-size: 14px; margin-top: 1px; }
+
+    /* Tooltip */
+    .tooltip { font-size: 11px; color: var(--ink-3); margin-top: 2px; }
+
+    /* ─── FOOTER ──────────────────────────────── */
+    .footer {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: var(--nav-bg); padding: 12px 28px;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      border-top: 1px solid rgba(255,255,255,.06); font-size: 11px; color: var(--nav-ink-2);
+      z-index: 100;
+    }
+    .footer-left { display: flex; gap: 10px; align-items: center; }
+    .footer-right { display: flex; gap: 6px; align-items: center; }
+
+    @media (max-width: 600px) {
+      .nav, .footer { padding: 0 16px; }
+      .container { padding: 20px 16px 80px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-left">
+    <a href="index.html" class="nav-back">← Forge</a>
+    <div class="nav-title">Meeting Agenda Builder</div>
+  </div>
+  <div class="nav-right">
+    <a href="manual.html" class="nav-chip">📖 Manual</a>
+  </div>
+</nav>
+
+<!-- CONTAINER -->
+<div class="container">
+
+  <!-- LEFT PANEL -->
+  <div class="left-panel">
+    <div>
+      <div class="panel-title">Build Your Agenda</div>
+      <div class="panel-sub">Add items, set times, drag to reorder.</div>
+    </div>
+
+    <div class="input-row">
+      <input type="text" id="agendaTitle" class="agenda-title" placeholder="e.g. Welcome & intro" />
+      <input type="text" id="agendaTime" class="agenda-time" placeholder="MM:SS" value="05:00" />
+      <button class="btn-add" onclick="addAgendaItem()">+ Add</button>
+    </div>
+    <div class="tooltip">Time in MM:SS format (e.g., 05:00 for 5 minutes)</div>
+
+    <div class="settings-box">
+      <div class="settings-title">Default Settings</div>
+      <div class="setting-row">
+        <label class="setting-label">Default time per item:</label>
+        <input type="number" id="defaultMinutes" class="setting-input" value="5" min="1" max="60" />
+        <span style="font-size:11px;color:var(--ink-3)">min</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+    <div>
+      <div class="panel-title">Your Agenda</div>
+      <div class="panel-sub" id="itemCount">0 items • 0 min total</div>
+    </div>
+
+    <div class="warning-box" id="warningBox">
+      <span class="warning-icon">⚠️</span>
+      <div>Meeting exceeds 60 minutes — consider breaking into sessions.</div>
+    </div>
+
+    <div class="agenda-list" id="agendaList">
+      <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <div class="empty-text">No items yet. Add one to get started.</div>
+      </div>
+    </div>
+
+    <div class="summary-box">
+      <div class="summary-stat">
+        <div class="summary-label">Total Time</div>
+        <div class="summary-value" id="totalTime">0:00</div>
+      </div>
+      <div class="summary-stat">
+        <div class="summary-label">Items</div>
+        <div class="summary-value" id="totalItems">0</div>
+      </div>
+    </div>
+
+    <div class="button-row">
+      <button class="btn-secondary" id="btnClear" onclick="clearAgenda()">Clear All</button>
+      <button class="btn-primary" id="btnPDF" onclick="exportPDF()" disabled>⬇ PDF</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-left">
+    <span>🔥 GB Forge</span>
+  </div>
+  <div class="footer-right">
+    <span>Built by GomathiBalan · Designed with prompts · Crafted by Claude AI</span>
+  </div>
+</footer>
+
+<script>
+// ─── STATE ──────────────────────────────────────────
+let agenda = [];
+const STORAGE_KEY = 'gb_agenda_data';
+const TIME_REGEX = /^(\d{1,2}):(\d{2})$/;
+
+// ─── INIT ───────────────────────────────────────────
+function init() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      agenda = JSON.parse(saved);
+      renderAgenda();
+    } catch (e) {
+      console.error('Failed to load agenda', e);
+    }
+  }
+}
+
+// ─── TIME PARSING ──────────────────────────────────
+function parseTime(timeStr) {
+  const match = timeStr.match(TIME_REGEX);
+  if (!match) return null;
+  const mm = parseInt(match[1], 10);
+  const ss = parseInt(match[2], 10);
+  if (ss > 59) return null;
+  return mm * 60 + ss; // return total seconds
+}
+
+function formatTime(seconds) {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${String(s).padStart(2, '0')}`;
+}
+
+// ─── ADD ITEM ───────────────────────────────────────
+function addAgendaItem() {
+  const titleEl = document.getElementById('agendaTitle');
+  const timeEl = document.getElementById('agendaTime');
+  const title = titleEl.value.trim();
+  let time = timeEl.value.trim();
+
+  if (!title) { titleEl.focus(); return; }
+
+  // If time is just a number, treat as minutes
+  if (!time.includes(':')) {
+    const minutes = parseInt(time, 10) || parseInt(document.getElementById('defaultMinutes').value, 10);
+    time = `${minutes}:00`;
+  }
+
+  const seconds = parseTime(time);
+  if (seconds === null) {
+    timeEl.classList.add('error');
+    timeEl.focus();
+    return;
+  }
+
+  agenda.push({
+    id: Date.now(),
+    title,
+    seconds,
+  });
+
+  save();
+  renderAgenda();
+  titleEl.value = '';
+  timeEl.value = document.getElementById('defaultMinutes').value + ':00';
+  titleEl.focus();
+}
+
+// ─── DRAG & DROP ────────────────────────────────────
+let draggedId = null;
+
+function startDrag(id) {
+  draggedId = id;
+  document.querySelector(`[data-id="${id}"]`).classList.add('dragging');
+}
+
+function endDrag() {
+  if (draggedId) {
+    document.querySelector(`[data-id="${draggedId}"]`)?.classList.remove('dragging');
+  }
+  draggedId = null;
+}
+
+function dragOver(e) {
+  e.preventDefault();
+}
+
+function drop(e, targetId) {
+  e.preventDefault();
+  if (!draggedId || draggedId === targetId) return;
+
+  const draggedIdx = agenda.findIndex(a => a.id === draggedId);
+  const targetIdx = agenda.findIndex(a => a.id === targetId);
+
+  if (draggedIdx === -1 || targetIdx === -1) return;
+
+  [agenda[draggedIdx], agenda[targetIdx]] = [agenda[targetIdx], agenda[draggedIdx]];
+  save();
+  renderAgenda();
+  endDrag();
+}
+
+// ─── DELETE ITEM ────────────────────────────────────
+function deleteItem(id) {
+  agenda = agenda.filter(a => a.id !== id);
+  save();
+  renderAgenda();
+}
+
+// ─── CLEAR AGENDA ───────────────────────────────────
+function clearAgenda() {
+  if (!confirm('Clear all items? This cannot be undone.')) return;
+  agenda = [];
+  save();
+  renderAgenda();
+}
+
+// ─── RENDER ─────────────────────────────────────────
+function renderAgenda() {
+  const list = document.getElementById('agendaList');
+  const itemCountEl = document.getElementById('itemCount');
+  const totalTimeEl = document.getElementById('totalTime');
+  const totalItemsEl = document.getElementById('totalItems');
+  const warningBox = document.getElementById('warningBox');
+  const btnPDF = document.getElementById('btnPDF');
+
+  if (agenda.length === 0) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">No items yet. Add one to get started.</div></div>';
+    list.classList.add('empty');
+    itemCountEl.textContent = '0 items • 0 min total';
+    totalTimeEl.textContent = '0:00';
+    totalItemsEl.textContent = '0';
+    warningBox.classList.remove('show');
+    btnPDF.disabled = true;
+    return;
+  }
+
+  list.classList.remove('empty');
+  let totalSeconds = 0;
+  let html = '';
+
+  agenda.forEach((item, idx) => {
+    totalSeconds += item.seconds;
+    html += `
+      <div class="agenda-item" data-id="${item.id}" draggable="true"
+           ondragstart="startDrag(${item.id})"
+           ondragover="dragOver(event)"
+           ondrop="drop(event, ${item.id})"
+           ondragend="endDrag()">
+        <div class="drag-handle">⠿</div>
+        <div class="item-title">${escapeHtml(item.title)}</div>
+        <div class="item-time">${formatTime(item.seconds)}</div>
+        <button class="btn-delete" onclick="deleteItem(${item.id})">✕</button>
+      </div>
+    `;
+  });
+
+  list.innerHTML = html;
+
+  const minutes = Math.floor(totalSeconds / 60);
+  itemCountEl.textContent = `${agenda.length} item${agenda.length !== 1 ? 's' : ''} • ${minutes} min total`;
+  totalTimeEl.textContent = formatTime(totalSeconds);
+  totalItemsEl.textContent = String(agenda.length);
+
+  // Show warning if > 60 minutes
+  warningBox.classList.toggle('show', totalSeconds > 3600);
+  btnPDF.disabled = false;
+}
+
+// ─── EXPORT PDF ─────────────────────────────────────
+function exportPDF() {
+  if (agenda.length === 0) return;
+
+  const { jsPDF } = window.jspdf || {};
+  if (!jsPDF) {
+    // Fallback: use simple canvas + PDF library approach or alert
+    alert('PDF export requires jsPDF library. For now, use browser print (Ctrl+P).');
+    return;
+  }
+
+  // Simple approach: use print styles
+  const printWindow = window.open('', '_blank');
+  const html = buildPrintHTML();
+  printWindow.document.write(html);
+  printWindow.document.close();
+  setTimeout(() => printWindow.print(), 250);
+}
+
+function buildPrintHTML() {
+  let totalSeconds = 0;
+  agenda.forEach(a => totalSeconds += a.seconds);
+
+  const rows = agenda.map((item, idx) => `
+    <tr>
+      <td style="padding:8px;border-bottom:1px solid #ddd;font-weight:600;width:30px;">${idx + 1}</td>
+      <td style="padding:8px;border-bottom:1px solid #ddd;">${escapeHtml(item.title)}</td>
+      <td style="padding:8px;border-bottom:1px solid #ddd;text-align:right;width:80px;font-family:monospace;font-weight:700;">${formatTime(item.seconds)}</td>
+    </tr>
+  `).join('');
+
+  const totalMinutes = Math.floor(totalSeconds / 60);
+
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <title>Meeting Agenda</title>
+      <style>
+        body { font-family: 'DM Sans', sans-serif; background: white; color: #18120e; margin: 0; padding: 20px; }
+        h1 { font-family: 'DM Serif Display', serif; font-size: 32px; margin: 0 0 10px; color: #18120e; }
+        .meta { font-size: 12px; color: #9c968e; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th { background: #eceae5; padding: 10px 8px; text-align: left; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #9c968e; }
+        .summary { display: flex; gap: 40px; margin-top: 20px; font-size: 12px; }
+        .summary-item { display: flex; flex-direction: column; gap: 4px; }
+        .summary-label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #9c968e; }
+        .summary-value { font-family: 'DM Serif Display', serif; font-size: 20px; font-weight: 700; color: #c84b00; }
+        @media print { body { margin: 0; padding: 10mm; } }
+      </style>
+    </head>
+    <body>
+      <h1>Meeting Agenda</h1>
+      <div class="meta">Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</div>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Item</th>
+            <th>Time</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows}
+        </tbody>
+      </table>
+      <div class="summary">
+        <div class="summary-item">
+          <div class="summary-label">Total Time</div>
+          <div class="summary-value">${totalMinutes}m</div>
+        </div>
+        <div class="summary-item">
+          <div class="summary-label">Items</div>
+          <div class="summary-value">${agenda.length}</div>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
+// ─── SAVE / LOAD ────────────────────────────────────
+function save() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(agenda));
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// ─── KEYBOARD ───────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.activeElement.id === 'agendaTitle') {
+    document.getElementById('agendaTime').focus();
+  } else if (e.key === 'Enter' && document.activeElement.id === 'agendaTime') {
+    addAgendaItem();
+  }
+});
+
+// Init on load
+window.addEventListener('load', init);
+</script>
+
+</body>
+</html>
