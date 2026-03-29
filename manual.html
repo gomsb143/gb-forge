@@ -165,6 +165,7 @@
   </a>
   <div class="nav-right">
     <a href="index.html" class="nav-chip">← All Tools</a>
+    <a href="about.html" class="nav-chip">👤 About</a>
     <span class="nav-chip active">📖 User Manual</span>
   </div>
 </nav>
@@ -183,17 +184,20 @@
       <div class="sb-item" onclick="scrollTo('standup')">      <span class="sb-item-icon">⏱️</span><span class="sb-item-name">Standup Timer</span></div>
       <div class="sb-item" onclick="scrollTo('timezone')">     <span class="sb-item-icon">🌍</span><span class="sb-item-name">Team Timezone Clock</span></div>
       <div class="sb-item" onclick="scrollTo('checklist')">    <span class="sb-item-icon">☑️</span><span class="sb-item-name">Checklist Maker</span></div>
+      <div class="sb-item" onclick="scrollTo('agenda')">      <span class="sb-item-icon">📅</span><span class="sb-item-name">Meeting Agenda Builder</span></div>
       <div class="sb-item" onclick="scrollTo('celebration')">  <span class="sb-item-icon">🎉</span><span class="sb-item-name">Celebration Card Maker</span></div>
 
       <div class="sb-cat">{ } JSON Tools</div>
       <div class="sb-item" onclick="scrollTo('json-fmt')">     <span class="sb-item-icon">{ }</span><span class="sb-item-name">JSON Formatter</span></div>
       <div class="sb-item" onclick="scrollTo('json-schema')">  <span class="sb-item-icon">✓</span><span class="sb-item-name">JSON Schema Validator</span></div>
       <div class="sb-item" onclick="scrollTo('config-diff')">  <span class="sb-item-icon">⚙</span><span class="sb-item-name">Config Diff</span></div>
+      <div class="sb-item" onclick="scrollTo('csv-json')">     <span class="sb-item-icon">🔄</span><span class="sb-item-name">CSV ↔ JSON Converter</span></div>
 
       <div class="sb-cat">⚡ API Tools</div>
       <div class="sb-item" onclick="scrollTo('api-tester')">   <span class="sb-item-icon">⚡</span><span class="sb-item-name">API Tester</span></div>
       <div class="sb-item" onclick="scrollTo('api-mock')">     <span class="sb-item-icon">🎲</span><span class="sb-item-name">API Mock Generator</span></div>
       <div class="sb-item" onclick="scrollTo('regex')">        <span class="sb-item-icon">🔍</span><span class="sb-item-name">Regex Tester</span></div>
+      <div class="sb-item" onclick="scrollTo('cron')">         <span class="sb-item-icon">⏰</span><span class="sb-item-name">Cron Builder</span></div>
 
       <div class="sb-cat">🔒 Security &amp; Logs</div>
       <div class="sb-item" onclick="scrollTo('redactor')">     <span class="sb-item-icon">🔒</span><span class="sb-item-name">Secret Redactor</span></div>
@@ -206,6 +210,8 @@
       <div class="sb-item" onclick="scrollTo('md-preview')">   <span class="sb-item-icon">📝</span><span class="sb-item-name">Markdown Previewer</span></div>
       <div class="sb-item" onclick="scrollTo('md-linter')">    <span class="sb-item-icon">📋</span><span class="sb-item-name">Markdown Linter</span></div>
       <div class="sb-item" onclick="scrollTo('text-diff')">    <span class="sb-item-icon">↔</span><span class="sb-item-name">Text Diff Checker</span></div>
+      <div class="sb-cat">💼 Social Writing</div>
+      <div class="sb-item" onclick="scrollTo('linkedin')">    <span class="sb-item-icon">💼</span><span class="sb-item-name">LinkedIn Formatter</span></div>
 
     </div>
   </aside>
@@ -385,6 +391,44 @@
       </div>
     </div>
 
+    <!-- MEETING AGENDA BUILDER -->
+    <div class="tool-section" id="sec-agenda">
+      <div class="tool-header">
+        <div class="tool-icon">📅</div>
+        <div class="tool-meta">
+          <div class="tool-name">Meeting Agenda Builder</div>
+          <div class="tool-tagline">Build time-boxed meeting agendas with drag-to-reorder, auto-timed items, and PDF export.</div>
+          <a href="meeting-agenda-builder.html" class="tool-link">Open tool →</a>
+        </div>
+      </div>
+      <div class="what-box">
+        <div class="what-label">What it does</div>
+        <div class="what-text">Creates structured meeting agendas with time allocations for each topic. Each agenda item gets a time slot, displays total meeting time, shows overflow warnings, supports drag-to-reorder to reprioritize topics, and exports as a clean PDF printable card.</div>
+      </div>
+      <div class="two-col">
+        <div class="use-box">
+          <div class="use-label">When to use it</div>
+          <div class="use-item"><span class="use-dot">✓</span>Planning team meetings, standups, reviews</div>
+          <div class="use-item"><span class="use-dot">✓</span>Keeping meetings on schedule</div>
+          <div class="use-item"><span class="use-dot">✓</span>Ensuring all topics get fair airtime</div>
+          <div class="use-item"><span class="use-dot">✓</span>Sharing the agenda with attendees upfront</div>
+          <div class="use-item"><span class="use-dot">✓</span>Running structured retrospectives or workshops</div>
+        </div>
+        <div class="steps-box">
+          <div class="steps-label">How to use</div>
+          <div class="step"><span class="step-num">1</span><span class="step-text">Set <strong>total meeting time</strong> (e.g. 30 min) in the left panel</span></div>
+          <div class="step"><span class="step-num">2</span><span class="step-text">Type agenda item title and press <strong>Enter</strong></span></div>
+          <div class="step"><span class="step-num">3</span><span class="step-text">Set time allocation for each item (auto-calculates remainder)</span></div>
+          <div class="step"><span class="step-num">4</span><span class="step-text">Drag items to reorder priorities using the <strong>⠿ handle</strong></span></div>
+          <div class="step"><span class="step-num">5</span><span class="step-text">Click <strong>⬇ Print / PDF</strong> to export a clean agenda card</span></div>
+        </div>
+      </div>
+      <div class="tips-row">
+        <div class="tip"><span class="tip-icon">⏱</span>If items exceed total time, a <strong>red overflow warning</strong> appears — drag items to reorder and stay on schedule.</div>
+        <div class="tip"><span class="tip-icon">💡</span>The total time updates live as you add/remove items — useful for planning how much airtime each topic gets.</div>
+      </div>
+    </div>
+
     <!-- ══════════════════════════════════════════
          JSON TOOLS
     ══════════════════════════════════════════ -->
@@ -505,6 +549,43 @@
       <div class="tips-row">
         <div class="tip"><span class="tip-icon">💡</span>Try <strong>JSON sample</strong>, <strong>YAML sample</strong>, or <strong>INI sample</strong> in the topbar to see realistic dev/prod config differences immediately.</div>
         <div class="tip"><span class="tip-icon">⇄</span>Use the <strong>Swap</strong> button to flip A and B — useful when you want to see the diff from the opposite direction.</div>
+      </div>
+    </div>
+
+    <!-- CSV ↔ JSON CONVERTER -->
+    <div class="tool-section" id="sec-csv-json">
+      <div class="tool-header">
+        <div class="tool-icon" style="background:#1f0033">🔄</div>
+        <div class="tool-meta">
+          <div class="tool-name">CSV ↔ JSON Converter</div>
+          <div class="tool-tagline">Transform between CSV and JSON formats instantly. Auto-detect, format, validate, handle quotes.</div>
+          <a href="csv-json-converter.html" class="tool-link">Open tool →</a>
+        </div>
+      </div>
+      <div class="what-box">
+        <div class="what-label">What it does</div>
+        <div class="what-text">Bidirectional converter between CSV and JSON. Auto-detects input format, handles quoted fields and newlines, validates output, shows live statistics (row count, column count, file size). Upload a file, paste text, convert instantly, and download or copy the result.</div>
+      </div>
+      <div class="two-col">
+        <div class="use-box">
+          <div class="use-label">When to use it</div>
+          <div class="use-item"><span class="use-dot">✓</span>Converting Excel/CSV exports to JSON</div>
+          <div class="use-item"><span class="use-dot">✓</span>Preparing data for API imports</div>
+          <div class="use-item"><span class="use-dot">✓</span>Transforming JSON responses into spreadsheets</div>
+          <div class="use-item"><span class="use-dot">✓</span>Data pipeline processing</div>
+        </div>
+        <div class="steps-box">
+          <div class="steps-label">How to use</div>
+          <div class="step"><span class="step-num">1</span><span class="step-text">Paste CSV or JSON in the left panel — format auto-detects</span></div>
+          <div class="step"><span class="step-num">2</span><span class="step-text">Click <strong>▶ Convert</strong> or use <strong>Ctrl+Enter</strong></span></div>
+          <div class="step"><span class="step-num">3</span><span class="step-text">Converted output appears on the right, ready to copy or download</span></div>
+          <div class="step"><span class="step-num">4</span><span class="step-text">Optionally upload a <code>.csv</code> or <code>.json</code> file from your machine</span></div>
+          <div class="step"><span class="step-num">5</span><span class="step-text">Stats show rows, columns, and file size — useful for large data checks</span></div>
+        </div>
+      </div>
+      <div class="tips-row">
+        <div class="tip"><span class="tip-icon">📋</span>CSV first row is treated as headers — each header becomes a JSON key. Quote fields with commas: <code>"Smith, John",age</code></div>
+        <div class="tip"><span class="tip-icon">💡</span>JSON arrays are converted to CSV with one row per object. CSV is converted to JSON array of objects.</div>
       </div>
     </div>
 
@@ -634,6 +715,44 @@
         <span class="shortcut"><kbd>g</kbd> flag: find all matches</span>
         <span class="shortcut"><kbd>i</kbd> flag: case insensitive</span>
         <span class="shortcut"><kbd>m</kbd> flag: multiline ^ $</span>
+      </div>
+    </div>
+
+    <!-- CRON BUILDER -->
+    <div class="tool-section" id="sec-cron">
+      <div class="tool-header">
+        <div class="tool-icon" style="background:#1f1a00">⏰</div>
+        <div class="tool-meta">
+          <div class="tool-name">Cron Builder</div>
+          <div class="tool-tagline">Build cron expressions visually with dropdowns. See the next 5 scheduled run times instantly.</div>
+          <a href="cron-builder.html" class="tool-link">Open tool →</a>
+        </div>
+      </div>
+      <div class="what-box">
+        <div class="what-label">What it does</div>
+        <div class="what-text">Visual cron expression builder with 5 dropdowns (minute, hour, day of month, month, day of week). Displays a plain-English description of the schedule, shows the next 5 run times, validates syntax, and lets you import/export cron expressions. Includes 5 common presets (Daily 9am, Weekly Monday, Monthly 1st, Every 5 minutes, Every 4 hours).</div>
+      </div>
+      <div class="two-col">
+        <div class="use-box">
+          <div class="use-label">When to use it</div>
+          <div class="use-item"><span class="use-dot">✓</span>Scheduling cron jobs without memorizing syntax</div>
+          <div class="use-item"><span class="use-dot">✓</span>Planning recurring backups or maintenance tasks</div>
+          <div class="use-item"><span class="use-dot">✓</span>Debugging cron schedules — see next run times instantly</div>
+          <div class="use-item"><span class="use-dot">✓</span>Learning cron syntax interactively</div>
+        </div>
+        <div class="steps-box">
+          <div class="steps-label">How to use</div>
+          <div class="step"><span class="step-num">1</span><span class="step-text">Click any <strong>Preset</strong> button to load a common schedule (Daily 9am, Weekly Mon, etc.)</span></div>
+          <div class="step"><span class="step-num">2</span><span class="step-text">Or manually set each field using the <strong>dropdowns</strong> (minute, hour, day, month, day-of-week)</span></div>
+          <div class="step"><span class="step-num">3</span><span class="step-text">See <strong>English description</strong> of the schedule update live</span></div>
+          <div class="step"><span class="step-num">4</span><span class="step-text">Check <strong>Next 5 run times</strong> on the right to verify the schedule is correct</span></div>
+          <div class="step"><span class="step-num">5</span><span class="step-text">Click <strong>⎘ Copy</strong> to get the cron expression, then paste into your scheduler</span></div>
+        </div>
+      </div>
+      <div class="tips-row">
+        <div class="tip"><span class="tip-icon">💡</span>Use <strong>? (any)</strong> in day-of-month or day-of-week when you don't care about one — e.g. "every Tuesday" means day-of-month = ? and day-of-week = Tuesday.</div>
+        <div class="tip"><span class="tip-icon">⏰</span>Times shown are based on your local timezone. Copy the cron and import it to your server's timezone as needed.</div>
+        <div class="tip"><span class="tip-icon">📋</span>Paste any cron expression in the <strong>Import</strong> field to reverse-engineer it and see the next run times.</div>
       </div>
     </div>
 
@@ -897,6 +1016,64 @@
       </div>
     </div>
 
+
+    <!-- ══════════════════════════════════════════
+         SOCIAL WRITING
+    ══════════════════════════════════════════ -->
+    <div class="cat-divider">
+      <div class="cat-divider-inner">
+        <div class="cat-divider-icon" style="background:#d8f3dc">💼</div>
+        <span class="cat-divider-name">Social Writing</span>
+        <div class="cat-divider-line"></div>
+      </div>
+    </div>
+
+    <!-- LINKEDIN FORMATTER -->
+    <div class="tool-section" id="sec-linkedin">
+      <div class="tool-header">
+        <div class="tool-icon" style="background:#d8f3dc">💼</div>
+        <div class="tool-meta">
+          <div class="tool-name">LinkedIn Post Formatter</div>
+          <div class="tool-tagline">Write and format LinkedIn posts with unicode styles — bold, italic, script, monospace and more. Live preview, one-click copy.</div>
+          <a href="linkedin-formatter.html" class="tool-link">Open tool →</a>
+        </div>
+      </div>
+      <div class="what-box" style="border-left-color:#2d6a4f">
+        <div class="what-label" style="color:#2d6a4f">What it does</div>
+        <div class="what-text">Converts plain text into unicode-styled text that LinkedIn renders as bold, italic, script and other styles in the feed. Select any text in the editor and click a style button to apply it. The right panel shows a live preview of exactly what your followers will see. One click copies the formatted post ready to paste into LinkedIn.</div>
+      </div>
+      <div class="two-col">
+        <div class="use-box">
+          <div class="use-label">When to use it</div>
+          <div class="use-item"><span class="use-dot">✓</span>Writing LinkedIn posts that stand out in the feed</div>
+          <div class="use-item"><span class="use-dot">✓</span>Highlighting key lines or takeaways in bold</div>
+          <div class="use-item"><span class="use-dot">✓</span>Adding visual structure without images</div>
+          <div class="use-item"><span class="use-dot">✓</span>Making announcements or personal stories more readable</div>
+          <div class="use-item"><span class="use-dot">✓</span>Formatting thought leadership posts for maximum scroll-stop</div>
+        </div>
+        <div class="steps-box">
+          <div class="steps-label">How to use</div>
+          <div class="step"><span class="step-num">1</span><span class="step-text">Type or paste your post in the <strong>left editor</strong></span></div>
+          <div class="step"><span class="step-num">2</span><span class="step-text"><strong>Select the text</strong> you want to style — a heading, a key line, a word</span></div>
+          <div class="step"><span class="step-num">3</span><span class="step-text">Click a <strong>style button</strong> in the toolbar — Bold, Italic, Script, Mono etc.</span></div>
+          <div class="step"><span class="step-num">4</span><span class="step-text">See the result instantly in the <strong>Live Preview</strong> on the right</span></div>
+          <div class="step"><span class="step-num">5</span><span class="step-text">Use <strong>Quick Insert</strong> to add bullets, dividers and emojis at the cursor</span></div>
+          <div class="step"><span class="step-num">6</span><span class="step-text">Click <strong>⎘ Copy formatted post</strong> and paste directly into LinkedIn</span></div>
+        </div>
+      </div>
+      <div class="tips-row">
+        <div class="tip"><span class="tip-icon">💡</span><strong>Sans Bold</strong> is the most reliable style on LinkedIn — it renders consistently across desktop and mobile. Use it for your key hook lines.</div>
+        <div class="tip"><span class="tip-icon">✂️</span>To switch a word from one style to another, select it and click <strong>✕ Clear style</strong> first, then apply the new one. This prevents styles from layering.</div>
+        <div class="tip"><span class="tip-icon">⚠️</span>Don't overdo it — 2 to 3 styles per post reads well. More than that looks cluttered and hurts readability.</div>
+        <div class="tip"><span class="tip-icon">💾</span>Your draft is <strong>auto-saved</strong> every 3 seconds to your browser — so you never lose work if you close the tab by accident.</div>
+      </div>
+      <div class="section-label">Keyboard shortcuts</div>
+      <div class="shortcuts-row">
+        <span class="shortcut"><kbd>Ctrl</kbd>+<kbd>B</kbd> Sans Bold</span>
+        <span class="shortcut"><kbd>Ctrl</kbd>+<kbd>I</kbd> Sans Italic</span>
+      </div>
+    </div>
+
   </main><!-- /content -->
 </div><!-- /layout -->
 
@@ -921,19 +1098,23 @@ const sections = {
   standup:    'sec-standup',
   timezone:   'sec-timezone',
   checklist:  'sec-checklist',
+  agenda:     'sec-agenda',
   celebration:'sec-celebration',
   'json-fmt': 'sec-json-fmt',
   'json-schema':'sec-json-schema',
   'config-diff':'sec-config-diff',
+  'csv-json': 'sec-csv-json',
   'api-tester':'sec-api-tester',
   'api-mock': 'sec-api-mock',
   regex:      'sec-regex',
+  cron:       'sec-cron',
   redactor:   'sec-redactor',
   'log-hl':   'sec-log-hl',
   color:      'sec-color',
   'md-preview':'sec-md-preview',
   'md-linter':'sec-md-linter',
   'text-diff':'sec-text-diff',
+  'linkedin':  'sec-linkedin',
 };
 
 function scrollTo(id) {
