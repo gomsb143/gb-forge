@@ -271,10 +271,9 @@
     <a href="#" class="nav-chip" onclick="switchTab('team');return false">👥 Team</a>
     <a href="#" class="nav-chip" onclick="switchTab('dev');return false">⚙ Dev</a>
     <a href="#" class="nav-chip" onclick="switchTab('writing');return false">📝 Writing</a>
-    <a href="#" class="nav-chip" onclick="switchTab('coming');return false">🚧 Coming</a>
     <a href="manual.html" class="nav-chip">📖 Manual</a>
     <a href="about.html" class="nav-chip">👤 About</a>
-    <span class="nav-live">20 live</span>
+    <span class="nav-live">23 live</span>
   </div>
 </nav>
 
@@ -292,9 +291,9 @@
       <span class="search-key">/</span>
     </div>
     <div class="hero-stats">
-      <div class="hstat"><strong>20</strong> live tools</div>
+      <div class="hstat"><strong>23</strong> live tools</div>
       <div class="hstat">·</div>
-      <div class="hstat"><strong>4</strong> categories</div>
+      <div class="hstat"><strong>3</strong> categories</div>
       <div class="hstat">·</div>
       <div class="hstat"><strong>0</strong> servers</div>
       <div class="hstat">·</div>
@@ -307,458 +306,187 @@
 
 <!-- TABS -->
 <div class="tabs-bar">
-  <button class="cat-tab active" id="tab-team"    onclick="switchTab('team')">   👥 Team &amp; Productivity <span class="tab-count">4</span></button>
-  <button class="cat-tab"        id="tab-dev"     onclick="switchTab('dev')">    ⚙ Developer Tools <span class="tab-count">12</span></button>
-  <button class="cat-tab"        id="tab-writing" onclick="switchTab('writing')">📝 Writing &amp; Docs <span class="tab-count">4</span></button>
-  <button class="cat-tab"        id="tab-coming"  onclick="switchTab('coming')"> 🚧 Coming Soon <span class="tab-count">12</span></button>
+  <button class="cat-tab active" id="tab-team"    onclick="switchTab('team')">   👥 Team &amp; Productivity <span class="tab-count">6</span></button>
+  <button class="cat-tab"        id="tab-dev"     onclick="switchTab('dev')">    ⚙ Developer Tools <span class="tab-count">14</span></button>
+  <button class="cat-tab"        id="tab-writing" onclick="switchTab('writing')">📝 Writing &amp; Docs <span class="tab-count">6</span></button>
 </div>
 
 <!-- BODY -->
 <div class="page-body">
 <div id="noResults" class="no-results"><p>No tools match that search.</p></div>
 
-<!-- ══════════════════════════════════════════
-     TAB: TEAM & PRODUCTIVITY
-════════════════════════════════════════════ -->
+<!-- ══ TEAM & PRODUCTIVITY ══ -->
 <div class="cat-panel active" id="panel-team">
-
   <div class="subcat">
-    <div class="subcat-header">
-      <span class="subcat-label">⏱ Time &amp; Meetings</span>
-      <div class="subcat-line"></div>
-      <span class="subcat-count">2 tools</span>
-    </div>
+    <div class="subcat-header"><span class="subcat-label">⏱ Time &amp; Meetings</span><div class="subcat-line"></div><span class="subcat-count">2 tools</span></div>
     <div class="app-grid">
-
-      <a class="app-card" href="standup-timer.html"
-         style="--card-accent:#16a34a"
-         data-search="standup timer meeting countdown sound auto advance skip">
-        <div class="card-row-1">
-          <span class="card-emoji">⏱️</span>
-          <span class="card-name">Standup Timer</span>
-          <span class="card-badge b-live">Live</span>
-        </div>
+      <a class="app-card" href="standup-timer.html" style="--card-accent:#16a34a" data-search="standup timer meeting countdown team sound auto advance skip">
+        <div class="card-row-1"><span class="card-emoji">⏱️</span><span class="card-name">Standup Timer</span><span class="card-badge b-live">Live</span></div>
         <div class="card-desc">Per-person countdown for daily standups. Animated ring, sound alerts, pause/skip/done, session summary.</div>
-        <div class="card-footer">
-          <div class="card-tags"><span class="card-tag">Meetings</span><span class="card-tag">Timer</span></div>
-          <span class="card-open">Open →</span>
-        </div>
+        <div class="card-footer"><div class="card-tags"><span class="card-tag">Meetings</span><span class="card-tag">Timer</span></div><span class="card-open">Open →</span></div>
       </a>
-
-      <a class="app-card" href="timezone-clock.html"
-         style="--card-accent:#2563eb"
-         data-search="timezone world clock team remote cities dst daylight saving analog digital">
-        <div class="card-row-1">
-          <span class="card-emoji">🌍</span>
-          <span class="card-name">Team Timezone Clock</span>
-          <span class="card-badge b-live">Live</span>
-        </div>
+      <a class="app-card" href="timezone-clock.html" style="--card-accent:#2563eb" data-search="timezone world clock team remote cities dst daylight saving analog digital">
+        <div class="card-row-1"><span class="card-emoji">🌍</span><span class="card-name">Team Timezone Clock</span><span class="card-badge b-live">Live</span></div>
         <div class="card-desc">Search 170+ cities. Live analog + digital clocks with DST detection and working hours status.</div>
-        <div class="card-footer">
-          <div class="card-tags"><span class="card-tag">Timezones</span><span class="card-tag">Remote</span></div>
-          <span class="card-open">Open →</span>
-        </div>
+        <div class="card-footer"><div class="card-tags"><span class="card-tag">Timezones</span><span class="card-tag">Remote</span></div><span class="card-open">Open →</span></div>
       </a>
-
     </div>
   </div>
-
   <div class="subcat">
-    <div class="subcat-header">
-      <span class="subcat-label">📋 Organisation</span>
-      <div class="subcat-line"></div>
-      <span class="subcat-count">1 tool</span>
-    </div>
+    <div class="subcat-header"><span class="subcat-label">📋 Organisation</span><div class="subcat-line"></div><span class="subcat-count">2 tools</span></div>
     <div class="app-grid">
-
-      <a class="app-card" href="checklist.html"
-         style="--card-accent:#10b981"
-         data-search="checklist todo task list sections drag reorder priority notes pdf">
-        <div class="card-row-1">
-          <span class="card-emoji">☑️</span>
-          <span class="card-name">Checklist Maker</span>
-          <span class="card-badge b-live">Live</span>
-        </div>
-        <div class="card-desc">Paste, type, or upload a list. Sections, drag-to-reorder across sections, priority flags, notes. Export PDF.</div>
-        <div class="card-footer">
-          <div class="card-tags"><span class="card-tag">Tasks</span><span class="card-tag">PDF</span></div>
-          <span class="card-open">Open →</span>
-        </div>
+      <a class="app-card" href="checklist.html" style="--card-accent:#10b981" data-search="checklist todo task list sections drag reorder priority notes pdf">
+        <div class="card-row-1"><span class="card-emoji">☑️</span><span class="card-name">Checklist Maker</span><span class="card-badge b-live">Live</span></div>
+        <div class="card-desc">Paste, type, or upload a list. Sections, drag-to-reorder, priority flags, notes. Export PDF.</div>
+        <div class="card-footer"><div class="card-tags"><span class="card-tag">Tasks</span><span class="card-tag">PDF</span></div><span class="card-open">Open →</span></div>
       </a>
-
+      <a class="app-card" href="meeting-agenda-builder.html" style="--card-accent:#d97706" data-search="meeting agenda builder timer time boxed session schedule">
+        <div class="card-row-1"><span class="card-emoji">📅</span><span class="card-name">Meeting Agenda Builder</span><span class="card-badge b-live">Live</span></div>
+        <div class="card-desc">Build time-boxed agendas with drag-to-reorder, total time tracking, and PDF export.</div>
+        <div class="card-footer"><div class="card-tags"><span class="card-tag">Meetings</span><span class="card-tag">Planning</span></div><span class="card-open">Open →</span></div>
+      </a>
     </div>
   </div>
-
   <div class="subcat">
-    <div class="subcat-header">
-      <span class="subcat-label">🎉 Culture &amp; Celebration</span>
-      <div class="subcat-line"></div>
-      <span class="subcat-count">1 tool</span>
-    </div>
+    <div class="subcat-header"><span class="subcat-label">🎉 Culture &amp; Celebration</span><div class="subcat-line"></div><span class="subcat-count">1 tool</span></div>
     <div class="app-grid">
-
-      <a class="app-card" href="celebration-card.html"
-         style="--card-accent:#f59e0b"
-         data-search="birthday anniversary celebration card collage photo team export png svg">
-        <div class="card-row-1">
-          <span class="card-emoji">🎉</span>
-          <span class="card-name">Celebration Card Maker</span>
-          <span class="card-badge b-live">Live</span>
-        </div>
+      <a class="app-card" href="celebration-card.html" style="--card-accent:#f59e0b" data-search="birthday anniversary celebration card collage photo team export png svg">
+        <div class="card-row-1"><span class="card-emoji">🎉</span><span class="card-name">Celebration Card Maker</span><span class="card-badge b-live">Live</span></div>
         <div class="card-desc">Build birthday or anniversary photo collages. Upload, zoom and pan photos, customise grid. Export PNG or SVG.</div>
-        <div class="card-footer">
-          <div class="card-tags"><span class="card-tag">Cards</span><span class="card-tag">Photos</span></div>
-          <span class="card-open">Open →</span>
-        </div>
+        <div class="card-footer"><div class="card-tags"><span class="card-tag">Cards</span><span class="card-tag">Photos</span></div><span class="card-open">Open →</span></div>
       </a>
-
     </div>
   </div>
-
 </div><!-- /panel-team -->
 
-
-<!-- ══════════════════════════════════════════
-     TAB: DEVELOPER TOOLS
-════════════════════════════════════════════ -->
+<!-- ══ DEVELOPER TOOLS ══ -->
 <div class="cat-panel" id="panel-dev">
-
   <div class="subcat">
-    <div class="subcat-header">
-      <span class="subcat-label">{ } JSON Tools</span>
-      <div class="subcat-line"></div>
-      <span class="subcat-count">3 tools</span>
-    </div>
+    <div class="subcat-header"><span class="subcat-label">{ } JSON Tools</span><div class="subcat-line"></div><span class="subcat-count">4 tools</span></div>
     <div class="app-grid">
-
-      <a class="app-card" href="json-formatter.html"
-         style="--card-accent:#ffa657"
-         data-search="json formatter validator minify sort keys tree search repair">
-        <div class="card-row-1">
-          <span class="card-emoji">{ }</span>
-          <span class="card-name">JSON Formatter</span>
-          <span class="card-badge b-live">Live</span>
-        </div>
+      <a class="app-card" href="json-formatter.html" style="--card-accent:#ffa657" data-search="json formatter validator minify sort keys tree search repair">
+        <div class="card-row-1"><span class="card-emoji" style="font-family:monospace;font-size:14px;font-weight:800">{ }</span><span class="card-name">JSON Formatter</span><span class="card-badge b-live">Live</span></div>
         <div class="card-desc">Format, validate, minify, sort keys, auto-repair. Syntax highlighted output, collapsible tree view, path explorer.</div>
-        <div class="card-footer">
-          <div class="card-tags"><span class="card-tag">Format</span><span class="card-tag">Validate</span><span class="card-tag">Tree</span></div>
-          <span class="card-open">Open →</span>
-        </div>
+        <div class="card-footer"><div class="card-tags"><span class="card-tag">Format</span><span class="card-tag">Validate</span><span class="card-tag">Tree</span></div><span class="card-open">Open →</span></div>
       </a>
-
-      <a class="app-card" href="json-schema-validator.html"
-         style="--card-accent:#3fb950"
-         data-search="json schema validator draft-7 required type line numbers cursor allof anyof ref">
-        <div class="card-row-1">
-          <span class="card-emoji">✓</span>
-          <span class="card-name">JSON Schema Validator</span>
-          <span class="card-badge b-new">Updated</span>
-        </div>
+      <a class="app-card" href="json-schema-validator.html" style="--card-accent:#3fb950" data-search="json schema validator draft-7 required type line numbers cursor allof anyof ref">
+        <div class="card-row-1"><span class="card-emoji">✓</span><span class="card-name">JSON Schema Validator</span><span class="card-badge b-new">Updated</span></div>
         <div class="card-desc">Validate against Draft-7 schemas. Line-numbered editors, cursor position, error line highlighting. Supports allOf/anyOf/$ref.</div>
-        <div class="card-footer">
-          <div class="card-tags"><span class="card-tag">Schema</span><span class="card-tag">Draft-7</span><span class="card-tag">Line nos.</span></div>
-          <span class="card-open">Open →</span>
-        </div>
+        <div class="card-footer"><div class="card-tags"><span class="card-tag">Schema</span><span class="card-tag">Draft-7</span><span class="card-tag">Line nos.</span></div><span class="card-open">Open →</span></div>
       </a>
-
-      <a class="app-card" href="config-diff.html"
-         style="--card-accent:#38bdf8"
-         data-search="config diff json yaml ini compare structural key level difference">
-        <div class="card-row-1">
-          <span class="card-emoji">⚙</span>
-          <span class="card-name">Config Diff</span>
-          <span class="card-badge b-live">Live</span>
-        </div>
+      <a class="app-card" href="config-diff.html" style="--card-accent:#38bdf8" data-search="config diff json yaml ini compare structural key level difference">
+        <div class="card-row-1"><span class="card-emoji">⚙</span><span class="card-name">Config Diff</span><span class="card-badge b-live">Live</span></div>
         <div class="card-desc">Structural diff for JSON, YAML, and INI configs. Key-level comparison — reordering never creates false positives.</div>
-        <div class="card-footer">
-          <div class="card-tags"><span class="card-tag">JSON</span><span class="card-tag">YAML</span><span class="card-tag">INI</span></div>
-          <span class="card-open">Open →</span>
-        </div>
+        <div class="card-footer"><div class="card-tags"><span class="card-tag">JSON</span><span class="card-tag">YAML</span><span class="card-tag">INI</span></div><span class="card-open">Open →</span></div>
       </a>
-
+      <a class="app-card" href="csv-json-converter.html" style="--card-accent:#8b5cf6" data-search="csv json converter data transformation import export large file">
+        <div class="card-row-1"><span class="card-emoji">🔄</span><span class="card-name">CSV ↔ JSON Converter</span><span class="card-badge b-live">Live</span></div>
+        <div class="card-desc">Transform between CSV and JSON formats. Auto-detect, format, validate, handle quotes and newlines.</div>
+        <div class="card-footer"><div class="card-tags"><span class="card-tag">CSV</span><span class="card-tag">JSON</span><span class="card-tag">Data</span></div><span class="card-open">Open →</span></div>
+      </a>
     </div>
   </div>
-
   <div class="subcat">
-    <div class="subcat-header">
-      <span class="subcat-label">⚡ API Tools</span>
-      <div class="subcat-line"></div>
-      <span class="subcat-count">3 tools</span>
-    </div>
+    <div class="subcat-header"><span class="subcat-label">⚡ API Tools</span><div class="subcat-line"></div><span class="subcat-count">4 tools</span></div>
     <div class="app-grid">
-
-      <a class="app-card" href="api-tester.html"
-         style="--card-accent:#d29922"
-         data-search="api tester http get post request headers auth bearer curl response history">
-        <div class="card-row-1">
-          <span class="card-emoji">⚡</span>
-          <span class="card-name">API Tester</span>
-          <span class="card-badge b-live">Live</span>
-        </div>
+      <a class="app-card" href="api-tester.html" style="--card-accent:#d29922" data-search="api tester http get post request headers auth bearer curl response history">
+        <div class="card-row-1"><span class="card-emoji">⚡</span><span class="card-name">API Tester</span><span class="card-badge b-live">Live</span></div>
         <div class="card-desc">Send HTTP requests from the browser. Headers, params, body, Bearer/Basic/API Key auth, response viewer, cURL import/export.</div>
-        <div class="card-footer">
-          <div class="card-tags"><span class="card-tag">HTTP</span><span class="card-tag">REST</span><span class="card-tag">cURL</span></div>
-          <span class="card-open">Open →</span>
-        </div>
+        <div class="card-footer"><div class="card-tags"><span class="card-tag">HTTP</span><span class="card-tag">REST</span><span class="card-tag">cURL</span></div><span class="card-open">Open →</span></div>
       </a>
-
-      <a class="app-card" href="api-mock-generator.html"
-         style="--card-accent:#bc8cff"
-         data-search="api mock generator fake data json response faker presets paginated envelope">
-        <div class="card-row-1">
-          <span class="card-emoji">🎲</span>
-          <span class="card-name">API Mock Generator</span>
-          <span class="card-badge b-live">Live</span>
-        </div>
+      <a class="app-card" href="api-mock-generator.html" style="--card-accent:#bc8cff" data-search="api mock generator fake data json response faker presets paginated envelope">
+        <div class="card-row-1"><span class="card-emoji">🎲</span><span class="card-name">API Mock Generator</span><span class="card-badge b-live">Live</span></div>
         <div class="card-desc">Generate realistic JSON responses. 25 field types, 7 presets, paginated/envelope shapes, cURL tab, instant download.</div>
-        <div class="card-footer">
-          <div class="card-tags"><span class="card-tag">Mock</span><span class="card-tag">Faker</span><span class="card-tag">REST</span></div>
-          <span class="card-open">Open →</span>
-        </div>
+        <div class="card-footer"><div class="card-tags"><span class="card-tag">Mock</span><span class="card-tag">Faker</span><span class="card-tag">REST</span></div><span class="card-open">Open →</span></div>
       </a>
-
-      <a class="app-card" href="regex-tester.html"
-         style="--card-accent:#388bfd"
-         data-search="regex tester pattern match flags groups replace capture reference library">
-        <div class="card-row-1">
-          <span class="card-emoji">🔍</span>
-          <span class="card-name">Regex Tester</span>
-          <span class="card-badge b-live">Live</span>
-        </div>
+      <a class="app-card" href="regex-tester.html" style="--card-accent:#388bfd" data-search="regex tester pattern match flags groups replace capture reference library">
+        <div class="card-row-1"><span class="card-emoji">🔍</span><span class="card-name">Regex Tester</span><span class="card-badge b-live">Live</span></div>
         <div class="card-desc">Live match highlighting, 23 pattern presets, 6 flag toggles, capture group explorer, replace tab, quick reference panel.</div>
-        <div class="card-footer">
-          <div class="card-tags"><span class="card-tag">Regex</span><span class="card-tag">Patterns</span><span class="card-tag">Replace</span></div>
-          <span class="card-open">Open →</span>
-        </div>
+        <div class="card-footer"><div class="card-tags"><span class="card-tag">Regex</span><span class="card-tag">Patterns</span><span class="card-tag">Replace</span></div><span class="card-open">Open →</span></div>
       </a>
-
+      <a class="app-card" href="cron-builder.html" style="--card-accent:#f59e0b" data-search="cron builder expression scheduler job next run time">
+        <div class="card-row-1"><span class="card-emoji">⏰</span><span class="card-name">Cron Builder</span><span class="card-badge b-live">Live</span></div>
+        <div class="card-desc">Build cron expressions visually. Dropdowns for each field, English descriptions, next 5 run times, presets.</div>
+        <div class="card-footer"><div class="card-tags"><span class="card-tag">Cron</span><span class="card-tag">Scheduler</span><span class="card-tag">Preview</span></div><span class="card-open">Open →</span></div>
+      </a>
     </div>
   </div>
-
   <div class="subcat">
-    <div class="subcat-header">
-      <span class="subcat-label">🔒 Security &amp; Privacy</span>
-      <div class="subcat-line"></div>
-      <span class="subcat-count">1 tool</span>
-    </div>
+    <div class="subcat-header"><span class="subcat-label">🔒 Security &amp; Privacy</span><div class="subcat-line"></div><span class="subcat-count">1 tool</span></div>
     <div class="app-grid">
-
-      <a class="app-card" href="redactor.html"
-         style="--card-accent:#f85149"
-         data-search="secret redactor password api key jwt token email credit card ip phone security">
-        <div class="card-row-1">
-          <span class="card-emoji">🔒</span>
-          <span class="card-name">Secret Redactor</span>
-          <span class="card-badge b-live">Live</span>
-        </div>
+      <a class="app-card" href="redactor.html" style="--card-accent:#f85149" data-search="secret redactor password api key jwt token email credit card ip phone security">
+        <div class="card-row-1"><span class="card-emoji">🔒</span><span class="card-name">Secret Redactor</span><span class="card-badge b-live">Live</span></div>
         <div class="card-desc">Auto-detect passwords, API keys, JWTs, emails, credit cards, IPs. 11 pattern categories, custom keywords, three redaction styles.</div>
-        <div class="card-footer">
-          <div class="card-tags"><span class="card-tag">Security</span><span class="card-tag">Secrets</span><span class="card-tag">Logs</span></div>
-          <span class="card-open">Open →</span>
-        </div>
+        <div class="card-footer"><div class="card-tags"><span class="card-tag">Security</span><span class="card-tag">Secrets</span><span class="card-tag">Logs</span></div><span class="card-open">Open →</span></div>
       </a>
-
     </div>
   </div>
-
   <div class="subcat">
-    <div class="subcat-header">
-      <span class="subcat-label">📄 Logs &amp; Debugging</span>
-      <div class="subcat-line"></div>
-      <span class="subcat-count">1 tool</span>
-    </div>
+    <div class="subcat-header"><span class="subcat-label">📄 Logs &amp; Debugging</span><div class="subcat-line"></div><span class="subcat-count">1 tool</span></div>
     <div class="app-grid">
-
-      <a class="app-card" href="log-highlighter.html"
-         style="--card-accent:#388bfd"
-         data-search="log highlighter error warn info debug trace filter keyword colour level apache nginx json">
-        <div class="card-row-1">
-          <span class="card-emoji">📄</span>
-          <span class="card-name">Log Highlighter</span>
-          <span class="card-badge b-live">Live</span>
-        </div>
+      <a class="app-card" href="log-highlighter.html" style="--card-accent:#388bfd" data-search="log highlighter error warn info debug trace filter keyword colour level apache nginx json">
+        <div class="card-row-1"><span class="card-emoji">📄</span><span class="card-name">Log Highlighter</span><span class="card-badge b-live">Live</span></div>
         <div class="card-desc">Colour-coded log levels, level filters, keyword search, custom highlights, session grouping. Auto-detects Apache/Nginx/JSON formats.</div>
-        <div class="card-footer">
-          <div class="card-tags"><span class="card-tag">Logs</span><span class="card-tag">Debug</span><span class="card-tag">Filter</span></div>
-          <span class="card-open">Open →</span>
-        </div>
+        <div class="card-footer"><div class="card-tags"><span class="card-tag">Logs</span><span class="card-tag">Debug</span><span class="card-tag">Filter</span></div><span class="card-open">Open →</span></div>
       </a>
-
     </div>
   </div>
-
   <div class="subcat">
-    <div class="subcat-header">
-      <span class="subcat-label">🎨 Design &amp; Frontend</span>
-      <div class="subcat-line"></div>
-      <span class="subcat-count">1 tool</span>
-    </div>
+    <div class="subcat-header"><span class="subcat-label">🎨 Design &amp; Frontend</span><div class="subcat-line"></div><span class="subcat-count">1 tool</span></div>
     <div class="app-grid">
-
-      <a class="app-card" href="color-palette.html"
-         style="--card-accent:#ec4899"
-         data-search="color colour palette picker hex rgb hsl wcag contrast css tailwind scss generate shades">
-        <div class="card-row-1">
-          <span class="card-emoji">🎨</span>
-          <span class="card-name">Color Palette Manager</span>
-          <span class="card-badge b-live">Live</span>
-        </div>
+      <a class="app-card" href="color-palette.html" style="--card-accent:#ec4899" data-search="color colour palette picker hex rgb hsl wcag contrast css tailwind scss generate shades">
+        <div class="card-row-1"><span class="card-emoji">🎨</span><span class="card-name">Color Palette Manager</span><span class="card-badge b-live">Live</span></div>
         <div class="card-desc">Picker + RGB sliders synced to HEX/HSL. WCAG AA/AAA contrast. Generate shades, tints, triadic. Export CSS vars / Tailwind / SCSS.</div>
-        <div class="card-footer">
-          <div class="card-tags"><span class="card-tag">Color</span><span class="card-tag">WCAG</span><span class="card-tag">CSS</span></div>
-          <span class="card-open">Open →</span>
-        </div>
+        <div class="card-footer"><div class="card-tags"><span class="card-tag">Color</span><span class="card-tag">WCAG</span><span class="card-tag">CSS</span></div><span class="card-open">Open →</span></div>
       </a>
-
     </div>
   </div>
-
 </div><!-- /panel-dev -->
 
-
-<!-- ══════════════════════════════════════════
-     TAB: WRITING & DOCS
-════════════════════════════════════════════ -->
+<!-- ══ WRITING & DOCS ══ -->
 <div class="cat-panel" id="panel-writing">
-
   <div class="subcat">
-    <div class="subcat-header">
-      <span class="subcat-label">📝 Markdown</span>
-      <div class="subcat-line"></div>
-      <span class="subcat-count">2 tools</span>
-    </div>
+    <div class="subcat-header"><span class="subcat-label">📝 Markdown</span><div class="subcat-line"></div><span class="subcat-count">2 tools</span></div>
     <div class="app-grid">
-
-      <a class="app-card" href="markdown-previewer.html"
-         style="--card-accent:#2563eb"
-         data-search="markdown previewer live render editor split syntax highlight export pdf scroll sync">
-        <div class="card-row-1">
-          <span class="card-emoji">📝</span>
-          <span class="card-name">Markdown Previewer</span>
-          <span class="card-badge b-live">Live</span>
-        </div>
+      <a class="app-card" href="markdown-previewer.html" style="--card-accent:#2563eb" data-search="markdown previewer live render editor split syntax highlight export pdf scroll sync">
+        <div class="card-row-1"><span class="card-emoji">📝</span><span class="card-name">Markdown Previewer</span><span class="card-badge b-live">Live</span></div>
         <div class="card-desc">Live split-view editor with syntax highlighting for JS/Python/HTML/CSS/Bash. Scroll sync, toolbar shortcuts, PDF and .md export.</div>
-        <div class="card-footer">
-          <div class="card-tags"><span class="card-tag">Markdown</span><span class="card-tag">Preview</span><span class="card-tag">Export</span></div>
-          <span class="card-open">Open →</span>
-        </div>
+        <div class="card-footer"><div class="card-tags"><span class="card-tag">Markdown</span><span class="card-tag">Preview</span><span class="card-tag">Export</span></div><span class="card-open">Open →</span></div>
       </a>
-
-      <a class="app-card" href="md-linter.html"
-         style="--card-accent:#f59e0b"
-         data-search="markdown linter heading links alt text formatting rules line numbers h1 h2">
-        <div class="card-row-1">
-          <span class="card-emoji">📋</span>
-          <span class="card-name">Markdown Linter</span>
-          <span class="card-badge b-live">Live</span>
-        </div>
+      <a class="app-card" href="md-linter.html" style="--card-accent:#f59e0b" data-search="markdown linter heading links alt text formatting rules line numbers h1 h2">
+        <div class="card-row-1"><span class="card-emoji">📋</span><span class="card-name">Markdown Linter</span><span class="card-badge b-live">Live</span></div>
         <div class="card-desc">13 toggleable rules — missing H1, skipped heading levels, bare URLs, missing image alt, long lines, hard tabs, duplicates.</div>
-        <div class="card-footer">
-          <div class="card-tags"><span class="card-tag">Lint</span><span class="card-tag">Rules</span><span class="card-tag">Quality</span></div>
-          <span class="card-open">Open →</span>
-        </div>
+        <div class="card-footer"><div class="card-tags"><span class="card-tag">Lint</span><span class="card-tag">Rules</span><span class="card-tag">Quality</span></div><span class="card-open">Open →</span></div>
       </a>
-
     </div>
   </div>
-
   <div class="subcat">
-    <div class="subcat-header">
-      <span class="subcat-label">↔ Comparison</span>
-      <div class="subcat-line"></div>
-      <span class="subcat-count">2 tools</span>
-    </div>
+    <div class="subcat-header"><span class="subcat-label">↔ Comparison</span><div class="subcat-line"></div><span class="subcat-count">2 tools</span></div>
     <div class="app-grid">
-
-      <a class="app-card" href="text-diff.html"
-         style="--card-accent:#8b5cf6"
-         data-search="text diff compare side by side unified word level ignore whitespace case patch">
-        <div class="card-row-1">
-          <span class="card-emoji">↔</span>
-          <span class="card-name">Text Diff Checker</span>
-          <span class="card-badge b-live">Live</span>
-        </div>
+      <a class="app-card" href="text-diff.html" style="--card-accent:#8b5cf6" data-search="text diff compare side by side unified word level ignore whitespace case patch">
+        <div class="card-row-1"><span class="card-emoji">↔</span><span class="card-name">Text Diff Checker</span><span class="card-badge b-live">Live</span></div>
         <div class="card-desc">LCS-based line and word-level diff. Side-by-side or unified view, ignore whitespace/case, collapse unchanged sections.</div>
-        <div class="card-footer">
-          <div class="card-tags"><span class="card-tag">Diff</span><span class="card-tag">Compare</span><span class="card-tag">Patch</span></div>
-          <span class="card-open">Open →</span>
-        </div>
+        <div class="card-footer"><div class="card-tags"><span class="card-tag">Diff</span><span class="card-tag">Compare</span><span class="card-tag">Patch</span></div><span class="card-open">Open →</span></div>
       </a>
-
-      <a class="app-card" href="config-diff.html"
-         style="--card-accent:#38bdf8"
-         data-search="config diff json yaml ini compare structural docs writing">
-        <div class="card-row-1">
-          <span class="card-emoji">⚙</span>
-          <span class="card-name">Config Diff</span>
-          <span class="card-badge b-live">Live</span>
-        </div>
+      <a class="app-card" href="config-diff.html" style="--card-accent:#38bdf8" data-search="config diff json yaml ini compare structural docs writing">
+        <div class="card-row-1"><span class="card-emoji">⚙</span><span class="card-name">Config Diff</span><span class="card-badge b-live">Live</span></div>
         <div class="card-desc">Compare JSON, YAML, and INI config files structurally. Spot what changed between dev and prod configs instantly.</div>
-        <div class="card-footer">
-          <div class="card-tags"><span class="card-tag">JSON</span><span class="card-tag">YAML</span><span class="card-tag">INI</span></div>
-          <span class="card-open">Open →</span>
-        </div>
+        <div class="card-footer"><div class="card-tags"><span class="card-tag">JSON</span><span class="card-tag">YAML</span><span class="card-tag">INI</span></div><span class="card-open">Open →</span></div>
       </a>
-
+    </div>
+  </div>
+  <div class="subcat">
+    <div class="subcat-header"><span class="subcat-label">💼 Social Writing</span><div class="subcat-line"></div><span class="subcat-count">1 tool</span></div>
+    <div class="app-grid">
+      <a class="app-card" href="linkedin-formatter.html" style="--card-accent:#2d6a4f" data-search="linkedin formatter unicode bold italic script monospace post format social writing">
+        <div class="card-row-1"><span class="card-emoji">💼</span><span class="card-name">LinkedIn Post Formatter</span><span class="card-badge b-live">Live</span></div>
+        <div class="card-desc">Format LinkedIn posts with unicode — bold, italic, script, monospace, strikethrough and more. Select text, apply style, copy and paste.</div>
+        <div class="card-footer"><div class="card-tags"><span class="card-tag">Unicode</span><span class="card-tag">LinkedIn</span><span class="card-tag">Format</span></div><span class="card-open">Open →</span></div>
+      </a>
     </div>
   </div>
 
 </div><!-- /panel-writing -->
-
-
-<!-- ══════════════════════════════════════════
-     TAB: COMING SOON
-════════════════════════════════════════════ -->
-<div class="cat-panel" id="panel-coming">
-
-  <div class="coming-intro">
-    <span class="coming-intro-icon">🔥</span>
-    <div>
-      <div class="coming-intro-title">More tools being forged</div>
-      <div class="coming-intro-sub">These are planned next. Built with prompts and Claude AI — just like everything here.</div>
-    </div>
-  </div>
-
-  <div class="subcat">
-    <div class="subcat-header">
-      <span class="subcat-label">👥 Team Tools</span>
-      <div class="subcat-line"></div>
-    </div>
-    <div class="coming-grid">
-      <div class="coming-card" data-search="poll vote team options card"><span class="cc-icon">📊</span><div><div class="cc-name">Quick Poll Card</div><div class="cc-desc">Shareable poll card with options, votes, exportable result image.</div><span class="cc-badge">Soon</span></div></div>
-      <div class="coming-card" data-search="icebreaker wheel spin team random"><span class="cc-icon">🎡</span><div><div class="cc-name">Ice Breaker Wheel</div><div class="cc-desc">Spin a wheel to pick team questions. Import your own list.</div><span class="cc-badge">Soon</span></div></div>
-      <div class="coming-card" data-search="meeting agenda builder time slots"><span class="cc-icon">📅</span><div><div class="cc-name">Meeting Agenda Builder</div><div class="cc-desc">Build a time-boxed agenda and export a clean printable card.</div><span class="cc-badge">Soon</span></div></div>
-      <div class="coming-card" data-search="retro board team retrospective sticky"><span class="cc-icon">🗂</span><div><div class="cc-name">Retro Board</div><div class="cc-desc">Went well / Improve / Actions board. Export as PDF or image.</div><span class="cc-badge">Planned</span></div></div>
-    </div>
-  </div>
-
-  <div class="subcat" style="margin-top:24px">
-    <div class="subcat-header">
-      <span class="subcat-label">⚙ Developer Tools</span>
-      <div class="subcat-line"></div>
-    </div>
-    <div class="coming-grid">
-      <div class="coming-card" data-search="password generator secure strong"><span class="cc-icon">🔑</span><div><div class="cc-name">Password Generator</div><div class="cc-desc">Strong passwords with rules, strength meter, bulk generate.</div><span class="cc-badge">Planned</span></div></div>
-      <div class="coming-card" data-search="base64 encode decode url hex binary"><span class="cc-icon">🔄</span><div><div class="cc-name">Encoder / Decoder</div><div class="cc-desc">Base64, URL encode, hex, HTML entities — both directions.</div><span class="cc-badge">Planned</span></div></div>
-      <div class="coming-card" data-search="cron expression builder scheduler job"><span class="cc-icon">⏰</span><div><div class="cc-name">Cron Builder</div><div class="cc-desc">Build cron expressions visually. See next 10 run times.</div><span class="cc-badge">Planned</span></div></div>
-      <div class="coming-card" data-search="jwt decoder token claims header signature expiry"><span class="cc-icon">🪙</span><div><div class="cc-name">JWT Decoder</div><div class="cc-desc">Decode JWT header, payload, verify expiry. No secret needed.</div><span class="cc-badge">Planned</span></div></div>
-      <div class="coming-card" data-search="csv json table converter transform data"><span class="cc-icon">📊</span><div><div class="cc-name">CSV ↔ JSON Converter</div><div class="cc-desc">Convert CSV to JSON and back. Table preview, configurable.</div><span class="cc-badge">Planned</span></div></div>
-      <div class="coming-card" data-search="http status code lookup reference 404 500"><span class="cc-icon">📖</span><div><div class="cc-name">HTTP Status Reference</div><div class="cc-desc">Searchable reference for every HTTP status code.</div><span class="cc-badge">Planned</span></div></div>
-      <div class="coming-card" data-search="commit message lint conventional changelog git"><span class="cc-icon">📝</span><div><div class="cc-name">Commit Message Linter</div><div class="cc-desc">Validate against Conventional Commits. Suggest fixes.</div><span class="cc-badge">Planned</span></div></div>
-    </div>
-  </div>
-
-  <div class="subcat" style="margin-top:24px">
-    <div class="subcat-header">
-      <span class="subcat-label">🎨 Design</span>
-      <div class="subcat-line"></div>
-    </div>
-    <div class="coming-grid">
-      <div class="coming-card" data-search="color contrast checker accessibility wcag aa aaa blindness"><span class="cc-icon">👁</span><div><div class="cc-name">Contrast Checker</div><div class="cc-desc">Full WCAG 2.2 contrast checker with colour-blindness simulation.</div><span class="cc-badge">Planned</span></div></div>
-    </div>
-  </div>
-
-</div><!-- /panel-coming -->
 
 </div><!-- /page-body -->
 
@@ -783,7 +511,7 @@
   </div>
   <div class="footer-rule"></div>
   <div class="footer-bottom">
-    <span class="footer-copy">© GomathiBalan · 20 live tools · 0 servers · 0 data collected</span>
+    <span class="footer-copy">© GomathiBalan · 23 live tools · 0 servers · 0 data collected</span>
     <div class="footer-pills">
       <span class="footer-pill">No login</span>
       <span class="footer-pill">No backend</span>
